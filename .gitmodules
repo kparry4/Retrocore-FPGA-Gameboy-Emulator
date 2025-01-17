@@ -1,0 +1,9 @@
+[submodule "mooneye-test-suite"]
+	path = mooneye-test-suite
+	url = git@github.com:Gekkio/mooneye-test-suite.git
+[submodule "gameboy-doctor"]
+	path = gameboy-doctor
+	url = git@github.com:robert/gameboy-doctor.git
+[submodule "gb-test-roms"]
+	path = gb-test-roms
+	url = git@github.com:retrio/gb-test-roms.git
