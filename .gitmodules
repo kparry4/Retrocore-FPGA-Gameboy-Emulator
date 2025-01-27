@@ -7,6 +7,3 @@
 [submodule "gb-test-roms"]
 	path = gb-test-roms
 	url = git@github.com:retrio/gb-test-roms.git
-[submodule "wla-dx"]
-	path = wla-dx
-	url = git@github.com:vhelin/wla-dx.git
