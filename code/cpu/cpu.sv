@@ -7,15 +7,21 @@ module cpu (
   // DECODE
   //////////////////////////////////////////////////////////////////////////////////////
   logic [3:0][7:0] instrD;
+  ctrl_t ctrlD;
 
+  // instruction buffer, holds 4 bytes
   flopenr instrBuf(clk, flush, ~stall, instrF, instrD);
 
-  ctrl ctrl(.instr(instrD), .instrSz);
+  // control unit
+  ctrl ctrl(.instr(instrD), .ctrl(ctrlD));
 
+  // pc register
   flopen pcflop(clk, ~stall, pcNext, pc);
+  
+  // select the next pc
   always_comb 
-    case(pcSel):
-      PC_ADD: pcNext = pc + instrSz;
+    case(ctrlD.pcSel):
+      PC_ADD: pcNext = pc + ctrlD.instrSz;
       default: pcNext = 'x;
     endcase
 

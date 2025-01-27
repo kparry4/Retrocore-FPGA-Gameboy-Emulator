@@ -1,7 +1,7 @@
 
 
 typedef enum logic [2:0] {
-    PC_ADD,                 // PC + ?
+    PC_ADD,                 // PC + instrSz
     PC_DC = 'bx            // Don't care value
 } pcSel_t;
 
@@ -30,3 +30,8 @@ typedef enum logic [2:0] {
   RD_NON,                // don't write
   RD_DC = 'bx            // Don't care value
 } rd_sel_t;
+
+typedef struct packed {
+    pcSel_t pcSel;
+    logic [1:0] instrSzD;
+} ctrl_t;
