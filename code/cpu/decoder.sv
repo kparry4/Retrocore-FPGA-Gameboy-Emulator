@@ -1,6 +1,6 @@
 
 module decode (
-  input  logic [15:0] instr
+  input  logic [3:0][7:0] instr,
   output logic [2:0] rd, rs1
 );
 

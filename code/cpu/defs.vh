@@ -1,6 +1,11 @@
 
 
 typedef enum logic [2:0] {
+    PC_ADD,                 // PC + ?
+    PC_DC = 'bx            // Don't care value
+} pcSel_t;
+
+typedef enum logic [2:0] {
     ADR_PC,                 // PC
     ADR_DC = 'bx            // Don't care value
 } addr_sel_t;
