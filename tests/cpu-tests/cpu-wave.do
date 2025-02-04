@@ -1,4 +1,5 @@
-
-# add wave -noupdate /tb/*
-#add wave -group {Testbench} -noupdate /tb/*
-#add wave -group {SQR} -noupdate /tb/cpu/*
+add wave -noupdate /tb/rst
+add wave -noupdate /tb/clk
+add wave -noupdate /tb/pc
+add wave -group {Testbench} -noupdate /tb/*
+add wave -group {CPU} -noupdate /tb/cpu/*

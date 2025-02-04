@@ -1,16 +1,27 @@
+import defs::*;
 
 module cpu (
-  input  logic [31:0] memData,
-  output logic [15:0] pc,
+  input logic clk,
+  input  logic rst,
+  input  logic [15:0] memData,
+  output logic [15:0] pc
 );  
   logic [3:0][7:0] instrD;
   logic stallE,stallM,stallD;
+  logic [7:0] rs1E, rs2E;
+  logic [7:0] src1, src2;
+  logic [7:0] aluOutE;
+  logic [7:0] rdM;
   assign stallE = 0;
   assign stallD = 0;
   assign stallM = 0;
+  logic [15:0] pcNext;
   ctrlD_t ctrlD;
   ctrlE_t ctrlE;
   ctrlM_t ctrlM;
+  datD_t datD;
+  datE_t datE;
+  datM_t datM;
   //////////////////////////////////////////////////////////////////////////////////////
   // DECODE
   //////////////////////////////////////////////////////////////////////////////////////
@@ -20,35 +31,44 @@ module cpu (
   // *** might be able to merge fetch and decode and hold the instrD
 
   // control unit
-  ctrl ctrl(.memData, .ctrl(ctrlD));
+  decoder decoder(.memData, .memValid(1'b1), .ctrl(ctrlD), .rst, .n(datD.n));
 
   // pc register
-  flopen pcflop(clk, ~stallD, pcNext, pc);
+  flopenr #(16) pcflop(clk, rst, ~stallD, pcNext, pc);
   
   // select the next pc
   always_comb 
-    case(ctrlD.pcSel):
+    case(ctrlD.pcSel)
       PC_ADD: pcNext = pc + ctrlD.instrSz;
       default: pcNext = 'x;
     endcase
 
   flopenr #($bits(ctrlE)) ctrlflopDE (clk, flush, ~stallE, ctrlD, ctrlE);
+  flopenr #($bits(datD)) datflopDE (clk, flush, ~stallM, datD, datE[$bits(datD)-1:0]);
   //////////////////////////////////////////////////////////////////////////////////////
   // EXECUTE
   //////////////////////////////////////////////////////////////////////////////////////
 
-  regfile regfile(.rd, .rs1(rs1E), .rs2(rs2E), 
+  regfile regfile(.clk, .rd(rdM), .rs1(rs1E), .rs2(rs2E), 
                   .rdAddr(ctrlE.rdAddr), .addr1(ctrlE.addr1), .addr2(ctrlE.addr2),
                   .rdWen(ctrlE.rdWen));
 
-  aluE aluE (.src1, .src2, aluOp(ctrlE.aluOpM) .aluOut(aluOutE), .flg(flgE));
+  assign src1 = rs1E;
+  assign src2 = rs2E;
 
-  flopenr #($bits(ctrlM)) ctrlflopEM (clk, flush, ~stallM, ctrlD, ctrlE);
-  flopenr #(12) aluflopEM (clk, flush, ~stallM, {aluOutE, flgE}, {aluOutM, flgM});
+  aluE aluE (.src1, .src2, .aluOp(ctrlE.aluOp), .aluOut(datE.aluOut), .flg(datE.flg));
+
+  flopenr #($bits(ctrlM)) ctrlflopEM (clk, flush, ~stallM, ctrlE, ctrlM);
+  flopenr #($bits(datE)) datflopEM (clk, flush, ~stallM, datE, datM);
   //////////////////////////////////////////////////////////////////////////////////////
   // MEMORY
   //////////////////////////////////////////////////////////////////////////////////////
-
+  always_comb 
+    case(ctrlD.pcSel)
+      RD_N: rdM = datM.n;
+      RD_ALU: rdM = datM.aluOut;
+      default: rdM = 'x;
+    endcase
   
 
 endmodule

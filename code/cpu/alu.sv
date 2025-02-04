@@ -1,3 +1,4 @@
+import defs::*;
 
 module aluE (
   input logic [7:0] src1, src2,
@@ -7,20 +8,22 @@ module aluE (
 );
 
   // add/subtract
-  {bcarry, bsum} = src1[3:0] + src2[3:0];
-  {carry, tsum} = src1[7:4] + src2[7:4] + bcarry;
+  assign {bcarry, bsum} = src1[3:0] + src2[3:0];
+  assign {carry, tsum} = src1[7:4] + src2[7:4] + bcarry;
 
   // select output
   always_comb begin
-    case(aluOpM)
+    case(aluOp)
       ALU_ADD: aluOut = {tsum,bsum};
+      default: aluOut = 'x;
     endcase
   end
 
   // calculate flags
   always_comb begin
-    case(aluOpM) // flg = {zero,neg,halfcarry,carry}
+    case(aluOp) // flg = {zero,neg,halfcarry,carry}
       ALU_ADD: flg = {~|(bsum|tsum),1'b0,bcarry,carry};
+      default: flg = 'x;
     endcase
   end
 

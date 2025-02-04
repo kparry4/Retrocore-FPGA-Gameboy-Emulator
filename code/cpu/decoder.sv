@@ -1,25 +1,29 @@
+import defs::*;
 
-module decode (
-  input  logic [31:0] memData,
-  output ctrl_t ctrl
+module decoder (
+  input  logic [15:0] memData,
+  input  logic memValid,
+  input logic rst,
+  output logic [7:0] n,
+  output ctrlD_t ctrl
 );
 
-  logic [7:0] op,n;
-  logic [1:0] mpc;
-  logic [63:0] nextInstr;
+  logic [7:0] op;
+  logic [3:0][7:0] instr;
   
-  flopenr #(64) instrBuf(clk, flush, ~stallD, nextInstr, instrD);
-  // if go through all of first mank intructions move
-  // the second bank into the first and adjust the micro pc
-  assign getInstr = n > 3;
-  assign mpcNext = getInstr ? mpc-4 : mpc+instrSz;
-  assign nextInstr = getInstr ? {memData, instrD[7:4]} : instrD;
-
-  flopenr #(2) mpcflop(clk, rst, stallD, mpcNext, mpc);
+  // flopenr #(32) instrBuf(clk, flush, ~stallD, nextInstr, instr);
+  // *** add instr buffer
+  assign instr = {'0,memData};
+  assign mpc = 1;
+  
+  // always_ff @(negedge clk) begin : mpcflop
+  //   if(rst) prempc = 4;
+  //   else prempc = mpc;
+  // end
 
   // select the proper parts of instruction
-  assign op = instrs[mpc];
-  assign n = instrs[mpc+1];
+  assign op = instr[mpc];
+  assign n = instr[mpc-1];
 
   // register layout
   // B C D E H L F A SP PC WZ(temp storage)
@@ -29,7 +33,7 @@ module decode (
   always_comb begin
     case(op)
       // nop
-      8'b00000000: ctrl = {PC_ADD,2'h1,ALU_DC,DC,DC,1'b0,RD_DC};
+      8'b00000000: ctrl = {PC_ADD,2'h1,ALU_DC,DC,DC,DC,1'b0,RD_DC};
       // ld r, n    op rs1 | n
       // rd = A+r
       8'b00???110: ctrl = {PC_ADD,2'h2,ALU_DC,DC,DC,instr[7:4],1'b1,RD_N};

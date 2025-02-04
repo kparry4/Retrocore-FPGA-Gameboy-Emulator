@@ -1,13 +1,59 @@
-`define INSTRS 32
+`define INSTRS 20
+`define PATH "code/"
 
 module tb;
-  logic [`INSTRS-1:0][7:0] instrs;
+  string tests[];
+  // solution in the first 3 words
+  logic [15:0] prog[`INSTRS-1:0];
+  int progNum;
+  logic [15:0] pc, memData;
+  string testname;
+  logic [2:0][7:0] soln;
+  logic rst=0, clk=0;
+
+
+  // set solution
+  assign soln = {prog[3][7:0],prog[3][15:8],
+                prog[2][7:0],prog[2][15:8],
+                prog[1][7:0],prog[1][15:8],
+                prog[0][7:0],prog[0][15:8]};
   
-  // cpu cpu ();
+  assign memData = prog[pc+6];
+  cpu cpu (.memData, .pc, .rst, .clk);
+
+  always #1 clk = ~clk;
+
   initial begin
-    $display("running %s tests\n",`TEST);
-    $finish;
+    rst = 1;
+    #4;
+    rst = 0;
   end
+
+  initial begin
+    $display("Test mode: %s\n",`TEST);
+
+    if(`TEST == "ld" || `TEST == "all") begin
+      tests = {tests, "ld"};
+    end
+
+    testname = {`PATH, tests[0], ".txt"};
+    $display("\n\nRunning %s test ", tests[0]);
+    $readmemh(testname, prog);
+    // set the test index to 0
+    progNum = 0;
+    
+  end
+
+  always @(pc) begin
+    if(prog[pc+6] === 'x && ~rst) begin
+      if(cpu.regfile.regs !== soln)
+        $display("ERROR\n AFLHEDCB %h %h", cpu.regfile.regs, soln);
+      #1;
+      $finish;
+    end
+  end
+  
+  
 
   // assign ans = (x+y)*(x+y);
   // always begin
