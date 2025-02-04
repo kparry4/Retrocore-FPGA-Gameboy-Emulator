@@ -9,7 +9,7 @@ module regfile (
   
   // B C D E H L F A
   // 0 1 2 3 4 5 6 7
-  logic [2:0][7:0] regs;
+  logic [7:0][7:0] regs;
   always_ff @(negedge clk) begin : rf
     if(rdWen) regs[rdAddr] = rd;
   end

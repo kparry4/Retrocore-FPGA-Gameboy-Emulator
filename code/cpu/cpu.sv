@@ -43,28 +43,28 @@ module cpu (
       default: pcNext = 'x;
     endcase
 
-  flopenr #($bits(ctrlE)) ctrlflopDE (clk, flush, ~stallE, ctrlD, ctrlE);
-  flopenr #($bits(datD)) datflopDE (clk, flush, ~stallM, datD, datE[$bits(datD)-1:0]);
+  flopenr #($bits(ctrlE)) ctrlflopDE (clk, rst, ~stallE, ctrlD, ctrlE);
+  flopenr #($bits(datD)) datflopDE (clk, rst, ~stallM, datD, datE[$bits(datD)-1:0]);
   //////////////////////////////////////////////////////////////////////////////////////
   // EXECUTE
   //////////////////////////////////////////////////////////////////////////////////////
 
   regfile regfile(.clk, .rd(rdM), .rs1(rs1E), .rs2(rs2E), 
-                  .rdAddr(ctrlE.rdAddr), .addr1(ctrlE.addr1), .addr2(ctrlE.addr2),
-                  .rdWen(ctrlE.rdWen));
+                  .rdAddr(ctrlM.rdAddr), .addr1(ctrlE.addr1), .addr2(ctrlE.addr2),
+                  .rdWen(ctrlM.rdWen));
 
   assign src1 = rs1E;
   assign src2 = rs2E;
 
   aluE aluE (.src1, .src2, .aluOp(ctrlE.aluOp), .aluOut(datE.aluOut), .flg(datE.flg));
 
-  flopenr #($bits(ctrlM)) ctrlflopEM (clk, flush, ~stallM, ctrlE, ctrlM);
-  flopenr #($bits(datE)) datflopEM (clk, flush, ~stallM, datE, datM);
+  flopenr #($bits(ctrlM)) ctrlflopEM (clk, rst, ~stallM, ctrlE, ctrlM);
+  flopenr #($bits(datE)) datflopEM (clk, rst, ~stallM, datE, datM);
   //////////////////////////////////////////////////////////////////////////////////////
   // MEMORY
   //////////////////////////////////////////////////////////////////////////////////////
   always_comb 
-    case(ctrlD.pcSel)
+    case(ctrlM.rdSel)
       RD_N: rdM = datM.n;
       RD_ALU: rdM = datM.aluOut;
       default: rdM = 'x;

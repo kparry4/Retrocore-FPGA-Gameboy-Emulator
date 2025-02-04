@@ -46,7 +46,7 @@ package defs;
   typedef struct packed {
       pcSel_t pcSel;        // what is next pc
       logic [1:0] instrSz;  // size of intruction (# bytes)
-      alu_op_t aluOpM;      // which alu opperation alu in memory stage
+      alu_op_t aluOp;      // which alu opperation alu in memory stage
       reg_t addr1;          // which register for rs1
       reg_t addr2;          // which register for rs1
       reg_t rdAddr;         // which register for rs1
