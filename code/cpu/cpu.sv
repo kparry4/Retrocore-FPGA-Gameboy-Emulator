@@ -4,7 +4,8 @@ module cpu (
   input logic clk,
   input  logic rst,
   input  logic [15:0] memData,
-  output logic [15:0] pc
+  input logic memValid,
+  output logic [15:0] memAddr
 );  
   logic [3:0][7:0] instrD;
   logic stallE,stallM,stallD;
@@ -15,7 +16,7 @@ module cpu (
   assign stallE = 0;
   assign stallD = 0;
   assign stallM = 0;
-  logic [15:0] pcNext;
+  logic [15:0] pcNext, pc;
   ctrlD_t ctrlD;
   ctrlE_t ctrlE;
   ctrlM_t ctrlM;
@@ -31,7 +32,7 @@ module cpu (
   // *** might be able to merge fetch and decode and hold the instrD
 
   // control unit
-  decoder decoder(.memData, .memValid(1'b1), .ctrl(ctrlD), .rst, .clk, .n(datD.n));
+  decoder decoder(.memData, .memValid, .ctrl(ctrlD), .rst, .clk, .n(datD.n));
 
   // pc register
   flopenr #(16) pcflop(clk, rst, ~stallD, pcNext, pc);
@@ -42,8 +43,11 @@ module cpu (
       PC_ADD: pcNext = pc + ctrlD.instrSz;
       default: pcNext = 'x;
     endcase
+  // get the next instruction
+  assign memAddr = pcNext + {ctrlD.adjpc,1'b0};
+  // assign memAddr = pc + {ctrlD.adjpc,1'b0};
 
-  flopenr #($bits(ctrlE)) ctrlflopDE (clk, rst, ~stallE, ctrlD, ctrlE);
+  flopenr #($bits(ctrlE)) ctrlflopDE (clk, rst, ~stallE, ctrlD[$bits(ctrlE)-1:0], ctrlE);
   flopenr #($bits(datD)) datflopDE (clk, rst, ~stallM, datD, datE[$bits(datD)-1:0]);
   //////////////////////////////////////////////////////////////////////////////////////
   // EXECUTE

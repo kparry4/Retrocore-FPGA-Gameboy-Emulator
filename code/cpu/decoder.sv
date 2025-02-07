@@ -11,22 +11,27 @@ module decoder (
   logic [7:0] op;
   logic [2:0] mpc, prempc, newmpc;
   logic [1:0] preInstrSz;
-  logic [3:0][7:0] instr, preInstr;
-  logic gotInstr;
+  logic [3:0][7:0] preInstr;
+  logic [4:0][7:0] instr;
+  logic addInstr;
   logic instrValid;
 
   
-  flopenr #(32) instrBuf(clk, flush, ~stallD, instr, preInstr);
+  // flopenr #(32) instrBuf(clk, rst, 1'b1, instr[3:0], preInstr);
+  always_ff @(posedge clk) begin : instrbuf
+    // fill with an illegal instruction
+    if(rst) preInstr = 32'hdddddddd;
+    else preInstr = instr[3:0];
+  end
   // put data in proper position
-  assign instr = instrValid ? {memData, preInstr[3:2]} : preInstr;
+  assign instr = {8'hdd, instrValid ? {memData, preInstr[3:2]} : preInstr};
   // tried getting new instruction if prempc > 2
-  assign gotInstr = |prempc[2:1];
-  // assign ctrl.getInstr = |newmpc[2:1];
+  assign addInstr = |prempc[2:1];
   // is the instruction in memData valid
-  assign instrValid = memValid & gotInstr;
+  assign instrValid = memValid & addInstr;
   // subtract 2 if get new instruction
   assign mpc = prempc - {instrValid,1'b0};
-  assign newmpc = instrValid ? mpc+ctrl.instrSz : mpc;
+  assign newmpc = mpc+ctrl.instrSz;
   
   // flopenr #(2) instrSzBuf(clk, flush, ~stallD, ctrl.instrSz, preInstrSz);
   always_ff @(posedge clk) begin : mpcflop
@@ -46,6 +51,8 @@ module decoder (
   // pcSel_instrSz_aluOp_addr1_addr2_rdAddr_rdWen_rdSel
   always_comb begin
     casez(op)
+      // illegal
+      8'hDD: ctrl = {PC_ADD,1'b0,ALU_DC,DC,DC,DC,1'b0,RD_DC};
       // nop
       8'b00000000: ctrl = {PC_ADD,2'h1,ALU_DC,DC,DC,DC,1'b0,RD_DC};
       // ld r, n    op rd | n
@@ -57,9 +64,10 @@ module decoder (
       // add r    op rs2
       // rd = A+r
       8'b10000???: ctrl = {PC_ADD,2'h1,ALU_ADD,A,instr[2:0],A,1'b1,RD_ALU};
-      default: ctrl = {PC_DC,1'b0,ALU_DC,DC,DC,DC,1'b0,RD_DC};
+      default: ctrl = {PC_ADD,1'b0,ALU_DC,DC,DC,DC,1'b0,RD_DC};
 
     endcase
+    ctrl.adjpc = newmpc[1] & ~newmpc[2];
   end
 
 endmodule

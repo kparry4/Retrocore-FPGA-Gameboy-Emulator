@@ -6,8 +6,9 @@ module tb;
   // solution in the first 3 words
   logic [15:0] prog[`INSTRS-1:0];
   int progNum;
-  logic [15:0] pc, memData;
+  logic [15:0] pc, memData,memAddr;
   string testname;
+  logic memValid;
   logic [7:0][7:0] soln;
   logic rst=0, clk=0;
 
@@ -19,14 +20,18 @@ module tb;
                 prog[0][7:0],prog[0][15:8]};
   
   assign memData = prog[pc[15:1]+6];
-  cpu cpu (.memData, .pc, .rst, .clk);
+  always_ff @(posedge clk) pc = memAddr; 
+  cpu cpu (.memData, .memAddr, .memValid, .rst, .clk);
 
   always #5 clk = ~clk;
 
   initial begin
     rst = 1;
+    memValid = 0;
     #9;
     rst = 0;
+    #7;
+    memValid = 1;
   end
 
   initial begin
@@ -49,7 +54,7 @@ module tb;
 
   always @(pc) begin
     if(prog[pc/2+6] === 'x && ~rst) begin
-      #20; // to finish last two opperations
+      #30; // to finish last two opperations
       if(cpu.regfile.regs !== soln)
         $display("ERROR\n AFLHEDCB %h %h", cpu.regfile.regs, soln);
       else $display("YAY IT WORKS!\n");

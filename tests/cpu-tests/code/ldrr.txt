@@ -6,25 +6,6 @@ xx_55
 0000
 CC06_
 550E_
-50_58_
-61_6C_
-7d_00_
-
-B cc
-C 55
-D cc
-E cc
-H 55
-L 55
-F xx
-A 55
-SP 0000
-PC 0000
-
-ld B,cc cc06
-ld C,55 550e
-ld D,B 50
-ld E,B 58
-ld H,C 61
-ld L,H 6c
-ld A,L 7d
+58_50_
+6c_61_
+00_7d_

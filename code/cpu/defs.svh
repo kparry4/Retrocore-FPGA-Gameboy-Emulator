@@ -46,9 +46,10 @@ package defs;
 
   typedef struct packed {
       // decode
+      logic adjpc;  // adjust pc to get new instr
       pcSel_t pcSel;        // what is next pc
+      // logic pcEn;        // update pc
       logic [1:0] instrSz;  // size of intruction (# bytes)
-      // logic getInster;  // get a new instruction
       // execute
       alu_op_t aluOp;      // which alu opperation alu in memory stage
       reg_t addr1;          // which register for rs1
