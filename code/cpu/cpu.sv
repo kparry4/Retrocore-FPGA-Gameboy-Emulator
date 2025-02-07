@@ -31,7 +31,7 @@ module cpu (
   // *** might be able to merge fetch and decode and hold the instrD
 
   // control unit
-  decoder decoder(.memData, .memValid(1'b1), .ctrl(ctrlD), .rst, .n(datD.n));
+  decoder decoder(.memData, .memValid(1'b1), .ctrl(ctrlD), .rst, .clk, .n(datD.n));
 
   // pc register
   flopenr #(16) pcflop(clk, rst, ~stallD, pcNext, pc);

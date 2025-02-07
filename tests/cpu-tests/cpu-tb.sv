@@ -32,8 +32,11 @@ module tb;
   initial begin
     $display("Test mode: %s\n",`TEST);
 
-    if(`TEST == "ld" || `TEST == "all") begin
-      tests = {tests, "ld"};
+    if(`TEST == "ldn" || `TEST == "all") begin
+      tests = {tests, "ldn"};
+    end
+    if(`TEST == "ldrr" || `TEST == "all") begin
+      tests = {tests, "ldrr"};
     end
 
     testname = {`PATH, tests[0], ".txt"};
@@ -53,23 +56,6 @@ module tb;
       $finish;
     end
   end
-  
-  
-
-  // assign ans = (x+y)*(x+y);
-  // always begin
-  //   #1;
-  //   x++;
-  //   if(y=={`SZ{1'b1}} && x=={`SZ{1'b1}})begin
-  //     #1; $finish;
-  //   end
-  //   if(x=={`SZ{1'b1}})begin
-  //     y++;
-  //     // #1; $finish;
-  //   end
-  //   if(res !== ans) begin $display("res: %h ans: %h x: %h y: %h", res, ans, x-1, y); $finish; end
-
-  // end
 
 endmodule
  

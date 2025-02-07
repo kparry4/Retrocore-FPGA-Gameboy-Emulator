@@ -4,7 +4,7 @@ D 34
 E 45
 H 56
 L 67
-F 78
+F xx
 A 89
 SP 0000
 PC 0000
@@ -15,5 +15,4 @@ ld D,34
 ld E,45
 ld H,56
 ld L,67
-ld F,78
 ld A,89

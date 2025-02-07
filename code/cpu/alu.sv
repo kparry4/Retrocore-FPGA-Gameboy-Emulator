@@ -15,6 +15,7 @@ module aluE (
   always_comb begin
     case(aluOp)
       ALU_ADD: aluOut = {tsum,bsum};
+      ALU_SRC1: aluOut = src1; // *** could move to mux at end
       default: aluOut = 'x;
     endcase
   end

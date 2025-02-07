@@ -22,6 +22,7 @@ package defs;
 
   typedef enum logic [2:0] {
       ALU_ADD,                // add
+      ALU_SRC1,                // src1
       ALU_DC = 'x            // Don't care value
   } alu_op_t;
 
@@ -44,11 +45,15 @@ package defs;
   } reg_t;
 
   typedef struct packed {
+      // decode
       pcSel_t pcSel;        // what is next pc
       logic [1:0] instrSz;  // size of intruction (# bytes)
+      // logic getInster;  // get a new instruction
+      // execute
       alu_op_t aluOp;      // which alu opperation alu in memory stage
       reg_t addr1;          // which register for rs1
       reg_t addr2;          // which register for rs1
+      // memory
       reg_t rdAddr;         // which register for rs1
       logic rdWen;          // reg file write enable
       rd_sel_t rdSel;       // what value is used for rd
