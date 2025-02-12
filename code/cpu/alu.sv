@@ -1,6 +1,6 @@
 import defs::*;
 
-module aluE (
+module alu (
   input logic [7:0] src1, src2,
   input alu_op_t aluOp,
   output logic [3:0] flg,
@@ -15,7 +15,7 @@ module aluE (
   always_comb begin
     case(aluOp)
       ALU_ADD: aluOut = {tsum,bsum};
-      ALU_SRC1: aluOut = src1; // *** could move to mux at end
+      ALU_R:   aluOut = src1;
       default: aluOut = 'x;
     endcase
   end
