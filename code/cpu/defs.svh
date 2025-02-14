@@ -7,6 +7,7 @@ package defs;
 
   typedef enum logic [2:0] {
       ADR_PC,                // PC
+      ADR_RS,                // send 16 bit rs as addr
       ADR_DC = 'x            // Don't care value
   } adr_sel_t;
 
@@ -44,6 +45,7 @@ package defs;
     W,
     Z,
     SP,
+    SPL,
     DC = 'x 
   } reg_t;
 
@@ -53,9 +55,12 @@ package defs;
       alu_op_t aluOp;          // which alu opperation
       idu_op_t iduSel;         // which input for idu
       logic iduSub;            // decrement op for idu?
+      logic pcen;              // enable pc register
       reg_t rs1;               // which register for rs1
       reg_t rs2;               // which register for rs2
       reg_t rd;                // which register for rd
+      logic iren;              // save next opcode
+      logic useOp;              // load next op code
       logic rdWen;             // reg file write enable
       rd_sel_t rdSel;          // what value is used for rd
       logic done;              // is instruction done
@@ -66,6 +71,8 @@ package defs;
       LD_RN,    // r<-n
       LD_RN2,
       LD_RR,    // r<-r'
+      LD_RHL,    // r<-(HL)
+      LD_RHL2,
       BAD = 'x
   } mpc_t;
 endpackage

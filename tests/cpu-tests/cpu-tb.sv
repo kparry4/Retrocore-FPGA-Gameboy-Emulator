@@ -44,6 +44,8 @@ module tb;
       tests = {tests, "ldn"};
     end if(`TEST == "ldrr" || `TEST == "all") begin
       tests = {tests, "ldrr"};
+    end if(`TEST == "ldrhl" || `TEST == "all") begin
+      tests = {tests, "ldrhl"};
     end else begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;

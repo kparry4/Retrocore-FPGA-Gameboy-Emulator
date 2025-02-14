@@ -1,9 +1,11 @@
+import defs::*;
 
 module regfile (
   input logic clk,
   input  logic [3:0] adr1, adr2, rdAdr,
   input  logic rdWen,
   input  logic [7:0] rd,
+  output logic [15:0] rs16,
   output logic [7:0] rs1, rs2
 );
   // *** may have trouble with timing later. add internal forwarding to fix timing issues
@@ -16,5 +18,12 @@ module regfile (
 
   assign rs1 = regs[adr1];
   assign rs2 = regs[adr2];
+  always_comb case(adr1)
+    B: rs16 = {regs[B], regs[C]};
+    C: rs16 = {regs[C], regs[D]};
+    H: rs16 = {regs[H], regs[L]};
+    SP: rs16 = {regs[SP], regs[SPL]};
+    default: rs16 = 'x;
+  endcase
 
 endmodule

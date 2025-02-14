@@ -9,11 +9,14 @@ module decoder (
 
   mpc_t mpc_enum;
   logic [$bits(mpc_enum)-1:0] mpc,nmpc;
-  logic [7:0] op;
+  logic [7:0] op, nextOp;
+  logic [7:0] nextInstr;
 
   assign mpc_enum = mpc_t'(mpc);
+  assign nextInstr = ctrl.useOp ? nextOp : instr;
   // opcode flop
-  flopenr #(8) opflop (clk,rst,ctrl.done,instr,op);
+  flopenr #(8) curropreg (clk,rst,ctrl.done,nextInstr,op);
+  flopenr #(8) nextopreg (clk,rst,ctrl.iren,instr,nextOp);
   
   // microcode flop
   flopr #($bits(mpc)) mpcflop (clk,rst,nmpc,mpc);
@@ -22,10 +25,11 @@ module decoder (
   always_comb begin
     if(memValid) begin
       // if finished an instr then get new mpc
-      if(ctrl.done) casez(instr)
+      if(ctrl.done) casez(nextInstr)
         8'b00000000: nmpc=NOP;
         8'b00???110: nmpc=LD_RN;
-        8'b01??????: nmpc=LD_RR; // ld r,r'
+        8'b01???110: nmpc=LD_RHL;
+        8'b01??????: nmpc=LD_RR;
         default: nmpc = BAD;
       endcase
 
@@ -39,12 +43,15 @@ module decoder (
   // 0 1 2 3 4 5 6 7
   // you can't load to F
 
+  // OTHER:
+  //   - pc's are incremented by the prev instr
   // microcode LUT
   always_comb begin
     // basic case
     ctrl.pcSel = PC_IDU;
     ctrl.adrSel = ADR_PC;
     ctrl.iduSel = IDU_PC;
+    ctrl.pcen = 1;
     ctrl.iduSub = 0;
     ctrl.rs1 = DC;
     ctrl.rs2 = DC;
@@ -52,6 +59,8 @@ module decoder (
     ctrl.rd = DC;
     ctrl.rdSel = RD_DC;
     ctrl.rdWen = 0;
+    ctrl.iren = 0;
+    ctrl.useOp = 0;
     ctrl.done = 0;
     // manual selection case
     case(mpc)
@@ -84,6 +93,26 @@ module decoder (
         ctrl.rd = reg_t'(op[5:3]);
         ctrl.rdSel = RD_ALU;
         ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // ld r,(hl)
+      // r <- r'
+      LD_RHL:  begin
+        // get hl and send as addr
+        // grab the next op code
+        ctrl.rs1 = H;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_RHL2:  begin
+        // get the next instr
+        // load the previously grabbed memory 
+        ctrl.rd = reg_t'(op[5:3]);
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.pcen = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // add r    op rs2
