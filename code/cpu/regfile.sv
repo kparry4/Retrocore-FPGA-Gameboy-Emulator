@@ -8,7 +8,6 @@ module regfile (
   output logic [15:0] rs16,
   output logic [7:0] rs1, rs2
 );
-  // *** may have trouble with timing later. add internal forwarding to fix timing issues
   // B C D E H L F A W Z SP
   // 0 1 2 3 4 5 6 7 8 9 10/11
   logic [11:0][7:0] regs;
