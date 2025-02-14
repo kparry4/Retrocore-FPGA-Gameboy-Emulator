@@ -45,6 +45,7 @@ module cpu (
   endcase
 
   regfile regfile(.clk, 
+                  .rst, 
                   .rd, 
                   .rs1, 
                   .rs2,

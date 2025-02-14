@@ -4,7 +4,7 @@ D cc
 E cc
 H 55
 L 55
-F xx
+F 00
 A 55
 SP 0000
 PC 0000

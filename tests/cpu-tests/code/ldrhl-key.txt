@@ -4,7 +4,7 @@ D 2e
 E 2e
 H 2e
 L 02
-F xx
+F 00
 A 2e
 SP 0000
 PC 0000

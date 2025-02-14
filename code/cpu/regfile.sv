@@ -1,7 +1,7 @@
 import defs::*;
 
 module regfile (
-  input logic clk,
+  input logic clk, rst,
   input  logic [3:0] adr1, adr2, rdAdr,
   input  logic rdWen,
   input  logic [7:0] rd,
@@ -12,7 +12,8 @@ module regfile (
   // 0 1 2 3 4 5 6 7 8 9 10/11
   logic [11:0][7:0] regs;
   always_ff @(posedge clk) begin : rf
-    if(rdWen) regs[rdAdr] = rd;
+    if(rst) regs = 0;
+    else if(rdWen) regs[rdAdr] = rd;
   end
 
   assign rs1 = regs[adr1];
