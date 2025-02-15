@@ -29,6 +29,8 @@ module decoder (
         8'b00000000: nmpc=NOP;
         8'b00001010: nmpc=LD_ABC;
         8'b00011010: nmpc=LD_ADE;
+        8'b00000010: nmpc=LD_BCA;
+        8'b00010010: nmpc=LD_DEA;
         8'b00110110: nmpc=LD_HLN;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
@@ -201,6 +203,48 @@ module decoder (
         ctrl.rd = A;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld (bc),a
+      // (bc) <- a
+      LD_BCA:  begin
+        // *** could improve by storing in WZ?
+        // read bc from memory
+        ctrl.rs1 = B;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_BCA2:  begin
+        // use BC to insert data in correct word
+        // then write to memory
+        ctrl.rs1 = B;
+        ctrl.rs2 = A;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld (de),a
+      // (de) <- a
+      LD_DEA:  begin
+        // *** could improve by storing in WZ?
+        // read bc from memory
+        ctrl.rs1 = D;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_DEA2:  begin
+        // use de to insert data in correct word
+        // then write to memory
+        ctrl.rs1 = D;
+        ctrl.rs2 = A;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
         ctrl.useOp = 1;
         ctrl.done = 1;
       end

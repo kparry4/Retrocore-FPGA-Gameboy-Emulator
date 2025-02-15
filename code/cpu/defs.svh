@@ -96,6 +96,10 @@ package defs;
       LD_ABC2,
       LD_ADE,    // A<-(DE)
       LD_ADE2,
+      LD_BCA,    // (BC)<-A
+      LD_BCA2,
+      LD_DEA,    // (DE)<-A
+      LD_DEA2,
       BAD = 'x
   } mpc_t;
 endpackage

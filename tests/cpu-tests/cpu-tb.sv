@@ -59,10 +59,10 @@ module tb;
       tests = {tests, "ldabc"};
     end if(`TEST == "ldade" || `TEST == "all") begin
       tests = {tests, "ldade"};
-    // end if(`TEST == "ldbca" || `TEST == "all") begin
-    //   tests = {tests, "ldbca"};
-    // end if(`TEST == "lddea" || `TEST == "all") begin
-    //   tests = {tests, "lddea"};
+    end if(`TEST == "ldbca" || `TEST == "all") begin
+      tests = {tests, "ldbca"};
+    end if(`TEST == "lddea" || `TEST == "all") begin
+      tests = {tests, "lddea"};
     // end if(`TEST == "ldann" || `TEST == "all") begin
     //   tests = {tests, "ldann"};
     // end if(`TEST == "ldnna" || `TEST == "all") begin
