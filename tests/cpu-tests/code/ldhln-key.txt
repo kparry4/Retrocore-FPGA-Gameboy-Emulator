@@ -1,0 +1,19 @@
+B 00
+C 00
+D 99
+E 99
+H 00
+L 02
+F 00
+A 99
+SP 0000
+PC 0000
+
+ld B,00 0006
+ld C,00 000e
+ld H,00 0026
+ld L,02 022e
+ld (HL),99 9936
+ld D,(HL) 56
+ld E,(HL) 5e
+ld A,(HL) 7e
