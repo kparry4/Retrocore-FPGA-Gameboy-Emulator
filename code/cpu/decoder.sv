@@ -28,6 +28,7 @@ module decoder (
       if(ctrl.done) casez(nextInstr)
         8'b00000000: nmpc=NOP;
         8'b00001010: nmpc=LD_ABC;
+        8'b00011010: nmpc=LD_ADE;
         8'b00110110: nmpc=LD_HLN;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
@@ -176,6 +177,25 @@ module decoder (
         ctrl.iren = 1;
       end
       LD_ABC2:  begin
+        // get the next instr
+        // load the previously grabbed memory 
+        ctrl.rd = A;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld A,(DE)
+      // A <- DE
+      LD_ADE:  begin
+        // get DE and send as addr
+        // grab the next op code
+        ctrl.rs1 = D;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_ADE2:  begin
         // get the next instr
         // load the previously grabbed memory 
         ctrl.rd = A;

@@ -20,7 +20,7 @@ module regfile (
   assign rs2 = regs[adr2];
   always_comb case(adr1)
     B: rs16 = {regs[B], regs[C]};
-    C: rs16 = {regs[C], regs[D]};
+    D: rs16 = {regs[D], regs[E]};
     H: rs16 = {regs[H], regs[L]};
     SP: rs16 = {regs[SP], regs[SPL]};
     default: rs16 = 'x;

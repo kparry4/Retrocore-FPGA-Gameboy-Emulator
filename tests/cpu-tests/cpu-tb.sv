@@ -57,8 +57,8 @@ module tb;
       tests = {tests, "ldhln"};
     end if(`TEST == "ldabc" || `TEST == "all") begin
       tests = {tests, "ldabc"};
-    // end if(`TEST == "ldade" || `TEST == "all") begin
-    //   tests = {tests, "ldade"};
+    end if(`TEST == "ldade" || `TEST == "all") begin
+      tests = {tests, "ldade"};
     // end if(`TEST == "ldbca" || `TEST == "all") begin
     //   tests = {tests, "ldbca"};
     // end if(`TEST == "lddea" || `TEST == "all") begin

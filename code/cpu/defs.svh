@@ -94,6 +94,8 @@ package defs;
       LD_HLN3,
       LD_ABC,    // A<-(BC)
       LD_ABC2,
+      LD_ADE,    // A<-(DE)
+      LD_ADE2,
       BAD = 'x
   } mpc_t;
 endpackage
