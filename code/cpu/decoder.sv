@@ -31,6 +31,7 @@ module decoder (
         8'b00011010: nmpc=LD_ADE;
         8'b00000010: nmpc=LD_BCA;
         8'b00010010: nmpc=LD_DEA;
+        8'b11111010: nmpc=LD_ANN;
         8'b00110110: nmpc=LD_HLN;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
@@ -246,6 +247,63 @@ module decoder (
         ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
         ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld A,nn
+      // (nn)<-A
+      LD_ANN:  begin
+        // save lsbs nn in Z
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LD_ANN2:  begin
+        // save msbs nn in W
+        ctrl.rd = W;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LD_ANN3:  begin
+        // read addr from memory
+        ctrl.rs1 = W;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+      end
+      LD_ANN4:  begin
+        // write memory into A
+        ctrl.rd = A;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // ld nn,a
+      // A<-(nn)
+      LD_NNA:  begin
+        // save lsbs nn in Z
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LD_NNA2:  begin
+        // save msbs nn in W
+        ctrl.rd = W;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LD_NNA3:  begin
+        // read addr from memory
+        ctrl.rs1 = W;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+      end
+      LD_NNA4:  begin
+        // use W to write to correct byte
+        // and write to memory
+        ctrl.rs1 = W;
+        ctrl.rs2 = A;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
         ctrl.done = 1;
       end
       // add r    op rs2

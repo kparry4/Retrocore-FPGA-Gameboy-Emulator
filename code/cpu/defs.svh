@@ -100,6 +100,14 @@ package defs;
       LD_BCA2,
       LD_DEA,    // (DE)<-A
       LD_DEA2,
+      LD_ANN,    // A<-(nn)
+      LD_ANN2,
+      LD_ANN3,
+      LD_ANN4,
+      LD_NNA,    // (nn) <A
+      LD_NNA2,
+      LD_NNA3,
+      LD_NNA4,
       BAD = 'x
   } mpc_t;
 endpackage
