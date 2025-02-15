@@ -27,6 +27,7 @@ module decoder (
       // if finished an instr then get new mpc
       if(ctrl.done) casez(nextInstr)
         8'b00000000: nmpc=NOP;
+        8'b00110110: nmpc=LD_HLN;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
         8'b01110???: nmpc=LD_HLR;
@@ -52,6 +53,7 @@ module decoder (
     ctrl.pcSel = PC_IDU;
     ctrl.adrSel = ADR_PC;
     ctrl.wadrSel = WADR_DC;
+    ctrl.wdatSel = WDAT_DC;
     ctrl.memWen = 0;
     ctrl.iduSel = IDU_PC;
     ctrl.pcen = 1;
@@ -133,8 +135,33 @@ module decoder (
         ctrl.rs1 = H;
         ctrl.rs2 = reg_t'(op[2:0]);
         ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
         ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld (hl),n
+      // (hl) <- n
+      LD_HLN:  begin
+        // read HL from memory and save n in Z
+        ctrl.rs1 = H;
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+      end
+      LD_HLN2:  begin
+        // use H to insert rs2 data into correct spot
+        // then write to memory
+        ctrl.rs1 = H;
+        ctrl.rs2 = Z;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+      end
+      LD_HLN3:  begin
+        // nothin
         ctrl.done = 1;
       end
       // add r    op rs2

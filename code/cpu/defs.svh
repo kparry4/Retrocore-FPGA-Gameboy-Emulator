@@ -27,6 +27,12 @@ package defs;
   } idu_op_t;
 
   typedef enum logic [2:0] {
+      WDAT_RS2,                // sleect rs2 as write mem data
+      WDAT_N,                // n as write mem data
+      WDAT_DC = 'x            // Don't care value
+  } wdat_sel_t;
+
+  typedef enum logic [2:0] {
       ALU_ADD,                // add
       ALU_R,                  // src1
       ALU_DC = 'x             // Don't care value
@@ -34,7 +40,7 @@ package defs;
 
   typedef enum logic [2:0] {
     RD_ALU,                // ALU
-    RD_MEM,                // memory
+    RD_MEM,                // memory or n
     RD_DC = 'x             // Don't care value
   } rd_sel_t;
 
@@ -58,6 +64,7 @@ package defs;
       pcSel_t pcSel;           // what is next pc
       adr_sel_t adrSel;        // select adreess to send to memory
       wadr_sel_t wadrSel;        // select write adreess to send to memory
+      wdat_sel_t wdatSel;        // select write adreess to send to memory
       alu_op_t aluOp;          // which alu opperation
       idu_op_t iduSel;         // which input for idu
       logic iduSub;            // decrement op for idu?
@@ -73,7 +80,7 @@ package defs;
       logic done;              // is instruction done
   } ctrl_t;
 
-  typedef enum logic [2:0] {
+  typedef enum logic [10:0] {
       NOP,      // nop
       LD_RN,    // r<-n
       LD_RN2,
@@ -82,6 +89,9 @@ package defs;
       LD_RHL2,
       LD_HLR,   // (HL) <- r
       LD_HLR2,
+      LD_HLN,   // (HL) <- n
+      LD_HLN2,
+      LD_HLN3,
       BAD = 'x
   } mpc_t;
 endpackage

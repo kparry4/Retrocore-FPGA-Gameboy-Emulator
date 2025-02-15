@@ -16,7 +16,7 @@ module cpu (
   logic [15:0] iduIn, iduOut;
   logic [7:0] rd;
   logic [15:0] rs16;
-  logic [7:0] mem;
+  logic [7:0] mem, n;
   logic [3:0] flg;
   logic [15:0] npc, pc;
   ctrl_t ctrl;
@@ -25,6 +25,7 @@ module cpu (
 
   flopr #(1) memAdrflop(clk, rst, memAdr[0], preAdr);
   assign mem = preAdr ? memData[15:8] : memData[7:0];
+  assign n = mem;
   // control unit
   decoder decoder(.instr(mem), 
                   .memValid, 
@@ -72,8 +73,15 @@ module cpu (
   assign iduOut = iduIn+1;
 
   // memory write data calculation
+  // always_comb case(ctrl.wadrSel)
+  //   WADR_RS: memWadr = rs16;
+  //   WADR_RS: memWadr = rs16;
   assign memWadr = rs16;
-  assign memWdata = memWadr[0] ? {rs2, memData[7:0]} : {memData[15:8], rs2};
+  always_comb case(ctrl.wadrSel)
+    WADR_RS: memWdata = memWadr[0] ? {rs2, memData[7:0]} : {memData[15:8], rs2};
+    // WADR_RS: memWdata = memWadr[0] ? {n, memData[7:0]} : {memData[15:8], n};
+    default: memWdata = 'x;
+  endcase
   assign memWen = ctrl.memWen;
 
   always_comb
