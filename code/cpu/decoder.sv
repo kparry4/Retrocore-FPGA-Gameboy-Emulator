@@ -29,6 +29,7 @@ module decoder (
         8'b00000000: nmpc=NOP;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
+        8'b01110???: nmpc=LD_HLR;
         8'b01??????: nmpc=LD_RR;
         default: nmpc = BAD;
       endcase
@@ -50,6 +51,8 @@ module decoder (
     // basic case
     ctrl.pcSel = PC_IDU;
     ctrl.adrSel = ADR_PC;
+    ctrl.wadrSel = WADR_DC;
+    ctrl.memWen = 0;
     ctrl.iduSel = IDU_PC;
     ctrl.pcen = 1;
     ctrl.iduSub = 0;
@@ -111,7 +114,26 @@ module decoder (
         ctrl.rd = reg_t'(op[5:3]);
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
-        ctrl.pcen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld (hl),r
+      // (hl) <- r
+      LD_HLR:  begin
+        // *** could improve by storing in WZ?
+        // read HL from memory
+        ctrl.rs1 = H;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_HLR2:  begin
+        // use H to insert data in correct word
+        // then write to memory
+        ctrl.rs1 = H;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.wadrSel = WADR_RS;
+        ctrl.memWen = 1;
         ctrl.useOp = 1;
         ctrl.done = 1;
       end

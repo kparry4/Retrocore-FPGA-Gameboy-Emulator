@@ -5,6 +5,9 @@ module cpu (
   input  logic rst,
   input  logic [15:0] memData,
   input logic memValid,
+  output logic [15:0] memWdata,
+  output logic [15:0] memWadr,
+  output logic memWen,
   output logic [15:0] memAdr
 );  
   logic [7:0] rs1, rs2;
@@ -67,6 +70,11 @@ module cpu (
   assign iduIn = pc;
 
   assign iduOut = iduIn+1;
+
+  // memory write data calculation
+  assign memWadr = rs16;
+  assign memWdata = memWadr[0] ? {rs2, memData[7:0]} : {memData[15:8], rs2};
+  assign memWen = ctrl.memWen;
 
   always_comb
     case(ctrl.rdSel)

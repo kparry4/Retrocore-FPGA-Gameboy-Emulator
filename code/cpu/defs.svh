@@ -12,6 +12,11 @@ package defs;
   } adr_sel_t;
 
   typedef enum logic [2:0] {
+      WADR_RS,                // send 16 bit rs as addr
+      WADR_DC = 'x            // Don't care value
+  } wadr_sel_t;
+
+  typedef enum logic [2:0] {
       DAT_NOP,               // NOP
       DAT_DC = 'x            // Don't care value
   } data_sel_t;
@@ -52,6 +57,7 @@ package defs;
   typedef struct packed {
       pcSel_t pcSel;           // what is next pc
       adr_sel_t adrSel;        // select adreess to send to memory
+      wadr_sel_t wadrSel;        // select write adreess to send to memory
       alu_op_t aluOp;          // which alu opperation
       idu_op_t iduSel;         // which input for idu
       logic iduSub;            // decrement op for idu?
@@ -62,6 +68,7 @@ package defs;
       logic iren;              // save next opcode
       logic useOp;              // load next op code
       logic rdWen;             // reg file write enable
+      logic memWen;             // reg file write enable
       rd_sel_t rdSel;          // what value is used for rd
       logic done;              // is instruction done
   } ctrl_t;
@@ -73,6 +80,8 @@ package defs;
       LD_RR,    // r<-r'
       LD_RHL,    // r<-(HL)
       LD_RHL2,
+      LD_HLR,   // (HL) <- r
+      LD_HLR2,
       BAD = 'x
   } mpc_t;
 endpackage

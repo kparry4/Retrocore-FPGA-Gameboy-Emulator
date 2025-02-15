@@ -1,4 +1,4 @@
-`define INSTRS 20
+`define INSTRS 65536
 `define PATH "code/"
 
 module tb;
@@ -11,6 +11,9 @@ module tb;
   logic memValid;
   logic [7:0][7:0] soln;
   logic rst=0, clk=0;
+  logic memWen;
+  logic [15:0] memWadr;
+  logic [15:0] memWdata;
 
 
   // set solution
@@ -23,8 +26,10 @@ module tb;
     pc = memAdr; 
     #1; // little memory delay
     memData = prog[pc[15:1]+6];
+    if(memWen) prog[memWadr[15:1]+6] = memWdata;
   end
-  cpu cpu (.memData, .memAdr, .memValid, .rst, .clk);
+  cpu cpu (.memData, .memAdr, .memValid, .rst, .clk,
+           .memWen, .memWadr, .memWdata);
 
   always #5 clk = ~clk;
 
@@ -40,13 +45,57 @@ module tb;
   initial begin
     $display("Test mode: %s\n",`TEST);
 
-    if(`TEST == "ldn" || `TEST == "all") begin
+    if(`TEST == "ldn" || `TEST == "all") begin //
       tests = {tests, "ldn"};
-    end if(`TEST == "ldrr" || `TEST == "all") begin
+    end if(`TEST == "ldrr" || `TEST == "all") begin //
       tests = {tests, "ldrr"};
-    end if(`TEST == "ldrhl" || `TEST == "all") begin
+    end if(`TEST == "ldrhl" || `TEST == "all") begin //
       tests = {tests, "ldrhl"};
-    end else begin
+    end if(`TEST == "ldhlr" || `TEST == "all") begin
+      tests = {tests, "ldhlr"};
+    end if(`TEST == "ldhln" || `TEST == "all") begin
+      tests = {tests, "ldhln"};
+    end if(`TEST == "ldabc" || `TEST == "all") begin
+      tests = {tests, "ldabc"};
+    end if(`TEST == "ldade" || `TEST == "all") begin
+      tests = {tests, "ldade"};
+    end if(`TEST == "ldbca" || `TEST == "all") begin
+      tests = {tests, "ldbca"};
+    end if(`TEST == "lddea" || `TEST == "all") begin
+      tests = {tests, "lddea"};
+    end if(`TEST == "ldann" || `TEST == "all") begin
+      tests = {tests, "ldann"};
+    end if(`TEST == "ldnna" || `TEST == "all") begin
+      tests = {tests, "ldnna"};
+    end if(`TEST == "ldhac" || `TEST == "all") begin
+      tests = {tests, "ldhac"};
+    end if(`TEST == "ldhca" || `TEST == "all") begin
+      tests = {tests, "ldhca"};
+    end if(`TEST == "ldan" || `TEST == "all") begin
+      tests = {tests, "ldan"};
+    end if(`TEST == "ldna" || `TEST == "all") begin
+      tests = {tests, "ldna"};
+    end if(`TEST == "ldahl-" || `TEST == "all") begin
+      tests = {tests, "ldahl-"};
+    end if(`TEST == "ldhl-a" || `TEST == "all") begin
+      tests = {tests, "ldhl-a"};
+    end if(`TEST == "ldahl+" || `TEST == "all") begin
+      tests = {tests, "ldahl+"};
+    end if(`TEST == "ldhl+a" || `TEST == "all") begin
+      tests = {tests, "ldhl+a"};
+    end if(`TEST == "ldrrnn" || `TEST == "all") begin
+      tests = {tests, "ldrrnn"};
+    end if(`TEST == "ldnnsp" || `TEST == "all") begin
+      tests = {tests, "ldnnsp"};
+    end if(`TEST == "ldsphl" || `TEST == "all") begin
+      tests = {tests, "ldsphl"};
+    end if(`TEST == "pushrr" || `TEST == "all") begin
+      tests = {tests, "pushrr"};
+    end if(`TEST == "poprr" || `TEST == "all") begin
+      tests = {tests, "poprr"};
+    end if(`TEST == "ldhlps+e" || `TEST == "all") begin
+      tests = {tests, "ldhlps+e"};
+    end if(tests[0] == "") begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;
     end
