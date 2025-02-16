@@ -44,6 +44,7 @@ module cpu (
   // select the data
   always_comb case(ctrl.adrSel)
     ADR_PC: memAdr = pc;
+    ADR_FF: memAdr = {8'hff,rs1};
     ADR_RS: memAdr = rs16;
     default: memAdr = 'x;
   endcase
@@ -73,10 +74,11 @@ module cpu (
   assign iduOut = iduIn+1;
 
   // memory write data calculation
-  // always_comb case(ctrl.wadrSel)
-  //   WADR_RS: memWadr = rs16;
-  //   WADR_RS: memWadr = rs16;
-  assign memWadr = rs16;
+  always_comb case(ctrl.wadrSel)
+    WADR_RS: memWadr = rs16;
+    WADR_FF: memWadr = rs16;
+    default: memWadr = 'x;
+  endcase
   always_comb case(ctrl.wadrSel)
     WADR_RS: memWdata = memWadr[0] ? {rs2, memData[7:0]} : {memData[15:8], rs2};
     // WADR_RS: memWdata = memWadr[0] ? {n, memData[7:0]} : {memData[15:8], n};

@@ -7,12 +7,14 @@ package defs;
 
   typedef enum logic [2:0] {
       ADR_PC,                // PC
+      ADR_FF,                // FF00+rs1
       ADR_RS,                // send 16 bit rs as addr
       ADR_DC = 'x            // Don't care value
   } adr_sel_t;
 
   typedef enum logic [2:0] {
       WADR_RS,                // send 16 bit rs as addr
+      WADR_FF,                // send FF00+rs1 as addr
       WADR_DC = 'x            // Don't care value
   } wadr_sel_t;
 
@@ -108,6 +110,10 @@ package defs;
       LD_NNA2,
       LD_NNA3,
       LD_NNA4,
+      LDH_AC,    // A<-(FF00+C)
+      LDH_AC2,
+      LDH_CA,    // (FF00+C)<-A
+      LDH_CA2,
       BAD = 'x
   } mpc_t;
 endpackage

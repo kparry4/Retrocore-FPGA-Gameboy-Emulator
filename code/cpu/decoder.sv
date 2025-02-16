@@ -33,6 +33,8 @@ module decoder (
         8'b00010010: nmpc=LD_DEA;
         8'b11111010: nmpc=LD_ANN;
         8'b00110110: nmpc=LD_HLN;
+        8'b11110010: nmpc=LDH_AC;
+        8'b11100010: nmpc=LDH_CA;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
         8'b01110???: nmpc=LD_HLR;
@@ -304,6 +306,45 @@ module decoder (
         ctrl.wadrSel = WADR_RS;
         ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
+        ctrl.done = 1;
+      end
+      // ld A,(ff00+C)
+      // A <- (ff00+C)
+      LDH_AC:  begin
+        // get ff00+C and send as addr
+        // grab the next op code
+        ctrl.rs1 = C;
+        ctrl.adrSel = ADR_FF;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LDH_AC2:  begin
+        // get the next instr
+        // load the previously grabbed memory 
+        ctrl.rd = A;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld (ff00+C),a
+      // (ff00+C) <- a
+      LDH_CA:  begin
+        // read ffc from memory
+        ctrl.rs1 = C;
+        ctrl.adrSel = ADR_FF;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LDH_CA2:  begin
+        // use de to insert data in correct word
+        // then write to memory
+        ctrl.rs1 = C;
+        ctrl.rs2 = A;
+        ctrl.wadrSel = WADR_FF;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // add r    op rs2
