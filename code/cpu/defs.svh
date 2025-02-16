@@ -114,6 +114,12 @@ package defs;
       LDH_AC2,
       LDH_CA,    // (FF00+C)<-A
       LDH_CA2,
+      LDH_AN,    // A<-(FF00+n)
+      LDH_AN2,
+      LDH_AN3,
+      LDH_NA,    // A<-(FF00+n)
+      LDH_NA2,
+      LDH_NA3,
       BAD = 'x
   } mpc_t;
 endpackage

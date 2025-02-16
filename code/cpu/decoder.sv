@@ -35,6 +35,8 @@ module decoder (
         8'b00110110: nmpc=LD_HLN;
         8'b11110010: nmpc=LDH_AC;
         8'b11100010: nmpc=LDH_CA;
+        8'b11110000: nmpc=LDH_AN;
+        8'b11100010: nmpc=LDH_NA;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
         8'b01110???: nmpc=LD_HLR;
@@ -345,6 +347,50 @@ module decoder (
         ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
         ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld A,(n)
+      // A <- (n)
+      LDH_AN:  begin
+        // save n in Z
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LDH_AN2:  begin
+        // read addr from memory
+        ctrl.rs1 = Z;
+        ctrl.adrSel = ADR_FF;
+        ctrl.pcen = 0;
+      end
+      LDH_AN3:  begin
+        // write memory into A
+        ctrl.rd = A;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // ld (n), A
+      // (n) <- A
+      LDH_NA:  begin
+        // save n in Z
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LDH_NA2:  begin
+        // read addr from memory
+        ctrl.rs1 = Z;
+        ctrl.adrSel = ADR_FF;
+        ctrl.pcen = 0;
+      end
+      LDH_NA3:  begin
+        // write A into memory
+        ctrl.rs1 = Z;
+        ctrl.rs2 = A;
+        ctrl.wadrSel = WADR_FF;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
         ctrl.done = 1;
       end
       // add r    op rs2

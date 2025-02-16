@@ -69,10 +69,8 @@ module tb;
       tests = {tests, "ldnna"};
     end if(`TEST == "ldhca" || `TEST == "all") begin
       tests = {tests, "ldhca"};
-    // end if(`TEST == "ldan" || `TEST == "all") begin
-    //   tests = {tests, "ldan"};
-    // end if(`TEST == "ldna" || `TEST == "all") begin
-    //   tests = {tests, "ldna"};
+    end if(`TEST == "ldhna" || `TEST == "all") begin
+      tests = {tests, "ldhna"};
     // end if(`TEST == "ldahl-" || `TEST == "all") begin
     //   tests = {tests, "ldahl-"};
     // end if(`TEST == "ldhl-a" || `TEST == "all") begin
