@@ -6,7 +6,7 @@ H 56
 L 67
 F 00
 A 89
-SP 0000
+SP fffe
 PC 0000
 
 ld B,12

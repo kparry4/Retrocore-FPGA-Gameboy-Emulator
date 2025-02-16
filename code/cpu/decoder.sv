@@ -37,6 +37,16 @@ module decoder (
         8'b11100010: nmpc=LDH_CA;
         8'b11110000: nmpc=LDH_AN;
         8'b11100010: nmpc=LDH_NA;
+        8'b00111010: nmpc=LD_AHLD;
+        8'b00110010: nmpc=LD_HLDA;
+        8'b00101010: nmpc=LD_AHLI;
+        8'b00100010: nmpc=LD_HLIA;
+        8'b00001000: nmpc=LD_NNSP;
+        8'b11111001: nmpc=LD_SPHL;
+        8'b11111000: nmpc=LD_HLSPE;
+        8'b11??0101: nmpc=PUSH;
+        8'b11??0001: nmpc=POP;
+        8'b00??0001: nmpc=LD_RRNN;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
         8'b01110???: nmpc=LD_HLR;

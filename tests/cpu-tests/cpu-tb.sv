@@ -1,5 +1,6 @@
 `define INSTRS 65536
 `define PATH "code/"
+import defs::*;
 
 module tb;
   string tests[];
@@ -9,7 +10,7 @@ module tb;
   logic [15:0] pc, memData,memAdr;
   string testname;
   logic memValid;
-  logic [7:0][7:0] soln;
+  logic [9:0][7:0] soln;
   logic rst=0, clk=0;
   logic memWen;
   logic [15:0] memWadr;
@@ -17,7 +18,8 @@ module tb;
 
 
   // set solution
-  assign soln = {prog[3][7:0],prog[3][15:8],
+  assign soln = {prog[4][7:0],prog[4][15:8],
+                prog[3][7:0],prog[3][15:8],
                 prog[2][7:0],prog[2][15:8],
                 prog[1][7:0],prog[1][15:8],
                 prog[0][7:0],prog[0][15:8]};
@@ -108,8 +110,8 @@ module tb;
   always @(pc) begin
     if(prog[pc/2+6] === 'x && ~rst) begin
       #30; // to finish last two opperations
-      if(cpu.regfile.regs[7:0] !== soln) begin
-        $display("ERROR\n AFLHEDCB %h %h", cpu.regfile.regs[7:0], soln);
+      if({cpu.regfile.regs[SPL:SP],cpu.regfile.regs[7:0]} !== soln) begin
+        $display("ERROR\n SPAFLHEDCB %h %h", {cpu.regfile.regs[SPL:SP],cpu.regfile.regs[7:0]}, soln);
         $finish;
       end else $display("YAY %s WORKS!\n", tests[progNum]);
       progNum++;

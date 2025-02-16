@@ -120,6 +120,34 @@ package defs;
       LDH_NA,    // A<-(FF00+n)
       LDH_NA2,
       LDH_NA3,
+      LD_AHLD,    // A <- (HL-1)
+      LD_AHLD2,
+      LD_HLDA,    // (HL-1) <- A
+      LD_HLDA2,
+      LD_AHLI,    // A <- (HL+1)
+      LD_AHLI2,
+      LD_HLIA,    // (HL+1) <- A
+      LD_HLIA2,
+      LD_RRNN,    // RR<-nn
+      LD_RRNN2,
+      LD_RRNN3,
+      LD_NNSP,    // (nn)<-SP
+      LD_NNSP2,
+      LD_NNSP3,
+      LD_NNSP4,
+      LD_NNSP5,
+      LD_SPHL,    // SP<-HL
+      LD_SPHL2,
+      PUSH,    // push rr
+      PUSH2,
+      PUSH3,
+      PUSH4,
+      POP,    // pop rr
+      POP2,
+      POP3,
+      LD_HLSPE,    // HL <- SP+e
+      LD_HLSPE2,
+      LD_HLSPE3,
       BAD = 'x
   } mpc_t;
 endpackage

@@ -4,7 +4,7 @@ D 00
 E 00
 H ff
 L ff
-F 00
+F 03
 A 00
 SP 0001
 PC 0000

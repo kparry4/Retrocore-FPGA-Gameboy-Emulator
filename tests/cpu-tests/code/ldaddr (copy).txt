@@ -2,7 +2,7 @@ CC_55
 CC_CC
 55_55 doooo
 xx_55
-0000
+fffe
 0000
 CC06_
 550E_

@@ -6,7 +6,7 @@ H 00
 L 01
 F 00
 A 2e
-SP 0000
+SP fffe
 PC 0000
 
 ld H,00 0026

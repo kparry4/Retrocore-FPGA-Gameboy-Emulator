@@ -12,7 +12,10 @@ module regfile (
   // 0 1 2 3 4 5 6 7 8 9 10/11
   logic [11:0][7:0] regs;
   always_ff @(posedge clk) begin : rf
-    if(rst) regs = 0;
+    if(rst) begin 
+      regs = 0; 
+      {regs[SP], regs[SPL]} = 16'hfffe;
+    end
     else if(rdWen) regs[rdAdr] = rd;
   end
 
