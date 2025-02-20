@@ -14,7 +14,7 @@ module cpu (
   logic [7:0] src1, src2;
   logic [7:0] aluOut;
   logic [15:0] iduIn, iduOut;
-  logic [7:0] rd;
+  logic [15:0] rd;
   logic [15:0] rs16;
   logic [7:0] mem, n;
   logic [3:0] flg;
@@ -22,6 +22,10 @@ module cpu (
   ctrl_t ctrl;
   logic preAdr; // lsb of previous acessed memory
 
+//*** had to add a new adder for the pc in order to keep 
+//    cycle accuracy with our diffrent type of memory
+//    the other option was adding a register for rs1
+//    which woulve cost more logic.
 
   flopr #(1) memAdrflop(clk, rst, memAdr[0], preAdr);
   assign mem = preAdr ? memData[15:8] : memData[7:0];
@@ -37,7 +41,7 @@ module cpu (
   flopenr #(16) pcflop(clk, rst, ctrl.pcen, npc, pc);
   // select next pc
   always_comb case(ctrl.pcSel)
-    PC_IDU: npc = iduOut;
+    PC_IDU: npc = pc+1;
     default: npc = 'x;
   endcase
 
@@ -58,6 +62,7 @@ module cpu (
                   .rdAdr(ctrl.rd), 
                   .adr1(ctrl.rs1), 
                   .adr2(ctrl.rs2),
+                  .rdW16(ctrl.rdW16),
                   .rdWen(ctrl.rdWen));
                   
   assign src1 = rs1;
@@ -69,9 +74,15 @@ module cpu (
           .flg,
           .aluOut);
   
-  assign iduIn = pc;
+  //seclet the input to the idu
+  always_comb case(ctrl.iduSel)
+    // IDU_PC: iduIn = pc;
+    IDU_RS: iduIn = rs16;
+    default: iduIn = 'x;
+  endcase
 
-  assign iduOut = iduIn+1;
+  // do idu opperation
+  assign iduOut = ctrl.iduSub ? iduIn-1 : iduIn+1;
 
   // memory write data calculation
   always_comb case(ctrl.wadrSel)
@@ -86,10 +97,12 @@ module cpu (
   endcase
   assign memWen = ctrl.memWen;
 
+  // select result to be written into register file
   always_comb
     case(ctrl.rdSel)
-      RD_ALU: rd = aluOut;
-      RD_MEM: rd = mem;
+      RD_ALU: rd = {'0,aluOut};
+      RD_MEM: rd = {'0,mem};
+      RD_IDU: rd = iduOut;
       default: rd = 'x;
     endcase
 

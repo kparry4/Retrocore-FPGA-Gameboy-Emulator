@@ -3,8 +3,8 @@ import defs::*;
 module regfile (
   input logic clk, rst,
   input  logic [3:0] adr1, adr2, rdAdr,
-  input  logic rdWen,
-  input  logic [7:0] rd,
+  input  logic rdWen, rdW16,
+  input  logic [15:0] rd,
   output logic [15:0] rs16,
   output logic [7:0] rs1, rs2
 );
@@ -16,7 +16,16 @@ module regfile (
       regs = 0; 
       {regs[SP], regs[SPL]} = 16'hfffe;
     end
-    else if(rdWen) regs[rdAdr] = rd;
+    else if(rdWen) // if write
+      if(rdW16) case(rdAdr) // if 16 bit write
+        B: {regs[B], regs[C]} = rd;
+        D: {regs[D], regs[E]} = rd;
+        H: {regs[H], regs[L]} = rd;
+        W: {regs[W], regs[Z]} = rd;
+        SP: {regs[SP], regs[SPL]} = rd;
+      endcase
+      // if 8-bit write
+      else regs[rdAdr] = rd[7:0];
   end
 
   assign rs1 = regs[adr1];

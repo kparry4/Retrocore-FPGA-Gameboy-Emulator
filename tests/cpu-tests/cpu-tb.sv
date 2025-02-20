@@ -73,10 +73,10 @@ module tb;
       tests = {tests, "ldhca"};
     end if(`TEST == "ldhna" || `TEST == "all") begin
       tests = {tests, "ldhna"};
-    // end if(`TEST == "ldahl-" || `TEST == "all") begin
-    //   tests = {tests, "ldahl-"};
-    // end if(`TEST == "ldhl-a" || `TEST == "all") begin
-    //   tests = {tests, "ldhl-a"};
+    end if(`TEST == "ldahl-" || `TEST == "all") begin
+      tests = {tests, "ldahl-"};
+    end if(`TEST == "ldhl-a" || `TEST == "all") begin
+      tests = {tests, "ldhl-a"};
     // end if(`TEST == "ldahl+" || `TEST == "all") begin
     //   tests = {tests, "ldahl+"};
     // end if(`TEST == "ldhl+a" || `TEST == "all") begin
@@ -111,7 +111,15 @@ module tb;
     if(prog[pc/2+6] === 'x && ~rst) begin
       #30; // to finish last two opperations
       if({cpu.regfile.regs[SPL:SP],cpu.regfile.regs[7:0]} !== soln) begin
-        $display("ERROR\n SPAFLHEDCB %h %h", {cpu.regfile.regs[SPL:SP],cpu.regfile.regs[7:0]}, soln);
+        $display("ERROR res ans\nB %h %h", cpu.regfile.regs[B], soln[B]);
+        $display("\nC %h %h", cpu.regfile.regs[C], soln[C]);
+        $display("\nD %h %h", cpu.regfile.regs[D], soln[D]);
+        $display("\nE %h %h", cpu.regfile.regs[E], soln[E]);
+        $display("\nH %h %h", cpu.regfile.regs[H], soln[H]);
+        $display("\nL %h %h", cpu.regfile.regs[L], soln[L]);
+        $display("\nA %h %h", cpu.regfile.regs[A], soln[A]);
+        $display("\nF %h %h", cpu.regfile.regs[F], soln[F]);
+        $display("\nSP %h %h", cpu.regfile.regs[SPL:SP], soln[9:8]);
         $finish;
       end else $display("YAY %s WORKS!\n", tests[progNum]);
       progNum++;

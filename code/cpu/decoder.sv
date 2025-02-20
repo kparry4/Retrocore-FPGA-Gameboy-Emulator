@@ -83,6 +83,7 @@ module decoder (
     ctrl.rd = DC;
     ctrl.rdSel = RD_DC;
     ctrl.rdWen = 0;
+    ctrl.rdW16 = 0;
     ctrl.iren = 0;
     ctrl.useOp = 0;
     ctrl.done = 0;
@@ -401,6 +402,59 @@ module decoder (
         ctrl.wadrSel = WADR_FF;
         ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
+        ctrl.done = 1;
+      end
+      // ld A,(hl-)
+      // A <- (HL) HL--
+      LD_AHLD:  begin
+        // get hl and send as addr
+        // decremnt HL
+        // grab the next op code
+        ctrl.rs1 = H;
+        ctrl.adrSel = ADR_RS;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = H;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_AHLD2:  begin
+        // get the next instr
+        // load the previously grabbed memory 
+        ctrl.rd = A;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld (hl-),A
+      // (hl-) <- A
+      LD_HLDA:  begin
+        // read HL from memory
+        ctrl.rs1 = H;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_HLDA2:  begin
+        // use H to insert data in correct word
+        // decrement HL
+        // then write to memory
+        ctrl.rs1 = H;
+        ctrl.rs2 = A;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = H;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // add r    op rs2

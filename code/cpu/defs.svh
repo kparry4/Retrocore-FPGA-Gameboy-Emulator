@@ -24,7 +24,8 @@ package defs;
   } data_sel_t;
 
   typedef enum logic [2:0] {
-      IDU_PC,                // PC
+      IDU_PC,                // PC as input
+      IDU_RS,                // rs16 as input
       IDU_DC = 'x            // Don't care value
   } idu_op_t;
 
@@ -42,6 +43,7 @@ package defs;
 
   typedef enum logic [2:0] {
     RD_ALU,                // ALU
+    RD_IDU,                // IDU result
     RD_MEM,                // memory or n
     RD_DC = 'x             // Don't care value
   } rd_sel_t;
@@ -77,6 +79,7 @@ package defs;
       logic iren;              // save next opcode
       logic useOp;              // load next op code
       logic rdWen;             // reg file write enable
+      logic rdW16;             // write 16 bits to regfile
       logic memWen;             // reg file write enable
       rd_sel_t rdSel;          // what value is used for rd
       logic done;              // is instruction done
@@ -120,13 +123,13 @@ package defs;
       LDH_NA,    // A<-(FF00+n)
       LDH_NA2,
       LDH_NA3,
-      LD_AHLD,    // A <- (HL-1)
+      LD_AHLD,    // A <- (HL) HL--
       LD_AHLD2,
-      LD_HLDA,    // (HL-1) <- A
+      LD_HLDA,    // (HL) <- A HL--
       LD_HLDA2,
-      LD_AHLI,    // A <- (HL+1)
+      LD_AHLI,    // A <- (HL) HL++
       LD_AHLI2,
-      LD_HLIA,    // (HL+1) <- A
+      LD_HLIA,    // (HL) <- A HL++
       LD_HLIA2,
       LD_RRNN,    // RR<-nn
       LD_RRNN2,
