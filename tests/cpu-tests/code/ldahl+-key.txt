@@ -3,12 +3,10 @@ C 00
 D 00
 E 00
 H 00
-L 01
+L 00
 F 00
-A 2e
+A 2a
 SP fffe
 PC 0000
 
-ld H,00 0026
-ld L,01 012e
 ld A,(HL+) 2a

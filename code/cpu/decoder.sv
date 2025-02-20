@@ -457,6 +457,57 @@ module decoder (
         ctrl.useOp = 1;
         ctrl.done = 1;
       end
+      // ld A,(hl-)
+      // A <- (HL) HL--
+      LD_AHLI:  begin
+        // get hl and send as addr
+        // decremnt HL
+        // grab the next op code
+        ctrl.rs1 = H;
+        ctrl.adrSel = ADR_RS;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = H;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_AHLI2:  begin
+        // get the next instr
+        // load the previously grabbed memory 
+        ctrl.rd = A;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld (hl-),A
+      // (hl-) <- A
+      LD_HLIA:  begin
+        // read HL from memory
+        ctrl.rs1 = H;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_HLIA2:  begin
+        // use H to insert data in correct word
+        // decrement HL
+        // then write to memory
+        ctrl.rs1 = H;
+        ctrl.rs2 = A;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = H;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
       // add r    op rs2
       // rd = A+r
 

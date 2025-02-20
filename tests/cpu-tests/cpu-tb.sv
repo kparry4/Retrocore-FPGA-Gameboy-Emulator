@@ -77,10 +77,10 @@ module tb;
       tests = {tests, "ldahl-"};
     end if(`TEST == "ldhl-a" || `TEST == "all") begin
       tests = {tests, "ldhl-a"};
-    // end if(`TEST == "ldahl+" || `TEST == "all") begin
-    //   tests = {tests, "ldahl+"};
-    // end if(`TEST == "ldhl+a" || `TEST == "all") begin
-    //   tests = {tests, "ldhl+a"};
+    end if(`TEST == "ldahl+" || `TEST == "all") begin
+      tests = {tests, "ldahl+"};
+    end if(`TEST == "ldhl+a" || `TEST == "all") begin
+      tests = {tests, "ldhl+a"};
     // end if(`TEST == "ldrrnn" || `TEST == "all") begin
     //   tests = {tests, "ldrrnn"};
     // end if(`TEST == "ldnnsp" || `TEST == "all") begin

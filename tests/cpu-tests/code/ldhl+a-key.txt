@@ -3,7 +3,7 @@ C 00
 D 00
 E 00
 H 00
-L 03
+L 04
 F 00
 A 99
 SP fffe
@@ -11,7 +11,9 @@ PC 0000
 
 ld H,00 0026
 ld L,03 032e
-ld A, 99 013e
+ld A, 99 993e
 ld (HL+),A 22
+ld H,00 0026
+ld L,03 032e
 ld A, 01 013e
 ld A,(HL+) 2a
