@@ -81,6 +81,9 @@ module decoder (
     ctrl.rs2 = DC;
     ctrl.aluOp = ALU_DC;
     ctrl.rd = DC;
+    ctrl.rd2 = DC;
+    ctrl.rd2Sel = RD2_DC;
+    ctrl.rd2Wen = 0;
     ctrl.rdSel = RD_DC;
     ctrl.rdWen = 0;
     ctrl.rdW16 = 0;
@@ -602,6 +605,100 @@ module decoder (
       end
       LD_SPHL2:  begin
         // do nothin
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // push rr
+      // sp-- (sp)= msb rr sp-- (sp)=lsb rr
+      PUSH:  begin
+        // subtract sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      PUSH2:  begin
+        // read sp
+        ctrl.rs1 = SP;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        // dont set iren!
+      end
+      PUSH3: begin
+        // write msbs of sp to memory
+        ctrl.rs1 = SP;
+        ctrl.rs2 = reg_t'({op[5:4],&op[5:4]}); // A is 111 others are xx0
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+        // SP--
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = SP;
+        ctrl.rdW16 = 1;
+        ctrl.rdWen = 1;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
+        ctrl.pcen = 0;
+        // dont set iren!
+      end
+      PUSH4: begin
+        // write lsbs to memory
+        ctrl.rs1 = SP;
+        ctrl.rs2 = reg_t'({op[5:4],~&op[5:4]}); // F is 110 others are xx1
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // pop rr
+      // sp++ rr lsb = (sp) sp++ rr msb = (sp)
+      POP:  begin
+        // add sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        // read sp++
+        ctrl.adrSel = ADR_IDU;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      POP2:  begin
+        // store lsbs
+        ctrl.rd = reg_t'({op[5:4],~&op[5:4]}); // F is 110 others are xx1
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        // read from sp++
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.adrSel = ADR_IDU;
+        ctrl.pcen = 0;
+        // dont set iren!
+      end
+      POP3: begin
+        // store msbs
+        ctrl.rd2 = reg_t'({op[5:4],&op[5:4]}); // A is 111 others are xx0
+        ctrl.rd2Sel = RD2_MEM;
+        ctrl.rd2Wen = 1;
+        // SP++
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.adrSel = ADR_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
         ctrl.useOp = 1;
         ctrl.done = 1;
       end

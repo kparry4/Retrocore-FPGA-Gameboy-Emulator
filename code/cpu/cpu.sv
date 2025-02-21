@@ -14,6 +14,7 @@ module cpu (
   logic [7:0] src1, src2;
   logic [7:0] aluOut;
   logic [15:0] iduIn, iduOut;
+  logic [7:0] rd2;
   logic [15:0] rd;
   logic [15:0] rs16;
   logic [7:0] mem, n;
@@ -51,20 +52,24 @@ module cpu (
     ADR_FF: memAdr = {8'hff,rs1};
     ADR_RS: memAdr = rs16;
     ADR_NRS: memAdr = {mem,rs1};
+    ADR_IDU: memAdr = iduOut;
     default: memAdr = 'x;
   endcase
 
   regfile regfile(.clk, 
                   .rst, 
                   .rd, 
+                  .rd2, 
                   .rs1, 
                   .rs2,
                   .rs16, 
                   .rdAdr(ctrl.rd), 
+                  .rd2Adr(ctrl.rd2), 
                   .adr1(ctrl.rs1), 
                   .adr2(ctrl.rs2),
                   .rdW16(ctrl.rdW16),
-                  .rdWen(ctrl.rdWen));
+                  .rdWen(ctrl.rdWen),
+                  .rd2Wen(ctrl.rd2Wen));
                   
   assign src1 = rs1;
   assign src2 = rs2;
@@ -107,6 +112,7 @@ module cpu (
       RD_RS16: rd = rs16;
       default: rd = 'x;
     endcase
+  assign rd2 = mem;
 
 
   

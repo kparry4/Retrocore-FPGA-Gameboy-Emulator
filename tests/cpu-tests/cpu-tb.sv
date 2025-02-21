@@ -87,8 +87,8 @@ module tb;
       tests = {tests, "ldnnsp"};
     end if(`TEST == "ldsphl" || `TEST == "all") begin
       tests = {tests, "ldsphl"};
-    // end if(`TEST == "pushrr" || `TEST == "all") begin
-    //   tests = {tests, "pushrr"};
+    end if(`TEST == "pushrr" || `TEST == "all") begin
+      tests = {tests, "pushrr"};
     // end if(`TEST == "poprr" || `TEST == "all") begin
     //   tests = {tests, "poprr"};
     // end if(`TEST == "ldhlps+e" || `TEST == "all") begin

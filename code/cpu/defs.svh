@@ -10,6 +10,7 @@ package defs;
       ADR_FF,                // FF00+rs1
       ADR_RS,                // send 16 bit rs as addr
       ADR_NRS,               // use rs1 and msb of nn
+      ADR_IDU,               // IDU result
       ADR_DC = 'x            // Don't care value
   } adr_sel_t;
 
@@ -50,6 +51,11 @@ package defs;
     RD_DC = 'x             // Don't care value
   } rd_sel_t;
 
+  typedef enum logic [2:0] {
+    RD2_MEM,                // memory or n
+    RD2_DC = 'x             // Don't care value
+  } rd2_sel_t;
+
   typedef enum logic [3:0] {
     B,
     C,
@@ -78,12 +84,15 @@ package defs;
       reg_t rs1;               // which register for rs1
       reg_t rs2;               // which register for rs2
       reg_t rd;                // which register for rd
+      reg_t rd2;                // which register for rd
       logic iren;              // save next opcode
       logic useOp;              // load next op code
       logic rdWen;             // reg file write enable
+      logic rd2Wen;             // reg file write enable
       logic rdW16;             // write 16 bits to regfile
       logic memWen;             // reg file write enable
       rd_sel_t rdSel;          // what value is used for rd
+      rd2_sel_t rd2Sel;          // what value is used for rd
       logic done;              // is instruction done
   } ctrl_t;
 

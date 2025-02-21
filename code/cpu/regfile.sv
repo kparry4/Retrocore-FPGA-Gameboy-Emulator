@@ -2,9 +2,10 @@ import defs::*;
 
 module regfile (
   input logic clk, rst,
-  input  logic [3:0] adr1, adr2, rdAdr,
-  input  logic rdWen, rdW16,
+  input  logic [3:0] adr1, adr2, rdAdr, rd2Adr,
+  input  logic rdWen, rdW16, rd2Wen,
   input  logic [15:0] rd,
+  input  logic [7:0] rd2,
   output logic [15:0] rs16,
   output logic [7:0] rs1, rs2
 );
