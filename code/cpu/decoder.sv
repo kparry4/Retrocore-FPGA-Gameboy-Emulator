@@ -15,7 +15,7 @@ module decoder (
   assign mpc_enum = mpc_t'(mpc);
   assign nextInstr = ctrl.useOp ? nextOp : instr;
   // opcode flop
-  flopenr #(8) curropreg (clk,rst,ctrl.done,nextInstr,op);
+  flopenr #(8) curropreg (clk,rst,ctrl.done&memValid,nextInstr,op);
   flopenr #(8) nextopreg (clk,rst,ctrl.iren,instr,nextOp);
   
   // microcode flop
@@ -87,6 +87,7 @@ module decoder (
     ctrl.rdSel = RD_DC;
     ctrl.rdWen = 0;
     ctrl.rdW16 = 0;
+    ctrl.flgWen = 0;
     ctrl.iren = 0;
     ctrl.useOp = 0;
     ctrl.done = 0;
@@ -145,7 +146,6 @@ module decoder (
       // ld (hl),r
       // (hl) <- r
       LD_HLR:  begin
-        // *** could improve by storing in WZ?
         // read HL from memory
         ctrl.rs1 = H;
         ctrl.adrSel = ADR_RS;
@@ -621,22 +621,22 @@ module decoder (
         ctrl.rdW16 = 1;
         ctrl.pcen = 0;
         ctrl.iren = 1;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
       end
       PUSH2:  begin
-        // read sp
-        ctrl.rs1 = SP;
-        ctrl.adrSel = ADR_RS;
-        ctrl.pcen = 0;
-        // dont set iren!
-      end
-      PUSH3: begin
         // write msbs of sp to memory
         ctrl.rs1 = SP;
         ctrl.rs2 = reg_t'({op[5:4],&op[5:4]}); // A is 111 others are xx0
         ctrl.wadrSel = WADR_RS;
         ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
+        ctrl.pcen = 0;
+        // dont set iren!
+      end
+      PUSH3: begin
         // SP--
+        ctrl.rs1 = SP;
         ctrl.iduSel = IDU_RS;
         ctrl.iduSub = 1;
         ctrl.rdSel = RD_IDU;
@@ -659,7 +659,7 @@ module decoder (
         ctrl.done = 1;
       end
       // pop rr
-      // sp++ rr lsb = (sp) sp++ rr msb = (sp)
+      // rr lsb = (sp) sp++ rr msb = (sp) sp++
       POP:  begin
         // add sp
         ctrl.rd = SP;
@@ -668,8 +668,8 @@ module decoder (
         ctrl.rdSel = RD_IDU;
         ctrl.rdWen = 1;
         ctrl.rdW16 = 1;
-        // read sp++
-        ctrl.adrSel = ADR_IDU;
+        // read sp
+        ctrl.adrSel = ADR_RS;
         ctrl.pcen = 0;
         ctrl.iren = 1;
       end
@@ -678,11 +678,10 @@ module decoder (
         ctrl.rd = reg_t'({op[5:4],~&op[5:4]}); // F is 110 others are xx1
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
-        // read from sp++
+        // read from sp
         ctrl.rs1 = SP;
         ctrl.iduSel = IDU_RS;
-        ctrl.rdSel = RD_IDU;
-        ctrl.adrSel = ADR_IDU;
+        ctrl.adrSel = ADR_RS;
         ctrl.pcen = 0;
         // dont set iren!
       end
@@ -696,9 +695,41 @@ module decoder (
         ctrl.rs1 = SP;
         ctrl.iduSel = IDU_RS;
         ctrl.rdSel = RD_IDU;
-        ctrl.adrSel = ADR_IDU;
+        // ctrl.adrSel = ADR_IDU;
         ctrl.rdWen = 1;
         ctrl.rdW16 = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld hl,sp+e
+      // hl = sp+e
+      LD_HLSPE:  begin
+        // store e
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LD_HLSPE2:  begin
+        // L = lsbs sp + e
+        ctrl.rs1 = SPL;
+        ctrl.rs2 = Z;
+        ctrl.rd = L;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 1;
+        ctrl.aluOp = ALU_ADD;
+        ctrl.rdWen = 1;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_HLSPE3: begin
+        // H = msbs sp + carry
+        ctrl.rs1 = SP;
+        ctrl.rs2 = Z;
+        ctrl.rd = H;
+        ctrl.rdSel = RD_ALU;
+        ctrl.rdWen = 1;
+        ctrl.flgWen = 1;
+        ctrl.aluOp = ALU_ADD2;
         ctrl.useOp = 1;
         ctrl.done = 1;
       end

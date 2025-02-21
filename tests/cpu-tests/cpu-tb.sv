@@ -1,4 +1,4 @@
-`define INSTRS 65536
+`define INSTRS ((65536/2)+6)
 `define PATH "code/"
 import defs::*;
 
@@ -14,7 +14,7 @@ module tb;
   logic rst=0, clk=0;
   logic memWen;
   logic [15:0] memWadr;
-  logic [15:0] memWdata;
+  logic [15:0] memWdata, tmp;
 
 
   // set solution
@@ -26,9 +26,10 @@ module tb;
   
   always @(posedge clk) begin 
     pc = memAdr; 
-    #1; // little memory delay
-    memData = prog[pc[15:1]+6];
+    tmp = prog[pc[15:1]+6];
     if(memWen) prog[memWadr[15:1]+6] = memWdata;
+    #1; // little memory delay
+    memData = tmp;
   end
   cpu cpu (.memData, .memAdr, .memValid, .rst, .clk,
            .memWen, .memWadr, .memWdata);
@@ -89,10 +90,10 @@ module tb;
       tests = {tests, "ldsphl"};
     end if(`TEST == "pushrr" || `TEST == "all") begin
       tests = {tests, "pushrr"};
-    // end if(`TEST == "poprr" || `TEST == "all") begin
-    //   tests = {tests, "poprr"};
-    // end if(`TEST == "ldhlps+e" || `TEST == "all") begin
-    //   tests = {tests, "ldhlps+e"};
+    end if(`TEST == "poprr" || `TEST == "all") begin
+      tests = {tests, "poprr"};
+    end if(`TEST == "ldhlsppe" || `TEST == "all") begin
+      tests = {tests, "ldhlsp+e"};
     end if(tests[0] == "") begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;
@@ -124,7 +125,7 @@ module tb;
       end else $display("YAY %s WORKS!\n", tests[progNum]);
       progNum++;
       // reset cpu
-      rst=1; memValid = 0; #15; rst=0;#6; memValid=1;
+      rst=1; memValid = 0; 
       for(int i=0; i<`INSTRS; i++) prog[i] = 'x;
       // check if finished tests
       if(tests[progNum] === "end") begin
@@ -135,6 +136,7 @@ module tb;
       testname = {`PATH, tests[progNum], ".txt"};
       $display("Running %s test ", tests[progNum]);
       $readmemh(testname, prog);
+      #15; rst=0;#7; memValid=1;
     end
   end
 

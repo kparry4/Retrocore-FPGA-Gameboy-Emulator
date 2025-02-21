@@ -9,7 +9,7 @@ A 12
 SP fffe
 PC 0000
 
-ld A,aa af3e
+ld A,af af3e
 ld BC,bbcc bbcc01
 ld DE,ddee ddee11
 ld HL,1234 123421
