@@ -50,6 +50,7 @@ module cpu (
     ADR_PC: memAdr = pc;
     ADR_FF: memAdr = {8'hff,rs1};
     ADR_RS: memAdr = rs16;
+    ADR_NRS: memAdr = {mem,rs1};
     default: memAdr = 'x;
   endcase
 
@@ -103,6 +104,7 @@ module cpu (
       RD_ALU: rd = {'0,aluOut};
       RD_MEM: rd = {'0,mem};
       RD_IDU: rd = iduOut;
+      RD_RS16: rd = rs16;
       default: rd = 'x;
     endcase
 

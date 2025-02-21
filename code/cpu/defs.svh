@@ -9,6 +9,7 @@ package defs;
       ADR_PC,                // PC
       ADR_FF,                // FF00+rs1
       ADR_RS,                // send 16 bit rs as addr
+      ADR_NRS,               // use rs1 and msb of nn
       ADR_DC = 'x            // Don't care value
   } adr_sel_t;
 
@@ -45,6 +46,7 @@ package defs;
     RD_ALU,                // ALU
     RD_IDU,                // IDU result
     RD_MEM,                // memory or n
+    RD_RS16,                // rs16
     RD_DC = 'x             // Don't care value
   } rd_sel_t;
 

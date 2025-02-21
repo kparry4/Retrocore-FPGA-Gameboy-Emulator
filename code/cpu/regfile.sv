@@ -23,6 +23,7 @@ module regfile (
         H: {regs[H], regs[L]} = rd;
         W: {regs[W], regs[Z]} = rd;
         SP: {regs[SP], regs[SPL]} = rd;
+        F: {regs[SP], regs[SPL]} = rd; // opcode has SP as 110=F
       endcase
       // if 8-bit write
       else regs[rdAdr] = rd[7:0];
@@ -36,6 +37,7 @@ module regfile (
     H: rs16 = {regs[H], regs[L]};
     W: rs16 = {regs[W], regs[Z]};
     SP: rs16 = {regs[SP], regs[SPL]};
+    // F: rs16 = {regs[SP], regs[SPL]};
     default: rs16 = 'x;
   endcase
 

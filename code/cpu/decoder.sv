@@ -170,6 +170,7 @@ module decoder (
         ctrl.rdWen = 1;
         ctrl.adrSel = ADR_RS;
         ctrl.pcen = 0;
+        ctrl.iren = 1;
       end
       LD_HLN2:  begin
         // use H to insert rs2 data into correct spot
@@ -178,6 +179,7 @@ module decoder (
         ctrl.rs2 = Z;
         ctrl.wadrSel = WADR_RS;
         ctrl.wdatSel = WDAT_RS2;
+        ctrl.useOp = 1;
         ctrl.memWen = 1;
       end
       LD_HLN3:  begin
@@ -283,12 +285,14 @@ module decoder (
         ctrl.rs1 = W;
         ctrl.adrSel = ADR_RS;
         ctrl.pcen = 0;
+        ctrl.iren = 1;
       end
       LD_ANN4:  begin
         // write memory into A
         ctrl.rd = A;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // ld nn,a
@@ -310,6 +314,7 @@ module decoder (
         ctrl.rs1 = W;
         ctrl.adrSel = ADR_RS;
         ctrl.pcen = 0;
+        ctrl.iren = 1;
       end
       LD_NNA4:  begin
         // use W to write to correct byte
@@ -319,6 +324,7 @@ module decoder (
         ctrl.wadrSel = WADR_RS;
         ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // ld A,(ff00+C)
@@ -347,7 +353,7 @@ module decoder (
         ctrl.rs1 = C;
         ctrl.adrSel = ADR_FF;
         ctrl.pcen = 0;
-        ctrl.iren = 1;
+        // no iren
       end
       LDH_CA2:  begin
         // use de to insert data in correct word
@@ -357,7 +363,6 @@ module decoder (
         ctrl.wadrSel = WADR_FF;
         ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
-        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // ld A,(n)
@@ -373,12 +378,14 @@ module decoder (
         ctrl.rs1 = Z;
         ctrl.adrSel = ADR_FF;
         ctrl.pcen = 0;
+        ctrl.iren = 1;
       end
       LDH_AN3:  begin
         // write memory into A
         ctrl.rd = A;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // ld (n), A
@@ -394,6 +401,7 @@ module decoder (
         ctrl.rs1 = Z;
         ctrl.adrSel = ADR_FF;
         ctrl.pcen = 0;
+        ctrl.iren = 1;
       end
       LDH_NA3:  begin
         // write A into memory
@@ -402,6 +410,7 @@ module decoder (
         ctrl.wadrSel = WADR_FF;
         ctrl.wdatSel = WDAT_RS2;
         ctrl.memWen = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // ld A,(hl-)
@@ -508,8 +517,94 @@ module decoder (
         ctrl.useOp = 1;
         ctrl.done = 1;
       end
-      // add r    op rs2
-      // rd = A+r
+      // ld rr, nn
+      // rd = nn
+      LD_RRNN:  begin
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LD_RRNN2:  begin
+        ctrl.rd = W;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LD_RRNN3: begin
+        ctrl.rs1 = W;
+        ctrl.rd = reg_t'(op[5:3]);
+        ctrl.rdW16 = 1;
+        ctrl.rdSel = RD_RS16;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // ld (nn),sp
+      // (nn) = sp
+      LD_NNSP:  begin
+        // save lsb of nn
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+      end
+      LD_NNSP2:  begin
+        // save msb of nn
+        // read data from mem
+        ctrl.rd = W;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.rs1 = Z;
+        ctrl.adrSel = ADR_NRS;
+        ctrl.pcen = 0;
+        // dont set iren!
+      end
+      LD_NNSP3: begin
+        // write lsbs of sp to addr
+        ctrl.rs1 = W;
+        ctrl.rs2 = SPL;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+        // WZ++
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = W;
+        ctrl.rdW16 = 1;
+        ctrl.rdWen = 1;
+        ctrl.pcen = 0;
+        // dont set iren!
+      end
+      LD_NNSP4: begin
+        // read nn+1
+        ctrl.rs1 = W;
+        ctrl.adrSel = ADR_RS;
+        // ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_NNSP5: begin
+        // write msbs of sp 
+        ctrl.rs1 = W;
+        ctrl.rs2 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_RS2;
+        ctrl.memWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // ld sp, hl
+      // sp = hl
+      LD_SPHL:  begin
+        ctrl.rs1 = H;
+        ctrl.rd = SP;
+        ctrl.rdSel = RD_RS16;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      LD_SPHL2:  begin
+        // do nothin
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
 
     endcase
   end

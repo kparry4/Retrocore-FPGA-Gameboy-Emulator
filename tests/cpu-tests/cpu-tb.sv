@@ -81,12 +81,12 @@ module tb;
       tests = {tests, "ldahl+"};
     end if(`TEST == "ldhl+a" || `TEST == "all") begin
       tests = {tests, "ldhl+a"};
-    // end if(`TEST == "ldrrnn" || `TEST == "all") begin
-    //   tests = {tests, "ldrrnn"};
-    // end if(`TEST == "ldnnsp" || `TEST == "all") begin
-    //   tests = {tests, "ldnnsp"};
-    // end if(`TEST == "ldsphl" || `TEST == "all") begin
-    //   tests = {tests, "ldsphl"};
+    end if(`TEST == "ldrrnn" || `TEST == "all") begin
+      tests = {tests, "ldrrnn"};
+    end if(`TEST == "ldnnsp" || `TEST == "all") begin
+      tests = {tests, "ldnnsp"};
+    end if(`TEST == "ldsphl" || `TEST == "all") begin
+      tests = {tests, "ldsphl"};
     // end if(`TEST == "pushrr" || `TEST == "all") begin
     //   tests = {tests, "pushrr"};
     // end if(`TEST == "poprr" || `TEST == "all") begin
@@ -108,7 +108,7 @@ module tb;
   end
 
   always @(pc) begin
-    if(prog[pc/2+6] === 'x && ~rst) begin
+    if(prog[pc/2+6] === 'x && cpu.ctrl.adrSel==ADR_PC && ~rst) begin
       #30; // to finish last two opperations
       if({cpu.regfile.regs[SPL:SP],cpu.regfile.regs[7:0]} !== soln) begin
         $display("ERROR res ans\nB %h %h", cpu.regfile.regs[B], soln[B]);
@@ -119,7 +119,7 @@ module tb;
         $display("\nL %h %h", cpu.regfile.regs[L], soln[L]);
         $display("\nA %h %h", cpu.regfile.regs[A], soln[A]);
         $display("\nF %h %h", cpu.regfile.regs[F], soln[F]);
-        $display("\nSP %h %h", cpu.regfile.regs[SPL:SP], soln[9:8]);
+        $display("\nSP %h %h", {cpu.regfile.regs[SP],cpu.regfile.regs[SPL]}, {soln[8], soln[9]});
         $finish;
       end else $display("YAY %s WORKS!\n", tests[progNum]);
       progNum++;
