@@ -1,4 +1,5 @@
-import defs::*;
+//import defs::*;
+`include "defs.svh"
 
 module alu (
   input logic [7:0] src1, src2,
@@ -10,6 +11,7 @@ module alu (
 
   logic [7:0] addIn2;
   logic [3:0] bsum,tsum;
+  logic bcarry,carry;
 
   // add/subtract
   assign addIn2 = aluOp==ALU_ADD2 ? {8{src2[7]}} : src2;

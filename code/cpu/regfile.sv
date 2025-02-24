@@ -1,5 +1,5 @@
-import defs::*;
-
+//import defs::*;
+`include "defs.svh"
 module regfile (
   input logic clk, rst,
   input  logic [3:0] adr1, adr2, rdAdr, rd2Adr,

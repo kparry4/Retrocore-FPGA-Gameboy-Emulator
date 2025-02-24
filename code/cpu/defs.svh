@@ -1,3 +1,5 @@
+`ifndef DEFS
+`define DEFS
 package defs;
   
   typedef enum logic [2:0] {
@@ -167,3 +169,6 @@ package defs;
       BAD = 'x
   } mpc_t;
 endpackage
+
+import defs::*;
+`endif

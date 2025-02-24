@@ -1,5 +1,5 @@
-import defs::*;
-
+//import defs::*;
+`include "defs.svh"
 module cpu (
   input logic clk,
   input  logic rst,

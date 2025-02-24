@@ -1,5 +1,5 @@
-import defs::*;
-
+//import defs::*;
+`include "defs.svh"
 module decoder (
   input logic rst, clk,
   input  logic [7:0] instr,
