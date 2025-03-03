@@ -106,14 +106,14 @@ module tb;
     //   tests = {tests, "adchl"};
     // end if(`TEST == "adcn" || `TEST == "all") begin
     //   tests = {tests, "adcn"};
-    // end if(`TEST == "subr" || `TEST == "all") begin
-    //   tests = {tests, "subr"};
+    end if(`TEST == "subr" || `TEST == "all") begin
+      tests = {tests, "subr"};
     // end if(`TEST == "subhl" || `TEST == "all") begin
     //   tests = {tests, "subhl"};
     // end if(`TEST == "subn" || `TEST == "all") begin
     //   tests = {tests, "subn"};
-    // end if(`TEST == "sbcr" || `TEST == "all") begin
-    //   tests = {tests, "sbcr"};
+    end if(`TEST == "sbcr" || `TEST == "all") begin
+      tests = {tests, "sbcr"};
     // end if(`TEST == "sbchl" || `TEST == "all") begin
     //   tests = {tests, "sbchl"};
     // end if(`TEST == "sbcn" || `TEST == "all") begin

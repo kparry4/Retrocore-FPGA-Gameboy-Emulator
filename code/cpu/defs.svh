@@ -43,6 +43,8 @@ package defs;
       ALU_ADD,                // add
       ALU_ADD2,                // add for msbs
       ALU_ADC,                // add w/ carry
+      ALU_SUB,                // sub
+      ALU_SBC,                // sub w/ carry
       ALU_R,                  // src1
       ALU_DC = 'x             // Don't care value
   } alu_op_t;

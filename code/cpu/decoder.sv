@@ -841,6 +841,30 @@ module decoder (
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
+      // sub r
+      // A -= R z1hc
+      SUB_R:  begin
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.aluOp = ALU_SUB;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // adc r
+      // A = A-R-c z1hc
+      SBC_R:  begin
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.aluOp = ALU_SBC;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
 
     endcase
   end

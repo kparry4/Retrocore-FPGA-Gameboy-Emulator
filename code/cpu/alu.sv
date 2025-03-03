@@ -12,16 +12,20 @@ module alu (
 
   logic [7:0] addIn2;
   logic [3:0] bsum,tsum;
-  logic bcarry,carry;
-  logic useC;
+  logic bcarry;
+  logic carry;
+  logic [7:0] addCin;
+  logic useC, sub;
 
-  assign useC = (aluOp==ALU_ADD2)|(aluOp==ALU_ADC);
+  assign useC = (aluOp==ALU_ADD2)|(aluOp==ALU_ADC)|(aluOp==ALU_SBC);
+  assign sub = (aluOp==ALU_SUB)|(aluOp==ALU_SBC);
 
   // add/subtract
-  assign addIn2 = aluOp==ALU_ADD2 ? {8{src2[7]}} : src2;
+  assign addIn2 = sub ? -(aluOp==ALU_ADD2 ? {7{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {7{src2[7]}} : src2);
+  assign addCin = sub ? -(useC&cin) : useC&cin;
   // assign addIn1 = aluOp==ALU_ADD2 ? 0 : src1;
-  assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + (useC&cin);
-  assign {carry, tsum} = src1[7:4] + addIn2[7:4] + bcarry;
+  assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0];
+  assign {carry, tsum} = src1[7:4] + addIn2[7:4] + bcarry + addCin[7:4];
 
   // select output
   always_comb begin
@@ -29,6 +33,8 @@ module alu (
       ALU_ADD: aluOut = {tsum,bsum};
       ALU_ADD2: aluOut = {tsum,bsum};
       ALU_ADC: aluOut = {tsum,bsum};
+      ALU_SUB: aluOut = {tsum,bsum};
+      ALU_SBC: aluOut = {tsum,bsum};
       ALU_R:   aluOut = src1;
       default: aluOut = 'x;
     endcase
@@ -37,10 +43,10 @@ module alu (
   // zero flag
   assign flg[3] = (~|(bsum|tsum))&flgKill[3];
   // neg flag
-  assign flg[2] = 0;
+  assign flg[2] = sub;
   // half carry flag
-  assign flg[1] = bcarry;
+  assign flg[1] = bcarry^sub;
   // carry flag
-  assign flg[0] = carry;
+  assign flg[0] = carry^sub;
 
 endmodule
