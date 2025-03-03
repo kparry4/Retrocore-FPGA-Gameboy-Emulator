@@ -42,6 +42,7 @@ package defs;
   typedef enum logic [2:0] {
       ALU_ADD,                // add
       ALU_ADD2,                // add for msbs
+      ALU_ADC,                // add w/ carry
       ALU_R,                  // src1
       ALU_DC = 'x             // Don't care value
   } alu_op_t;
@@ -92,6 +93,7 @@ package defs;
       logic useOp;              // load next op code
       logic rdWen;             // reg file write enable
       logic [3:0] flgWen;             // flag file write enable
+      logic [3:0] flgKill;             // flag file write enable
       logic rd2Wen;             // reg file write enable
       logic rdW16;             // write 16 bits to regfile
       logic memWen;             // reg file write enable

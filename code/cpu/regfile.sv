@@ -3,7 +3,8 @@
 module regfile (
   input logic clk, rst,
   input  logic [3:0] adr1, adr2, rdAdr, rd2Adr,
-  input  logic rdWen, rdW16, rd2Wen, flgWen,
+  input  logic rdWen, rdW16, rd2Wen, 
+  input  logic [3:0] flgWen,
   input  logic [15:0] rd,
   input  logic [7:0] rd2,
   input  logic [3:0] flg,
@@ -33,7 +34,12 @@ module regfile (
     // second 8 bit write if needed
     if(~rst && rd2Wen) regs[rd2Adr] = rd2;
       // write to flags if needed
-    if(~rst && flgWen) regs[F] = {'0,flg};
+    if(~rst) begin 
+      if(flgWen[0]) regs[F][0] = flg[0];
+      if(flgWen[1]) regs[F][1] = flg[1];
+      if(flgWen[2]) regs[F][2] = flg[2];
+      if(flgWen[3]) regs[F][3] = flg[3];
+    end
   end
 
   assign carry = regs[F][0];

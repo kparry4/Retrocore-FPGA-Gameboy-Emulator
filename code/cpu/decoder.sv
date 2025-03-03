@@ -172,6 +172,7 @@ module decoder (
     ctrl.flgWen = 0;
     ctrl.iren = 0;
     ctrl.useOp = 0;
+    ctrl.flgKill = 4'b1111;
     ctrl.done = 0;
     // manual selection case
     case(mpc)
@@ -811,6 +812,7 @@ module decoder (
         ctrl.rdSel = RD_ALU;
         ctrl.rdWen = 1;
         ctrl.flgWen = 4'b1111;
+        ctrl.flgKill = 4'b0011;
         ctrl.aluOp = ALU_ADD2;
         ctrl.useOp = 1;
         ctrl.done = 1;
@@ -822,6 +824,18 @@ module decoder (
         ctrl.rs1 = A;
         ctrl.rs2 = reg_t'(op[2:0]);
         ctrl.aluOp = ALU_ADD;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // adc r
+      // A += R+c z0hc
+      ADC_R:  begin
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.aluOp = ALU_ADC;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
         ctrl.rdWen = 1;

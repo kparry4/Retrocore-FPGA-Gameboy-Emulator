@@ -96,6 +96,150 @@ module tb;
       tests = {tests, "ldhlsp+e"};
     end if(`TEST == "addr" || `TEST == "all") begin
       tests = {tests, "addr"};
+    // end if(`TEST == "addhl" || `TEST == "all") begin
+    //   tests = {tests, "addhl"};
+    // end if(`TEST == "addn" || `TEST == "all") begin
+    //   tests = {tests, "addn"};
+    end if(`TEST == "adcr" || `TEST == "all") begin
+      tests = {tests, "adcr"};
+    // end if(`TEST == "adchl" || `TEST == "all") begin
+    //   tests = {tests, "adchl"};
+    // end if(`TEST == "adcn" || `TEST == "all") begin
+    //   tests = {tests, "adcn"};
+    // end if(`TEST == "subr" || `TEST == "all") begin
+    //   tests = {tests, "subr"};
+    // end if(`TEST == "subhl" || `TEST == "all") begin
+    //   tests = {tests, "subhl"};
+    // end if(`TEST == "subn" || `TEST == "all") begin
+    //   tests = {tests, "subn"};
+    // end if(`TEST == "sbcr" || `TEST == "all") begin
+    //   tests = {tests, "sbcr"};
+    // end if(`TEST == "sbchl" || `TEST == "all") begin
+    //   tests = {tests, "sbchl"};
+    // end if(`TEST == "sbcn" || `TEST == "all") begin
+    //   tests = {tests, "sbcn"};
+    // end if(`TEST == "cpr" || `TEST == "all") begin
+    //   tests = {tests, "cpr"};
+    // end if(`TEST == "cphl" || `TEST == "all") begin
+    //   tests = {tests, "cphl"};
+    // end if(`TEST == "cpn" || `TEST == "all") begin
+    //   tests = {tests, "cpn"};
+    // end if(`TEST == "andr" || `TEST == "all") begin
+    //   tests = {tests, "andr"};
+    // end if(`TEST == "andhl" || `TEST == "all") begin
+    //   tests = {tests, "andhl"};
+    // end if(`TEST == "andn" || `TEST == "all") begin
+    //   tests = {tests, "andn"};
+    // end if(`TEST == "orr" || `TEST == "all") begin
+    //   tests = {tests, "orr"};
+    // end if(`TEST == "orhl" || `TEST == "all") begin
+    //   tests = {tests, "orhl"};
+    // end if(`TEST == "orn" || `TEST == "all") begin
+    //   tests = {tests, "orn"};
+    // end if(`TEST == "xorr" || `TEST == "all") begin
+    //   tests = {tests, "xorr"};
+    // end if(`TEST == "xorhl" || `TEST == "all") begin
+    //   tests = {tests, "xorhl"};
+    // end if(`TEST == "xorn" || `TEST == "all") begin
+    //   tests = {tests, "xorn"};
+    // end if(`TEST == "incr" || `TEST == "all") begin
+    //   tests = {tests, "incr"};
+    // end if(`TEST == "inchl" || `TEST == "all") begin
+    //   tests = {tests, "inchl"};
+    // end if(`TEST == "decr" || `TEST == "all") begin
+    //   tests = {tests, "decr"};
+    // end if(`TEST == "dechl" || `TEST == "all") begin
+    //   tests = {tests, "dechl"};
+    // end if(`TEST == "ccf" || `TEST == "all") begin
+    //   tests = {tests, "ccf"};
+    // end if(`TEST == "scf" || `TEST == "all") begin
+    //   tests = {tests, "scf"};
+    // end if(`TEST == "daa" || `TEST == "all") begin
+    //   tests = {tests, "daa"};
+    // end if(`TEST == "cpl" || `TEST == "all") begin
+    //   tests = {tests, "cpl"};
+    // end if(`TEST == "incrr" || `TEST == "all") begin
+    //   tests = {tests, "incrr"};
+    // end if(`TEST == "decrr" || `TEST == "all") begin
+    //   tests = {tests, "decrr"};
+    // end if(`TEST == "addhlrr" || `TEST == "all") begin
+    //   tests = {tests, "addhlrr"};
+    // end if(`TEST == "addspe" || `TEST == "all") begin
+    //   tests = {tests, "addspe"};
+    // end if(`TEST == "rlca" || `TEST == "all") begin
+    //   tests = {tests, "rlca"};
+    // end if(`TEST == "rrca" || `TEST == "all") begin
+    //   tests = {tests, "rrca"};
+    // end if(`TEST == "rla" || `TEST == "all") begin
+    //   tests = {tests, "rla"};
+    // end if(`TEST == "rra" || `TEST == "all") begin
+    //   tests = {tests, "rra"};
+    // end if(`TEST == "rlcr" || `TEST == "all") begin
+    //   tests = {tests, "rlcr"};
+    // end if(`TEST == "rlchl" || `TEST == "all") begin
+    //   tests = {tests, "rlchl"};
+    // end if(`TEST == "rrcr" || `TEST == "all") begin
+    //   tests = {tests, "rrcr"};
+    // end if(`TEST == "rrchl" || `TEST == "all") begin
+    //   tests = {tests, "rrchl"};
+    // end if(`TEST == "rlr" || `TEST == "all") begin
+    //   tests = {tests, "rlr"};
+    // end if(`TEST == "rlhl" || `TEST == "all") begin
+    //   tests = {tests, "rlhl"};
+    // end if(`TEST == "rrr" || `TEST == "all") begin
+    //   tests = {tests, "rrr"};
+    // end if(`TEST == "rrhl" || `TEST == "all") begin
+    //   tests = {tests, "rrhl"};
+    // end if(`TEST == "slar" || `TEST == "all") begin
+    //   tests = {tests, "slar"};
+    // end if(`TEST == "slahl" || `TEST == "all") begin
+    //   tests = {tests, "slahl"};
+    // end if(`TEST == "srar" || `TEST == "all") begin
+    //   tests = {tests, "srar"};
+    // end if(`TEST == "srahl" || `TEST == "all") begin
+    //   tests = {tests, "srahl"};
+    // end if(`TEST == "swapr" || `TEST == "all") begin
+    //   tests = {tests, "swapr"};
+    // end if(`TEST == "swaphl" || `TEST == "all") begin
+    //   tests = {tests, "swaphl"};
+    // end if(`TEST == "srlr" || `TEST == "all") begin
+    //   tests = {tests, "srlr"};
+    // end if(`TEST == "srlhl" || `TEST == "all") begin
+    //   tests = {tests, "srlhl"};
+    // end if(`TEST == "bitbr" || `TEST == "all") begin
+    //   tests = {tests, "bitbr"};
+    // end if(`TEST == "bitbhl" || `TEST == "all") begin
+    //   tests = {tests, "bitbhl"};
+    // end if(`TEST == "resbr" || `TEST == "all") begin
+    //   tests = {tests, "resbr"};
+    // end if(`TEST == "resbhl" || `TEST == "all") begin
+    //   tests = {tests, "resbhl"};
+    // end if(`TEST == "setbr" || `TEST == "all") begin
+    //   tests = {tests, "setbr"};
+    // end if(`TEST == "setbhl" || `TEST == "all") begin
+    //   tests = {tests, "setbhl"};
+    // end if(`TEST == "jpnn" || `TEST == "all") begin
+    //   tests = {tests, "jpnn"};
+    // end if(`TEST == "jphl" || `TEST == "all") begin
+    //   tests = {tests, "jphl"};
+    // end if(`TEST == "jpccnn" || `TEST == "all") begin
+    //   tests = {tests, "jpccnn"};
+    // end if(`TEST == "jre" || `TEST == "all") begin
+    //   tests = {tests, "jre"};
+    // end if(`TEST == "jrcce" || `TEST == "all") begin
+    //   tests = {tests, "jrcce"};
+    // end if(`TEST == "callnn" || `TEST == "all") begin
+    //   tests = {tests, "callnn"};
+    // end if(`TEST == "callccnn" || `TEST == "all") begin
+    //   tests = {tests, "callccnn"};
+    // end if(`TEST == "ret" || `TEST == "all") begin
+    //   tests = {tests, "ret"};
+    // end if(`TEST == "retcc" || `TEST == "all") begin
+    //   tests = {tests, "retcc"};
+    // end if(`TEST == "reti" || `TEST == "all") begin
+    //   tests = {tests, "reti"};
+    // end if(`TEST == "rstn" || `TEST == "all") begin
+    //   tests = {tests, "rstn"};
     end if(tests[0] == "") begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;
