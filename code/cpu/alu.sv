@@ -5,7 +5,7 @@ module alu (
   input logic [7:0] src1, src2,
   input alu_op_t aluOp,
   input logic cin,
-  input logic [3:0] flgKill,
+  input logic [3:0] flgKill, flgSet,
   output logic [3:0] flg,
   output logic [7:0] aluOut
 );
@@ -35,18 +35,21 @@ module alu (
       ALU_ADC: aluOut = {tsum,bsum};
       ALU_SUB: aluOut = {tsum,bsum};
       ALU_SBC: aluOut = {tsum,bsum};
+      ALU_AND: aluOut = src1&src2;
+      ALU_OR: aluOut = src1|src2;
+      ALU_XOR: aluOut = src1^src2;
       ALU_R:   aluOut = src1;
       default: aluOut = 'x;
     endcase
   end
 
   // zero flag
-  assign flg[3] = (~|(bsum|tsum))&flgKill[3];
+  assign flg[3] = (~|aluOut)&flgKill[3]|flgSet[3];
   // neg flag
-  assign flg[2] = sub;
+  assign flg[2] = flgSet[2];
   // half carry flag
-  assign flg[1] = bcarry^sub;
+  assign flg[1] = ((bcarry^sub)&flgKill[1])|flgSet[1];
   // carry flag
-  assign flg[0] = carry^sub;
+  assign flg[0] = ((carry^sub)&flgKill[0])|flgSet[0];
 
 endmodule

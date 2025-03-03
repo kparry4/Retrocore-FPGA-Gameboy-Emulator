@@ -83,6 +83,7 @@ module cpu (
           .aluOp(ctrl.aluOp),
           .flg,
           .flgKill(ctrl.flgKill),
+          .flgSet(ctrl.flgSet),
           .cin(carry),
           .aluOut);
   

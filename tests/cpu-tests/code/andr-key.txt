@@ -4,8 +4,8 @@ D 00
 E 00
 H 00
 L 00
-F 0a
-A 00
+F 02
+A 20
 SP fffe
 PC 0000
 

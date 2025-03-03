@@ -33,6 +33,7 @@ module decoder (
         8'b00000010: nmpc=LD_BCA;
         8'b00010010: nmpc=LD_DEA;
         8'b11111010: nmpc=LD_ANN;
+        8'b11101010: nmpc=LD_NNA;
         8'b00110110: nmpc=LD_HLN;
         8'b11110010: nmpc=LDH_AC;
         8'b11100010: nmpc=LDH_CA;
@@ -173,6 +174,7 @@ module decoder (
     ctrl.iren = 0;
     ctrl.useOp = 0;
     ctrl.flgKill = 4'b1111;
+    ctrl.flgSet = 4'b0000;
     ctrl.done = 0;
     // manual selection case
     case(mpc)
@@ -850,10 +852,11 @@ module decoder (
         ctrl.aluOp = ALU_SUB;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
+        ctrl.flgSet = 4'b0100;
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
-      // adc r
+      // sbc r
       // A = A-R-c z1hc
       SBC_R:  begin
         ctrl.rd = A;
@@ -862,6 +865,57 @@ module decoder (
         ctrl.aluOp = ALU_SBC;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
+        ctrl.flgSet = 4'b0100;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // cp r
+      // A-R z1hc
+      CP_R:  begin
+        ctrl.rs1 = A;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.aluOp = ALU_SUB;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgSet = 4'b0100;
+        ctrl.done = 1;
+      end
+      // and r
+      // A=A&R z010
+      AND_R:  begin
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.aluOp = ALU_AND;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgSet = 4'b0010;
+        ctrl.flgKill = 4'b1010;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // or r
+      // A=A|R z000
+      OR_R:  begin
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.aluOp = ALU_OR;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgKill = 4'b1000;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // xor r
+      // A=A^R z000
+      XOR_R:  begin
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.aluOp = ALU_XOR;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgKill = 4'b1000;
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end

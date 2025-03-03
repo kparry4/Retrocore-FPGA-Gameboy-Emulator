@@ -118,26 +118,26 @@ module tb;
     //   tests = {tests, "sbchl"};
     // end if(`TEST == "sbcn" || `TEST == "all") begin
     //   tests = {tests, "sbcn"};
-    // end if(`TEST == "cpr" || `TEST == "all") begin
-    //   tests = {tests, "cpr"};
+    end if(`TEST == "cpr" || `TEST == "all") begin
+      tests = {tests, "cpr"};
     // end if(`TEST == "cphl" || `TEST == "all") begin
     //   tests = {tests, "cphl"};
     // end if(`TEST == "cpn" || `TEST == "all") begin
     //   tests = {tests, "cpn"};
-    // end if(`TEST == "andr" || `TEST == "all") begin
-    //   tests = {tests, "andr"};
+    end if(`TEST == "andr" || `TEST == "all") begin
+      tests = {tests, "andr"};
     // end if(`TEST == "andhl" || `TEST == "all") begin
     //   tests = {tests, "andhl"};
     // end if(`TEST == "andn" || `TEST == "all") begin
     //   tests = {tests, "andn"};
-    // end if(`TEST == "orr" || `TEST == "all") begin
-    //   tests = {tests, "orr"};
+    end if(`TEST == "orr" || `TEST == "all") begin
+      tests = {tests, "orr"};
     // end if(`TEST == "orhl" || `TEST == "all") begin
     //   tests = {tests, "orhl"};
     // end if(`TEST == "orn" || `TEST == "all") begin
     //   tests = {tests, "orn"};
-    // end if(`TEST == "xorr" || `TEST == "all") begin
-    //   tests = {tests, "xorr"};
+    end if(`TEST == "xorr" || `TEST == "all") begin
+      tests = {tests, "xorr"};
     // end if(`TEST == "xorhl" || `TEST == "all") begin
     //   tests = {tests, "xorhl"};
     // end if(`TEST == "xorn" || `TEST == "all") begin

@@ -39,12 +39,15 @@ package defs;
       WDAT_DC = 'x            // Don't care value
   } wdat_sel_t;
 
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
       ALU_ADD,                // add
       ALU_ADD2,                // add for msbs
       ALU_ADC,                // add w/ carry
       ALU_SUB,                // sub
       ALU_SBC,                // sub w/ carry
+      ALU_AND,                // and
+      ALU_OR,                 // or
+      ALU_XOR,                // xor
       ALU_R,                  // src1
       ALU_DC = 'x             // Don't care value
   } alu_op_t;
@@ -96,6 +99,7 @@ package defs;
       logic rdWen;             // reg file write enable
       logic [3:0] flgWen;             // flag file write enable
       logic [3:0] flgKill;             // flag file write enable
+      logic [3:0] flgSet;             // flag file write enable
       logic rd2Wen;             // reg file write enable
       logic rdW16;             // write 16 bits to regfile
       logic memWen;             // reg file write enable

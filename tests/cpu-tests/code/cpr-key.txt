@@ -5,7 +5,7 @@ E 04
 H f5
 L 01
 F 0b
-A 00
+A 80
 SP 0000
 PC 0000
 
@@ -16,10 +16,10 @@ ld D,03 0316
 ld E,04 041e
 ld H,f5 f526
 ld L,01 012e
-sub A 97
-sub B 90
-sub C 91
-sub D 92
-sub E 93
-sub H 94
-sub L 95
+cp A bf
+cp B b8
+cp C b9
+cp D ba
+cp E bb
+cp H bc
+cp L bd
