@@ -163,9 +163,188 @@ package defs;
       POP,    // pop rr
       POP2,
       POP3,
-      LD_HLSPE,    // HL <- SP+e
+      LD_HLSPE,    // HL <- SP+e hc
       LD_HLSPE2,
       LD_HLSPE3,
+      ADD_R,    // A = A+R z0hc
+      ADD_HL,   // A = A+(HL) z0hc
+      ADD_HL2,
+      ADD_N,   // A = A+n z0hc
+      ADD_N2,
+      ADC_R,    // A = A+R+c z0hc
+      ADC_HL,   // A = A+(HL)+c z0hc
+      ADC_HL2,
+      ADC_N,   // A = A+n+c z0hc
+      ADC_N2,
+      SUB_R,    // A = A-R z1hc
+      SUB_HL,   // A = A-(HL) z1hc
+      SUB_HL2,
+      SUB_N,   // A = A-n z1hc
+      SUB_N2,
+      SBC_R,    // A = A-R-c z1hc
+      SBC_HL,   // A = A-(HL)-c z1hc
+      SBC_HL2,
+      SBC_N,   // A = A-n-c z1hc
+      SBC_N2,
+      CP_R,    // A-R z1hc
+      CP_HL,   // A-(HL) z1hc
+      CP_HL2,
+      CP_N,   // A-n z1hc
+      CP_N2,
+      INC_R,    // R++ z0h-
+      INC_HL,   // (HL)++ z0h-
+      INC_HL2,
+      INC_HL3,
+      DEC_R,    // R-- z1h-
+      DEC_HL,   // (HL)-- z1h-
+      DEC_HL2,
+      DEC_HL3,
+      AND_R,    // A = A&r z010
+      AND_HL,   // A = A&(HL) z010
+      AND_HL2,
+      AND_N,   // A = A&n z010
+      AND_N2,
+      OR_R,    // A = A|r z000
+      OR_HL,   // A = A|(HL) z000
+      OR_HL2,
+      OR_N,   // A = A|n z000
+      OR_N2,
+      XOR_R,    // A = A^r z000
+      XOR_HL,   // A = A^(HL) z000
+      XOR_HL2,
+      XOR_N,   // A = A^n z000
+      XOR_N2,
+      CCF,   // -00~c
+      SCF,   // -001
+      DDA,   // A = A + adj z-hc
+      CPL,   // A = ~A -11-
+      INC_RR,   // RR++
+      INC_RR2,
+      DEC_RR,   // RR--
+      DEC_RR2,
+      ADD_HLRR,   // HL += RR -0hc
+      ADD_HLRR2,
+      ADD_SPE,   // SP += e 00hc
+      ADD_SPE2,
+      ADD_SPE3,
+      ADD_SPE4,
+      RLCA,   // A = {A,b7}<<1 000b7
+      RRCA,   // A = {b0,A}>>1 000b0
+      RLA,   // A = {A,c}<<1 000b7
+      RRA,   // A = {c,A}>>1 000b0
+      RLC_R,   // R = {R,b7}<<1 z00b7
+      RLC_R2,
+      RLC_HL,   // (HL) = {(HL),b7}<<1 z00b7
+      RLC_HL2,
+      RLC_HL3,
+      RLC_HL4,
+      RRC_R,   // R = {b0,R}>>1 z00b0
+      RRC_R2,
+      RRC_HL,   // (HL) = {b0,(HL)}>>1 z00b0
+      RRC_HL2,
+      RRC_HL3,
+      RRC_HL4,
+      RL_R,   // R = {R,c}<<1 z00b7
+      RL_R2,
+      RL_HL,   // (HL) = {(HL),c}<<1 z00b7
+      RL_HL2,
+      RL_HL3,
+      RL_HL4,
+      RR_R,   // R = {c,R}>>1 z00b7
+      RR_R2,
+      RR_HL,   // (HL) = {c,(HL)}>>1 z00b7
+      RR_HL2,
+      RR_HL3,
+      RR_HL4,
+      SLA_R,   // R = {R,0}<<1 z00b7
+      SLA_R2,
+      SLA_HL,   // (HL) = {(HL),0}<<1 z00b7
+      SLA_HL2,
+      SLA_HL3,
+      SLA_HL4,
+      SRA_R,   // R = {b7,R}>>1 z00b0
+      SRA_R2,
+      SRA_HL,   // (HL) = {b7,(HL)}>>1 z00b0
+      SRA_HL2,
+      SRA_HL3,
+      SRA_HL4,
+      SWAP_R,   // R = {b3-0,b7-4} z000
+      SWAP_R2,
+      SWAP_HL,   // (HL) = {b3-0,b7-4} z000
+      SWAP_HL2,
+      SWAP_HL3,
+      SWAP_HL4,
+      SRL_R,   // R = {0,R}>>1 z00b0
+      SRL_R2,
+      SRL_HL,   // (HL) = {0,(HL)}>>1 z00b0
+      SRL_HL2,
+      SRL_HL3,
+      SRL_HL4,
+      BIT_R,   // bit b in r z01-
+      BIT_R2,
+      BIT_HL,   // bit b in (HL) z01-
+      BIT_HL2,
+      BIT_HL3,
+      RES_R,   // bit b in r = 0
+      RES_R2,
+      RES_HL,   // bit b in (HL) = 0
+      RES_HL2,
+      RES_HL3,
+      RES_HL4,
+      SET_R,   // bit b in r = 1
+      SET_R2,
+      SET_HL,   // bit b in (HL) = 1
+      SET_HL2,
+      SET_HL3,
+      SET_HL4,
+      JP_NN,   // PC = nn
+      JP_NN2,
+      JP_NN3,
+      JP_NN4,
+      JP_HL,   // PC = HL
+      JP_CCNN,   // PC = nn if cc
+      JP_CCNN2,
+      JP_CCNN3,
+      JP_CCNN4,
+      JR_E,   // PC += e
+      JR_E2,
+      JR_E3,
+      JR_CCE,   // PC += e if cc
+      JR_CCE2,
+      JR_CCE3,
+      CALL_NN,   // SP-=2 push PC PC = nn 
+      CALL_NN2,
+      CALL_NN3,
+      CALL_NN4,
+      CALL_NN5,
+      CALL_NN6,
+      CALL_CCNN,   // SP-=2 push PC PC = nn if cc
+      CALL_CCNN2,
+      CALL_CCNN3,
+      CALL_CCNN4,
+      CALL_CCNN5,
+      CALL_CCNN6,
+      RET,   // SP+=2 pop PC
+      RET2,
+      RET3,
+      RET4,
+      RET_CC,   // SP+=2 pop PC if cc
+      RET_CC2,
+      RET_CC3,
+      RET_CC4,
+      RET_CC5,
+      RETI,   // SP+=2 pop PC IME=1
+      RETI2,
+      RETI3,
+      RETI4,
+      RST_N,   // SP-=2 push PC=enocded
+      RST_N2,
+      RST_N3,
+      RST_N4,
+      HALT, // stop till interupt
+      STOP, // off button
+      DI,    // disable interupt
+      EI,    // enable interupt
       BAD = 'x
   } mpc_t;
 endpackage

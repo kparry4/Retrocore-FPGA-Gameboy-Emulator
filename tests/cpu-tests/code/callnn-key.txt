@@ -1,0 +1,26 @@
+B 00
+C 05
+D 00
+E ab
+H 00
+L 00
+F 00
+A ab
+SP fffe
+PC 0000
+
+ld A,ab ab3e
+call 1a ed
+nop 00
+ld C,ab ab0e
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld E,ab ab1e
+pop BC c1

@@ -1,0 +1,15 @@
+B 00
+C 00
+D 00
+E 00
+H 00
+L 00
+F 02
+A ab
+SP fffe
+PC 0000
+
+ld H,ff ff26
+ld A,ff ff3e
+ld (HL),ab 36
+and (HL) a6

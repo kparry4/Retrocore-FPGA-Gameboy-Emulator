@@ -1,0 +1,24 @@
+B 00
+C 00
+D 00
+E 00
+H 00
+L 00
+F 0a
+A 00
+SP fffe
+PC 0000
+
+ld A,ff ff3e
+ld B,fe fe06
+ld C,f3 f30e
+ld D,f1 f116
+ld E,e0 e01e
+ld H,30 3026
+and A a7
+and B a0
+and C a1
+and D a2
+and E a3
+and H a4
+and L a5

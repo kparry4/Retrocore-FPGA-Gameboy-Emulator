@@ -1,0 +1,14 @@
+B a9
+C 00
+D 00
+E 00
+H 00
+L 00
+F 00
+A 00
+SP fffe
+PC 0000
+
+ld b, aa aa03
+rl b cb10
+rl b cb10

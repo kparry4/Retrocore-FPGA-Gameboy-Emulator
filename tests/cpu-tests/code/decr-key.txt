@@ -1,0 +1,19 @@
+B ff
+C ff
+D ff
+E ff
+H ff
+L ff
+F 0a
+A ff
+SP 0000
+PC 0000
+
+ld L,01 012e
+dec A 3d
+dec B 05
+dec C 0d
+dec D 15
+dec E 1d
+dec H 25
+dec L 2d
