@@ -166,6 +166,7 @@ module decoder (
     ctrl.rd = DC;
     ctrl.rd2 = DC;
     ctrl.rd2Sel = RD2_DC;
+    ctrl.rs2Sel = RS2_RS2;
     ctrl.rd2Wen = 0;
     ctrl.rdSel = RD_DC;
     ctrl.rdWen = 0;
@@ -831,6 +832,24 @@ module decoder (
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
+      // add (HL)
+      // A += (HL) z0hc
+      ADD_HL:  begin
+        `READHL
+      end
+      ADD_HL2:  begin
+        // get the next instr
+        // load the previously grabbed memory 
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.aluOp = ALU_ADD;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
       // adc r
       // A += R+c z0hc
       ADC_R:  begin
@@ -841,6 +860,24 @@ module decoder (
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
         ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // adc (HL)
+      // A += (HL)+c z0hc
+      ADC_HL:  begin
+        `READHL
+      end
+      ADC_HL2:  begin
+        // get the next instr
+        // load the previously grabbed memory 
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.aluOp = ALU_ADC;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // sub r
@@ -856,6 +893,25 @@ module decoder (
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
+      // sub (HL)
+      // A -= (HL) z0hc
+      SUB_HL:  begin
+        `READHL
+      end
+      SUB_HL2:  begin
+        // get the next instr
+        // do op
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.aluOp = ALU_SUB;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgSet = 4'b0100;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
       // sbc r
       // A = A-R-c z1hc
       SBC_R:  begin
@@ -869,6 +925,25 @@ module decoder (
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
+      // sbc (HL)
+      // A = A-(HL)-c z0hc
+      SBC_HL:  begin
+        `READHL
+      end
+      SBC_HL2:  begin
+        // get the next instr
+        // do op
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.aluOp = ALU_SBC;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgSet = 4'b0100;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
       // cp r
       // A-R z1hc
       CP_R:  begin
@@ -877,6 +952,22 @@ module decoder (
         ctrl.aluOp = ALU_SUB;
         ctrl.flgWen = 4'b1111;
         ctrl.flgSet = 4'b0100;
+        ctrl.done = 1;
+      end
+      // sub (HL)
+      // A - (HL) z0hc
+      CP_HL:  begin
+        `READHL
+      end
+      CP_HL2:  begin
+        // get the next instr
+        // do op
+        ctrl.rs1 = A;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.aluOp = ALU_SUB;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgSet = 4'b0100;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
       // and r
@@ -893,6 +984,26 @@ module decoder (
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
+      // and (HL)
+      // A = A&(HL) z010
+      AND_HL:  begin
+        `READHL
+      end
+      AND_HL2:  begin
+        // get the next instr
+        // do op
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.aluOp = ALU_AND;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgSet = 4'b0010;
+        ctrl.flgKill = 4'b1010;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
       // or r
       // A=A|R z000
       OR_R:  begin
@@ -906,6 +1017,25 @@ module decoder (
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
+      // or (HL)
+      // A = A|(HL) z000
+      OR_HL:  begin
+        `READHL
+      end
+      OR_HL2:  begin
+        // get the next instr
+        // do op
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.aluOp = ALU_OR;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgKill = 4'b1000;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
       // xor r
       // A=A^R z000
       XOR_R:  begin
@@ -917,6 +1047,25 @@ module decoder (
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1000;
         ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // Xor (HL)
+      // A = A^(HL) z000
+      XOR_HL:  begin
+        `READHL
+      end
+      XOR_HL2:  begin
+        // get the next instr
+        // do op
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.aluOp = ALU_XOR;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.flgKill = 4'b1000;
+        ctrl.rdWen = 1;
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
 

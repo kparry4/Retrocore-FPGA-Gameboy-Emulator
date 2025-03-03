@@ -76,7 +76,7 @@ module cpu (
                   .rd2Wen(ctrl.rd2Wen));
                   
   assign src1 = rs1;
-  assign src2 = rs2;
+  assign src2 = ctrl.rs2Sel == RS2_MEM ? mem : rs2;
 
   alu alu(.src1, 
           .src2,

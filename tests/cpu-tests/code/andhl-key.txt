@@ -11,5 +11,5 @@ PC 0000
 
 ld H,ff ff26
 ld A,ff ff3e
-ld (HL),ab 36
+ld (HL),ab ab36
 and (HL) a6
