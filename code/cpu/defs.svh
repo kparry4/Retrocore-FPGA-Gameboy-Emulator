@@ -369,6 +369,10 @@ endpackage
   ctrl.adrSel = ADR_RS;\
   ctrl.pcen = 0;\
   ctrl.iren = 1;
+`define READN \
+        ctrl.rd = Z;\
+        ctrl.rdSel = RD_MEM;\
+        ctrl.rdWen = 1;
 
 import defs::*;
 `endif

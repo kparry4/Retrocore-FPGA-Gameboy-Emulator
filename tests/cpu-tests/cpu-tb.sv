@@ -98,50 +98,50 @@ module tb;
       tests = {tests, "addr"};
     end if(`TEST == "addhl" || `TEST == "all") begin
       tests = {tests, "addhl"};
-    // end if(`TEST == "addn" || `TEST == "all") begin
-    //   tests = {tests, "addn"};
+    end if(`TEST == "addn" || `TEST == "all") begin
+      tests = {tests, "addn"};
     end if(`TEST == "adcr" || `TEST == "all") begin
       tests = {tests, "adcr"};
     end if(`TEST == "adchl" || `TEST == "all") begin
       tests = {tests, "adchl"};
-    // end if(`TEST == "adcn" || `TEST == "all") begin
-    //   tests = {tests, "adcn"};
+    end if(`TEST == "adcn" || `TEST == "all") begin
+      tests = {tests, "adcn"};
     end if(`TEST == "subr" || `TEST == "all") begin
       tests = {tests, "subr"};
     end if(`TEST == "subhl" || `TEST == "all") begin
       tests = {tests, "subhl"};
-    // end if(`TEST == "subn" || `TEST == "all") begin
-    //   tests = {tests, "subn"};
+    end if(`TEST == "subn" || `TEST == "all") begin
+      tests = {tests, "subn"};
     end if(`TEST == "sbcr" || `TEST == "all") begin
       tests = {tests, "sbcr"};
     end if(`TEST == "sbchl" || `TEST == "all") begin
       tests = {tests, "sbchl"};
-    // end if(`TEST == "sbcn" || `TEST == "all") begin
-    //   tests = {tests, "sbcn"};
+    end if(`TEST == "sbcn" || `TEST == "all") begin
+      tests = {tests, "sbcn"};
     end if(`TEST == "cpr" || `TEST == "all") begin
       tests = {tests, "cpr"};
     end if(`TEST == "cphl" || `TEST == "all") begin
       tests = {tests, "cphl"};
-    // end if(`TEST == "cpn" || `TEST == "all") begin
-    //   tests = {tests, "cpn"};
+    end if(`TEST == "cpn" || `TEST == "all") begin
+      tests = {tests, "cpn"};
     end if(`TEST == "andr" || `TEST == "all") begin
       tests = {tests, "andr"};
     end if(`TEST == "andhl" || `TEST == "all") begin
       tests = {tests, "andhl"};
-    // end if(`TEST == "andn" || `TEST == "all") begin
-    //   tests = {tests, "andn"};
+    end if(`TEST == "andn" || `TEST == "all") begin
+      tests = {tests, "andn"};
     end if(`TEST == "orr" || `TEST == "all") begin
       tests = {tests, "orr"};
     end if(`TEST == "orhl" || `TEST == "all") begin
       tests = {tests, "orhl"};
-    // end if(`TEST == "orn" || `TEST == "all") begin
-    //   tests = {tests, "orn"};
+    end if(`TEST == "orn" || `TEST == "all") begin
+      tests = {tests, "orn"};
     end if(`TEST == "xorr" || `TEST == "all") begin
       tests = {tests, "xorr"};
     end if(`TEST == "xorhl" || `TEST == "all") begin
       tests = {tests, "xorhl"};
-    // end if(`TEST == "xorn" || `TEST == "all") begin
-    //   tests = {tests, "xorn"};
+    end if(`TEST == "xorn" || `TEST == "all") begin
+      tests = {tests, "xorn"};
     // end if(`TEST == "incr" || `TEST == "all") begin
     //   tests = {tests, "incr"};
     // end if(`TEST == "inchl" || `TEST == "all") begin

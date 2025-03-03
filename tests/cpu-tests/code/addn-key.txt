@@ -10,6 +10,6 @@ SP 0000
 PC 0000
 
 ld A,1 013e
-add ff ffe6
-add 01 01e6
-add 0f 0fe6
+add ff ffc6
+add 01 01c6
+add 0f 0fc6
