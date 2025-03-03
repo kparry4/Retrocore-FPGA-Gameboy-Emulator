@@ -94,6 +94,8 @@ module tb;
       tests = {tests, "poprr"};
     end if(`TEST == "ldhlsppe" || `TEST == "all") begin
       tests = {tests, "ldhlsp+e"};
+    end if(`TEST == "addr" || `TEST == "all") begin
+      tests = {tests, "addr"};
     end if(tests[0] == "") begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;

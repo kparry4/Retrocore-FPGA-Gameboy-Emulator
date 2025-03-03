@@ -26,6 +26,7 @@ module decoder (
     if(memValid) begin
       // if finished an instr then get new mpc
       if(ctrl.done) casez(nextInstr)
+        // 8'hCB: nmpc=;
         8'b00000000: nmpc=NOP;
         8'b00001010: nmpc=LD_ABC;
         8'b00011010: nmpc=LD_ADE;
@@ -44,15 +45,96 @@ module decoder (
         8'b00001000: nmpc=LD_NNSP;
         8'b11111001: nmpc=LD_SPHL;
         8'b11111000: nmpc=LD_HLSPE;
+        8'b10000110: nmpc=ADD_HL;
+        8'b11000110: nmpc=ADD_N;
+        8'b10001110: nmpc=ADC_HL;
+        8'b11001110: nmpc=ADC_N;
+        8'b10010110: nmpc=SUB_HL;
+        8'b11010110: nmpc=SUB_N;
+        8'b10011110: nmpc=SBC_HL;
+        8'b11011110: nmpc=SBC_N;
+        8'b10011110: nmpc=CP_HL;
+        8'b11111110: nmpc=CP_N;
+        8'b10100110: nmpc=AND_HL;
+        8'b11100110: nmpc=AND_N;
+        8'b10110110: nmpc=OR_HL;
+        8'b11110110: nmpc=OR_N;
+        8'b10101110: nmpc=XOR_HL;
+        8'b11101110: nmpc=XOR_N;
+        8'b00110100: nmpc=INC_HL;
+        8'b00110101: nmpc=DEC_HL;
+        8'b00111111: nmpc=CCF;
+        8'b00110111: nmpc=SCF;
+        8'b00100111: nmpc=DAA;
+        8'b00101111: nmpc=CPL;
+        8'b11101000: nmpc=ADD_SPE;
+        8'b00000111: nmpc=RLCA;
+        8'b00001111: nmpc=RRCA;
+        8'b00010111: nmpc=RRCA;
+        8'b00011111: nmpc=RRA;
+        8'b11000011: nmpc=JP_NN;
+        8'b11101001: nmpc=JP_HL;
+        8'b00011000: nmpc=JR_E;
+        8'b11001101: nmpc=CALL_NN;
+        8'b11001001: nmpc=RET;
+        8'b11011001: nmpc=RETI;
+        8'b11110011: nmpc=DI;
+        8'b11111011: nmpc=EI;
+        8'b00010000: nmpc=STOP;
+        8'b01110110: nmpc=HALT;
+        8'b11???111: nmpc=RST_N;
+        8'b110??000: nmpc=RET_CC;
+        8'b110??100: nmpc=CALL_CCNN;
+        8'b110??010: nmpc=JP_CCNN;
+        8'b001??000: nmpc=JR_CCE;
+        8'b00??0011: nmpc=INC_RR;
+        8'b00??1011: nmpc=DEC_RR;
+        8'b00??1001: nmpc=ADD_HLRR;
         8'b11??0101: nmpc=PUSH;
         8'b11??0001: nmpc=POP;
         8'b00??0001: nmpc=LD_RRNN;
+        8'b10000???: nmpc=ADD_R;
+        8'b10001???: nmpc=ADC_R;
+        8'b10010???: nmpc=SUB_R;
+        8'b10011???: nmpc=SBC_R;
+        8'b10111???: nmpc=CP_R;
+        8'b10100???: nmpc=AND_R;
+        8'b10110???: nmpc=OR_R;
+        8'b10101???: nmpc=XOR_R;
         8'b00???110: nmpc=LD_RN;
         8'b01???110: nmpc=LD_RHL;
+        8'b00???100: nmpc=INC_R;
+        8'b00???101: nmpc=DEC_R;
         8'b01110???: nmpc=LD_HLR;
         8'b01??????: nmpc=LD_RR;
         default: nmpc = BAD;
       endcase
+      // CB-prefixed
+      // casez(nextInstr)
+      //   8'b00000110: nmpc=RLC_HL;
+      //   8'b00001110: nmpc=RRC_HL;
+      //   8'b00010110: nmpc=RL_HL;
+      //   8'b00011110: nmpc=RR_HL;
+      //   8'b00100110: nmpc=SLA_HL;
+      //   8'b00101110: nmpc=SLA_HL;
+      //   8'b00110110: nmpc=SWAP_HL;
+      //   8'b00111110: nmpc=SRL_HL;
+      //   8'b01???110: nmpc=BIT_HL;
+      //   8'b10???110: nmpc=RES_HL;
+      //   8'b11???110: nmpc=SET_HL;
+      //   8'b00000???: nmpc=RLC_R;
+      //   8'b00001???: nmpc=RRC_R;
+      //   8'b00010???: nmpc=RL_R;
+      //   8'b00011???: nmpc=RR_R;
+      //   8'b00100???: nmpc=SLA_R;
+      //   8'b00101???: nmpc=SRA_R;
+      //   8'b00110???: nmpc=SWAP_R;
+      //   8'b00111???: nmpc=SRL_R;
+      //   8'b01??????: nmpc=BIT_R;
+      //   8'b10??????: nmpc=RES_R;
+      //   8'b11??????: nmpc=SET_R;
+      //   default: nmpc = BAD;
+      // endcase
 
       // if instr not done mpc++
       else nmpc = mpc+1;
@@ -715,7 +797,7 @@ module decoder (
         ctrl.rs2 = Z;
         ctrl.rd = L;
         ctrl.rdSel = RD_ALU;
-        ctrl.flgWen = 1;
+        ctrl.flgWen = 4'b1111;
         ctrl.aluOp = ALU_ADD;
         ctrl.rdWen = 1;
         ctrl.pcen = 0;
@@ -728,9 +810,21 @@ module decoder (
         ctrl.rd = H;
         ctrl.rdSel = RD_ALU;
         ctrl.rdWen = 1;
-        ctrl.flgWen = 1;
+        ctrl.flgWen = 4'b1111;
         ctrl.aluOp = ALU_ADD2;
         ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // add r
+      // A += R z0hc
+      ADD_R:  begin
+        ctrl.rd = A;
+        ctrl.rs1 = A;
+        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.aluOp = ALU_ADD;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1111;
+        ctrl.rdWen = 1;
         ctrl.done = 1;
       end
 

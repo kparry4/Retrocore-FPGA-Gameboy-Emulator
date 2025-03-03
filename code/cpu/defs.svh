@@ -91,7 +91,7 @@ package defs;
       logic iren;              // save next opcode
       logic useOp;              // load next op code
       logic rdWen;             // reg file write enable
-      logic flgWen;             // flag file write enable
+      logic [3:0] flgWen;             // flag file write enable
       logic rd2Wen;             // reg file write enable
       logic rdW16;             // write 16 bits to regfile
       logic memWen;             // reg file write enable
@@ -216,7 +216,7 @@ package defs;
       XOR_N2,
       CCF,   // -00~c
       SCF,   // -001
-      DDA,   // A = A + adj z-hc
+      DAA,   // A = A + adj z-hc
       CPL,   // A = ~A -11-
       INC_RR,   // RR++
       INC_RR2,
