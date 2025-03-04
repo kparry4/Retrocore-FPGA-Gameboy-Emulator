@@ -62,9 +62,16 @@ package defs;
 
   typedef enum logic [2:0] {
     RS2_RS2,                // rs2
+    RS2_1,                // 1
     RS2_MEM,                // memory or n
     RS2_DC = 'x             // Don't care value
   } rs2_sel_t;
+
+  typedef enum logic [2:0] {
+    RS1_RS1,                // rs2
+    RS1_MEM,                // memory or n
+    RS1_DC = 'x             // Don't care value
+  } rs1_sel_t;
 
   typedef enum logic [2:0] {
     RD2_MEM,                // memory or n
@@ -112,6 +119,7 @@ package defs;
       rd_sel_t rdSel;          // what value is used for rd
       rd2_sel_t rd2Sel;          // what value is used for rd
       rs2_sel_t rs2Sel;          // what value is used for rs2
+      rs1_sel_t rs1Sel;          // what value is used for rs1
       logic done;              // is instruction done
   } ctrl_t;
 
@@ -367,12 +375,16 @@ endpackage
 `define READHL \
   ctrl.rs1 = H;\
   ctrl.adrSel = ADR_RS;\
-  ctrl.pcen = 0;\
-  ctrl.iren = 1;
+  ctrl.pcen = 0;
 `define READN \
         ctrl.rd = Z;\
         ctrl.rdSel = RD_MEM;\
         ctrl.rdWen = 1;
+`define WRITEHL \
+        ctrl.rs1 = H;\
+        ctrl.wadrSel = WADR_RS;\
+        ctrl.wdatSel = WDAT_RS2;\
+        ctrl.memWen = 1;\
 
 import defs::*;
 `endif

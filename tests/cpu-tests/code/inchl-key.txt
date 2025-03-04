@@ -9,7 +9,8 @@ A 00
 SP 0000
 PC 0000
 
-ld H,ff ff25
+ld H,ff ff26
+ld (HL),00 0036
 inc (HL) 34
 inc (HL) 34
 inc (HL) 34

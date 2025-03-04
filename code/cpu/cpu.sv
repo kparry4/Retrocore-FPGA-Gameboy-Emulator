@@ -75,8 +75,19 @@ module cpu (
                   .rdWen(ctrl.rdWen),
                   .rd2Wen(ctrl.rd2Wen));
                   
-  assign src1 = rs1;
-  assign src2 = ctrl.rs2Sel == RS2_MEM ? mem : rs2;
+  always_comb case(ctrl.rs1Sel)
+    RS1_RS1: src1 = rs1;
+    RS1_MEM: src1 = mem;
+    default: src1 = 'x;
+  endcase
+  
+  always_comb case(ctrl.rs2Sel)
+    RS2_RS2: src2 = rs2;
+    RS2_MEM: src2 = mem;
+    RS2_1: src2 = 1;
+    default: src2 = 'x;
+  endcase
+
 
   alu alu(.src1, 
           .src2,

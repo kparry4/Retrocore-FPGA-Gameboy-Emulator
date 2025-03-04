@@ -142,14 +142,14 @@ module tb;
       tests = {tests, "xorhl"};
     end if(`TEST == "xorn" || `TEST == "all") begin
       tests = {tests, "xorn"};
-    // end if(`TEST == "incr" || `TEST == "all") begin
-    //   tests = {tests, "incr"};
-    // end if(`TEST == "inchl" || `TEST == "all") begin
-    //   tests = {tests, "inchl"};
-    // end if(`TEST == "decr" || `TEST == "all") begin
-    //   tests = {tests, "decr"};
-    // end if(`TEST == "dechl" || `TEST == "all") begin
-    //   tests = {tests, "dechl"};
+    end if(`TEST == "incr" || `TEST == "all") begin
+      tests = {tests, "incr"};
+    end if(`TEST == "inchl" || `TEST == "all") begin
+      tests = {tests, "inchl"};
+    end if(`TEST == "decr" || `TEST == "all") begin
+      tests = {tests, "decr"};
+    end if(`TEST == "dechl" || `TEST == "all") begin
+      tests = {tests, "dechl"};
     // end if(`TEST == "ccf" || `TEST == "all") begin
     //   tests = {tests, "ccf"};
     // end if(`TEST == "scf" || `TEST == "all") begin
@@ -158,10 +158,10 @@ module tb;
     //   tests = {tests, "daa"};
     // end if(`TEST == "cpl" || `TEST == "all") begin
     //   tests = {tests, "cpl"};
-    // end if(`TEST == "incrr" || `TEST == "all") begin
-    //   tests = {tests, "incrr"};
-    // end if(`TEST == "decrr" || `TEST == "all") begin
-    //   tests = {tests, "decrr"};
+    end if(`TEST == "incrr" || `TEST == "all") begin
+      tests = {tests, "incrr"};
+    end if(`TEST == "decrr" || `TEST == "all") begin
+      tests = {tests, "decrr"};
     // end if(`TEST == "addhlrr" || `TEST == "all") begin
     //   tests = {tests, "addhlrr"};
     // end if(`TEST == "addspe" || `TEST == "all") begin

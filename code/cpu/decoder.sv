@@ -167,6 +167,7 @@ module decoder (
     ctrl.rd2 = DC;
     ctrl.rd2Sel = RD2_DC;
     ctrl.rs2Sel = RS2_RS2;
+    ctrl.rs1Sel = RS1_RS1;
     ctrl.rd2Wen = 0;
     ctrl.rdSel = RD_DC;
     ctrl.rdWen = 0;
@@ -836,6 +837,7 @@ module decoder (
       // A += (HL) z0hc
       ADD_HL:  begin
         `READHL
+        ctrl.iren = 1;
       end
       ADD_HL2:  begin
         // get the next instr
@@ -881,6 +883,7 @@ module decoder (
       // A += (HL)+c z0hc
       ADC_HL:  begin
         `READHL
+        ctrl.iren = 1;
       end
       ADC_HL2:  begin
         // get the next instr
@@ -927,6 +930,7 @@ module decoder (
       // A -= (HL) z0hc
       SUB_HL:  begin
         `READHL
+        ctrl.iren = 1;
       end
       SUB_HL2:  begin
         // get the next instr
@@ -975,6 +979,7 @@ module decoder (
       // A = A-(HL)-c z0hc
       SBC_HL:  begin
         `READHL
+        ctrl.iren = 1;
       end
       SBC_HL2:  begin
         // get the next instr
@@ -1020,6 +1025,7 @@ module decoder (
       // A - (HL) z0hc
       CP_HL:  begin
         `READHL
+        ctrl.iren = 1;
       end
       CP_HL2:  begin
         // get the next instr
@@ -1063,6 +1069,7 @@ module decoder (
       // A = A&(HL) z010
       AND_HL:  begin
         `READHL
+        ctrl.iren = 1;
       end
       AND_HL2:  begin
         // get the next instr
@@ -1113,6 +1120,7 @@ module decoder (
       // A = A|(HL) z000
       OR_HL:  begin
         `READHL
+        ctrl.iren = 1;
       end
       OR_HL2:  begin
         // get the next instr
@@ -1161,6 +1169,7 @@ module decoder (
       // A = A^(HL) z000
       XOR_HL:  begin
         `READHL
+        ctrl.iren = 1;
       end
       XOR_HL2:  begin
         // get the next instr
@@ -1190,6 +1199,111 @@ module decoder (
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1000;
         ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // inc rr
+      // rr++
+      INC_RR:  begin
+        ctrl.rd = reg_t'({op[5:4],1'b0});
+        ctrl.rs1 = reg_t'({op[5:4],1'b0});
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      INC_RR2: begin
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // dec rr
+      // rr--
+      DEC_RR:  begin
+        ctrl.rd = reg_t'({op[5:4],1'b0});
+        ctrl.rs1 = reg_t'({op[5:4],1'b0});
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.iduSub = 1;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      DEC_RR2: begin
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // inc r
+      // r++
+      INC_R:  begin
+        ctrl.rd = reg_t'(op[5:3]);
+        ctrl.rs1 = reg_t'(op[5:3]);
+        ctrl.rs2Sel = RS2_1;
+        ctrl.aluOp = ALU_ADD;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1110;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // inc (HL)
+      // (HL)++
+      INC_HL:  begin
+        `READHL
+        ctrl.iren = 1;
+      end
+      INC_HL2:  begin
+        `READHL
+        ctrl.rd = Z;
+        ctrl.rs1Sel = RS1_MEM;
+        ctrl.rs2Sel = RS2_1;
+        ctrl.aluOp = ALU_ADD;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1110;
+        ctrl.rdWen = 1;
+        ctrl.pcen = 0;
+      end
+      INC_HL3:  begin
+        ctrl.rs2 = Z;
+        `WRITEHL
+        ctrl.useOp = 1;
+        ctrl.done = 1;
+      end
+      // dec r
+      // r--
+      DEC_R:  begin
+        ctrl.rd = reg_t'(op[5:3]);
+        ctrl.rs1 = reg_t'(op[5:3]);
+        ctrl.rs2Sel = RS2_1;
+        ctrl.aluOp = ALU_SUB;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1110;
+        ctrl.flgSet = 4'b0100;
+        ctrl.rdWen = 1;
+        ctrl.done = 1;
+      end
+      // dec (HL)
+      // (HL)--
+      DEC_HL:  begin
+        `READHL
+        ctrl.iren = 1;
+      end
+      DEC_HL2:  begin
+        `READHL
+        ctrl.rd = Z;
+        ctrl.rs1Sel = RS1_MEM;
+        ctrl.rs2Sel = RS2_1;
+        ctrl.aluOp = ALU_SUB;
+        ctrl.rdSel = RD_ALU;
+        ctrl.flgWen = 4'b1110;
+        ctrl.flgSet = 4'b0100;
+        ctrl.rdWen = 1;
+        ctrl.pcen = 0;
+      end
+      DEC_HL3:  begin
+        ctrl.rs2 = Z;
+        `WRITEHL
+        ctrl.useOp = 1;
         ctrl.done = 1;
       end
 

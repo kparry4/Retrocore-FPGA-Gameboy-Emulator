@@ -51,7 +51,7 @@ module regfile (
     H: rs16 = {regs[H], regs[L]};
     W: rs16 = {regs[W], regs[Z]};
     SP: rs16 = {regs[SP], regs[SPL]};
-    // F: rs16 = {regs[SP], regs[SPL]};
+    F: rs16 = {regs[SP], regs[SPL]};
     default: rs16 = 'x;
   endcase
 
