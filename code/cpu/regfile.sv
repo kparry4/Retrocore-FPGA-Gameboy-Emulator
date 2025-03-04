@@ -9,7 +9,7 @@ module regfile (
   input  logic [7:0] rd2,
   input  logic [3:0] flg,
   output logic [15:0] rs16,
-  output logic carry,
+  output logic carry, hcarry, nflg,
   output logic [7:0] rs1, rs2
 );
   // B C D E H L F A W Z SP
@@ -43,6 +43,8 @@ module regfile (
   end
 
   assign carry = regs[F][0];
+  assign hcarry = regs[F][1];
+  assign nflg = regs[F][2];
   assign rs1 = regs[adr1];
   assign rs2 = regs[adr2];
   always_comb case(adr1)

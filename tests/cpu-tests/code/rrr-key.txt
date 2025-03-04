@@ -10,5 +10,5 @@ SP fffe
 PC 0000
 
 ld b, aa aa06
-rr b cb08
-rr b cb08
+rr b cb18
+rr b cb18

@@ -39,7 +39,7 @@ package defs;
       WDAT_DC = 'x            // Don't care value
   } wdat_sel_t;
 
-  typedef enum logic [3:0] {
+  typedef enum logic [4:0] {
       ALU_ADD,                // add
       ALU_ADD2,                // add for msbs
       ALU_ADC,                // add w/ carry
@@ -48,6 +48,20 @@ package defs;
       ALU_AND,                // and
       ALU_OR,                 // or
       ALU_XOR,                // xor
+      ALU_CCF,                // commplement carry flag
+      ALU_DAA,                // commplement carry flag
+      ALU_NOT,                // commplement A
+      ALU_RLC,                // commplement A
+      ALU_RRC,                // commplement A
+      ALU_RR,                // commplement A
+      ALU_RL,                // commplement A
+      ALU_SRA,                // commplement A
+      ALU_SLA,                // commplement A
+      ALU_SRL,                // commplement A
+      ALU_SWAP,                // commplement A
+      ALU_BIT,                // commplement A
+      ALU_RES,                // commplement A
+      ALU_SET,                // commplement A
       ALU_R,                  // src1
       ALU_DC = 'x             // Don't care value
   } alu_op_t;
@@ -113,6 +127,7 @@ package defs;
       logic [3:0] flgWen;             // flag file write enable
       logic [3:0] flgKill;             // flag file write enable
       logic [3:0] flgSet;             // flag file write enable
+      logic [2:0] b;             // which bit
       logic rd2Wen;             // reg file write enable
       logic rdW16;             // write 16 bits to regfile
       logic memWen;             // reg file write enable
@@ -256,70 +271,48 @@ package defs;
       RLA,   // A = {A,c}<<1 000b7
       RRA,   // A = {c,A}>>1 000b0
       RLC_R,   // R = {R,b7}<<1 z00b7
-      RLC_R2,
       RLC_HL,   // (HL) = {(HL),b7}<<1 z00b7
       RLC_HL2,
       RLC_HL3,
-      RLC_HL4,
       RRC_R,   // R = {b0,R}>>1 z00b0
-      RRC_R2,
       RRC_HL,   // (HL) = {b0,(HL)}>>1 z00b0
       RRC_HL2,
       RRC_HL3,
-      RRC_HL4,
       RL_R,   // R = {R,c}<<1 z00b7
-      RL_R2,
       RL_HL,   // (HL) = {(HL),c}<<1 z00b7
       RL_HL2,
       RL_HL3,
-      RL_HL4,
       RR_R,   // R = {c,R}>>1 z00b7
-      RR_R2,
       RR_HL,   // (HL) = {c,(HL)}>>1 z00b7
       RR_HL2,
       RR_HL3,
-      RR_HL4,
       SLA_R,   // R = {R,0}<<1 z00b7
-      SLA_R2,
       SLA_HL,   // (HL) = {(HL),0}<<1 z00b7
       SLA_HL2,
       SLA_HL3,
-      SLA_HL4,
       SRA_R,   // R = {b7,R}>>1 z00b0
-      SRA_R2,
       SRA_HL,   // (HL) = {b7,(HL)}>>1 z00b0
       SRA_HL2,
       SRA_HL3,
-      SRA_HL4,
       SWAP_R,   // R = {b3-0,b7-4} z000
-      SWAP_R2,
       SWAP_HL,   // (HL) = {b3-0,b7-4} z000
       SWAP_HL2,
       SWAP_HL3,
-      SWAP_HL4,
       SRL_R,   // R = {0,R}>>1 z00b0
-      SRL_R2,
       SRL_HL,   // (HL) = {0,(HL)}>>1 z00b0
       SRL_HL2,
       SRL_HL3,
-      SRL_HL4,
       BIT_R,   // bit b in r z01-
-      BIT_R2,
       BIT_HL,   // bit b in (HL) z01-
       BIT_HL2,
-      BIT_HL3,
       RES_R,   // bit b in r = 0
-      RES_R2,
       RES_HL,   // bit b in (HL) = 0
       RES_HL2,
       RES_HL3,
-      RES_HL4,
       SET_R,   // bit b in r = 1
-      SET_R2,
       SET_HL,   // bit b in (HL) = 1
       SET_HL2,
       SET_HL3,
-      SET_HL4,
       JP_NN,   // PC = nn
       JP_NN2,
       JP_NN3,

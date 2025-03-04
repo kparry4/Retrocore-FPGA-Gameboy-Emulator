@@ -150,74 +150,74 @@ module tb;
       tests = {tests, "decr"};
     end if(`TEST == "dechl" || `TEST == "all") begin
       tests = {tests, "dechl"};
-    // end if(`TEST == "ccf" || `TEST == "all") begin
-    //   tests = {tests, "ccf"};
-    // end if(`TEST == "scf" || `TEST == "all") begin
-    //   tests = {tests, "scf"};
-    // end if(`TEST == "daa" || `TEST == "all") begin
-    //   tests = {tests, "daa"};
-    // end if(`TEST == "cpl" || `TEST == "all") begin
-    //   tests = {tests, "cpl"};
+    end if(`TEST == "ccf" || `TEST == "all") begin
+      tests = {tests, "ccf"};
+    end if(`TEST == "scf" || `TEST == "all") begin
+      tests = {tests, "scf"};
+    end if(`TEST == "daa" || `TEST == "all") begin
+      tests = {tests, "daa"};
+    end if(`TEST == "cpl" || `TEST == "all") begin
+      tests = {tests, "cpl"};
     end if(`TEST == "incrr" || `TEST == "all") begin
       tests = {tests, "incrr"};
     end if(`TEST == "decrr" || `TEST == "all") begin
       tests = {tests, "decrr"};
-    // end if(`TEST == "addhlrr" || `TEST == "all") begin
-    //   tests = {tests, "addhlrr"};
-    // end if(`TEST == "addspe" || `TEST == "all") begin
-    //   tests = {tests, "addspe"};
-    // end if(`TEST == "rlca" || `TEST == "all") begin
-    //   tests = {tests, "rlca"};
-    // end if(`TEST == "rrca" || `TEST == "all") begin
-    //   tests = {tests, "rrca"};
-    // end if(`TEST == "rla" || `TEST == "all") begin
-    //   tests = {tests, "rla"};
-    // end if(`TEST == "rra" || `TEST == "all") begin
-    //   tests = {tests, "rra"};
-    // end if(`TEST == "rlcr" || `TEST == "all") begin
-    //   tests = {tests, "rlcr"};
-    // end if(`TEST == "rlchl" || `TEST == "all") begin
-    //   tests = {tests, "rlchl"};
-    // end if(`TEST == "rrcr" || `TEST == "all") begin
-    //   tests = {tests, "rrcr"};
-    // end if(`TEST == "rrchl" || `TEST == "all") begin
-    //   tests = {tests, "rrchl"};
-    // end if(`TEST == "rlr" || `TEST == "all") begin
-    //   tests = {tests, "rlr"};
-    // end if(`TEST == "rlhl" || `TEST == "all") begin
-    //   tests = {tests, "rlhl"};
-    // end if(`TEST == "rrr" || `TEST == "all") begin
-    //   tests = {tests, "rrr"};
-    // end if(`TEST == "rrhl" || `TEST == "all") begin
-    //   tests = {tests, "rrhl"};
-    // end if(`TEST == "slar" || `TEST == "all") begin
-    //   tests = {tests, "slar"};
-    // end if(`TEST == "slahl" || `TEST == "all") begin
-    //   tests = {tests, "slahl"};
-    // end if(`TEST == "srar" || `TEST == "all") begin
-    //   tests = {tests, "srar"};
-    // end if(`TEST == "srahl" || `TEST == "all") begin
-    //   tests = {tests, "srahl"};
-    // end if(`TEST == "swapr" || `TEST == "all") begin
-    //   tests = {tests, "swapr"};
-    // end if(`TEST == "swaphl" || `TEST == "all") begin
-    //   tests = {tests, "swaphl"};
-    // end if(`TEST == "srlr" || `TEST == "all") begin
-    //   tests = {tests, "srlr"};
-    // end if(`TEST == "srlhl" || `TEST == "all") begin
-    //   tests = {tests, "srlhl"};
-    // end if(`TEST == "bitbr" || `TEST == "all") begin
-    //   tests = {tests, "bitbr"};
-    // end if(`TEST == "bitbhl" || `TEST == "all") begin
-    //   tests = {tests, "bitbhl"};
-    // end if(`TEST == "resbr" || `TEST == "all") begin
-    //   tests = {tests, "resbr"};
-    // end if(`TEST == "resbhl" || `TEST == "all") begin
-    //   tests = {tests, "resbhl"};
-    // end if(`TEST == "setbr" || `TEST == "all") begin
-    //   tests = {tests, "setbr"};
-    // end if(`TEST == "setbhl" || `TEST == "all") begin
-    //   tests = {tests, "setbhl"};
+    end if(`TEST == "addhlrr" || `TEST == "all") begin
+      tests = {tests, "addhlrr"};
+    end if(`TEST == "addspe" || `TEST == "all") begin
+      tests = {tests, "addspe"};
+    end if(`TEST == "rlca" || `TEST == "all") begin
+      tests = {tests, "rlca"};
+    end if(`TEST == "rrca" || `TEST == "all") begin
+      tests = {tests, "rrca"};
+    end if(`TEST == "rla" || `TEST == "all") begin
+      tests = {tests, "rla"};
+    end if(`TEST == "rra" || `TEST == "all") begin
+      tests = {tests, "rra"};
+    end if(`TEST == "rlcr" || `TEST == "all") begin
+      tests = {tests, "rlcr"};
+    end if(`TEST == "rlchl" || `TEST == "all") begin
+      tests = {tests, "rlchl"};
+    end if(`TEST == "rrcr" || `TEST == "all") begin
+      tests = {tests, "rrcr"};
+    end if(`TEST == "rrchl" || `TEST == "all") begin
+      tests = {tests, "rrchl"};
+    end if(`TEST == "rlr" || `TEST == "all") begin
+      tests = {tests, "rlr"};
+    end if(`TEST == "rlhl" || `TEST == "all") begin
+      tests = {tests, "rlhl"};
+    end if(`TEST == "rrr" || `TEST == "all") begin
+      tests = {tests, "rrr"};
+    end if(`TEST == "rrhl" || `TEST == "all") begin
+      tests = {tests, "rrhl"};
+    end if(`TEST == "slar" || `TEST == "all") begin
+      tests = {tests, "slar"};
+    end if(`TEST == "slahl" || `TEST == "all") begin
+      tests = {tests, "slahl"};
+    end if(`TEST == "srar" || `TEST == "all") begin
+      tests = {tests, "srar"};
+    end if(`TEST == "srahl" || `TEST == "all") begin
+      tests = {tests, "srahl"};
+    end if(`TEST == "swapr" || `TEST == "all") begin
+      tests = {tests, "swapr"};
+    end if(`TEST == "swaphl" || `TEST == "all") begin
+      tests = {tests, "swaphl"};
+    end if(`TEST == "srlr" || `TEST == "all") begin
+      tests = {tests, "srlr"};
+    end if(`TEST == "srlhl" || `TEST == "all") begin
+      tests = {tests, "srlhl"};
+    end if(`TEST == "bitbr" || `TEST == "all") begin
+      tests = {tests, "bitbr"};
+    end if(`TEST == "bitbhl" || `TEST == "all") begin
+      tests = {tests, "bitbhl"};
+    end if(`TEST == "resbr" || `TEST == "all") begin
+      tests = {tests, "resbr"};
+    end if(`TEST == "resbhl" || `TEST == "all") begin
+      tests = {tests, "resbhl"};
+    end if(`TEST == "setbr" || `TEST == "all") begin
+      tests = {tests, "setbr"};
+    end if(`TEST == "setbhl" || `TEST == "all") begin
+      tests = {tests, "setbhl"};
     // end if(`TEST == "jpnn" || `TEST == "all") begin
     //   tests = {tests, "jpnn"};
     // end if(`TEST == "jphl" || `TEST == "all") begin

@@ -9,6 +9,6 @@ A 00
 SP fffe
 PC 0000
 
-ld b, aa aa03
+ld b, aa aa06
 rl b cb10
 rl b cb10

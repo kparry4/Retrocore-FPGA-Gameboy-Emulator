@@ -19,7 +19,7 @@ module cpu (
   logic [15:0] rs16;
   logic [7:0] mem, n;
   logic [3:0] flg;
-  logic carry;
+  logic carry, hcarry, nflg;
   logic [15:0] npc, pc;
   ctrl_t ctrl;
   logic preAdr; // lsb of previous acessed memory
@@ -66,6 +66,8 @@ module cpu (
                   .rs2,
                   .rs16, 
                   .carry,
+                  .hcarry,
+                  .nflg,
                   .rdAdr(ctrl.rd), 
                   .rd2Adr(ctrl.rd2), 
                   .adr1(ctrl.rs1), 
@@ -93,9 +95,12 @@ module cpu (
           .src2,
           .aluOp(ctrl.aluOp),
           .flg,
+          .b(ctrl.b),
+          .nflg,
           .flgKill(ctrl.flgKill),
           .flgSet(ctrl.flgSet),
           .cin(carry),
+          .hcin(hcarry),
           .aluOut);
   
   //seclet the input to the idu

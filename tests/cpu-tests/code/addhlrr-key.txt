@@ -2,9 +2,9 @@ B 00
 C 01
 D 00
 E ff
-H 01
-L 00
-F 02
+H 02
+L ff
+F 00
 A 00 
 SP fffe
 PC 0000
@@ -13,8 +13,8 @@ ld C,01 010e
 ld E,ff ff1e
 add sp 39
 add hl 29
-add BC 0b
-add BC 0b
-add BC 0b
+add BC 09
+add BC 09
+add BC 09
 add de 19
 add BC 09
