@@ -10,7 +10,7 @@ SP fffe
 PC 0000
 
 ld A,ab ab3e
-call 1a ed
+call 1a 1acd
 nop 00
 ld C,ab ab0e
 ld D,ab ab16

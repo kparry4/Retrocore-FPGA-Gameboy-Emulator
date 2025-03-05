@@ -2,152 +2,164 @@
 `include "defs.svh"
 module decoder (
   input logic rst, clk,
-  input  logic [7:0] instr,
+  input  logic [7:0] instr, ie, iflg,
   input  logic memValid,
   input  logic jmp,
+  output logic stop,
+  output logic [7:0] newie, pre,
+  output logic ieen,
   output ctrl_t ctrl
 );
 
   mpc_t mpc_enum;
-  logic [$bits(mpc_enum)-1:0] mpc,nmpc;
-  logic [7:0] op, nextOp;
+  logic [$bits(mpc_enum)-1:0] oldmpc,mpc;
+  logic [7:0] op, nextOp, oldop;
   logic [7:0] nextInstr;
-  logic cb,cbpre;
+  logic cb,cbpre, done;
+  logic mpcen, nmpcen, interupt;
+
+  assign interupt = |(iflg[4:0]&ie[4:0]);
 
   assign mpc_enum = mpc_t'(mpc);
   assign nextInstr = ctrl.useOp ? nextOp : instr;
   // opcode flop
-  flopenr #(8) curropreg (clk,rst,ctrl.done&memValid,nextInstr,op);
+  // flopenr #(8) curropreg (clk,rst,ctrl.done&memValid,nextInstr,op);
+  flopenr #(8) oldopreg (clk,rst,ctrl.iren,instr,op);
   flopenr #(8) nextopreg (clk,rst,ctrl.iren,instr,nextOp);
   flopr #(1) cbprereg (clk,rst,cb,cbpre);
+  always_ff @(posedge clk) begin
+    if(rst) mpcen = 1;
+    else mpcen = nmpcen;
+  end
   
   // microcode flop
-  flopr #($bits(mpc)) mpcflop (clk,rst,nmpc,mpc);
-  
+  flopr #(1) doneflop (clk,rst,ctrl.done,done);
+  flopr #($bits(mpc)) mpcflop (clk,rst,mpc,oldmpc);
   // select the proper next microcode addr
   always_comb begin
-    if(memValid) begin
+    if(memValid&mpcen) begin
       cb=0;
       // if finished an instr then get new mpc
-      if(ctrl.done) begin
-        if(nextInstr == 8'hCB) cb=1;
-        casez(nextInstr)
-          8'hCB: nmpc=NOP;
-          8'b00000000: nmpc=NOP;
-          8'b00001010: nmpc=LD_ABC;
-          8'b00011010: nmpc=LD_ADE;
-          8'b00000010: nmpc=LD_BCA;
-          8'b00010010: nmpc=LD_DEA;
-          8'b11111010: nmpc=LD_ANN;
-          8'b11101010: nmpc=LD_NNA;
-          8'b00110110: nmpc=LD_HLN;
-          8'b11110010: nmpc=LDH_AC;
-          8'b11100010: nmpc=LDH_CA;
-          8'b11110000: nmpc=LDH_AN;
-          8'b11100010: nmpc=LDH_NA;
-          8'b00111010: nmpc=LD_AHLD;
-          8'b00110010: nmpc=LD_HLDA;
-          8'b00101010: nmpc=LD_AHLI;
-          8'b00100010: nmpc=LD_HLIA;
-          8'b00001000: nmpc=LD_NNSP;
-          8'b11111001: nmpc=LD_SPHL;
-          8'b11111000: nmpc=LD_HLSPE;
-          8'b10000110: nmpc=ADD_HL;
-          8'b11000110: nmpc=ADD_N;
-          8'b10001110: nmpc=ADC_HL;
-          8'b11001110: nmpc=ADC_N;
-          8'b10010110: nmpc=SUB_HL;
-          8'b11010110: nmpc=SUB_N;
-          8'b10011110: nmpc=SBC_HL;
-          8'b11011110: nmpc=SBC_N;
-          8'b10011110: nmpc=CP_HL;
-          8'b11111110: nmpc=CP_N;
-          8'b10100110: nmpc=AND_HL;
-          8'b11100110: nmpc=AND_N;
-          8'b10110110: nmpc=OR_HL;
-          8'b11110110: nmpc=OR_N;
-          8'b10101110: nmpc=XOR_HL;
-          8'b11101110: nmpc=XOR_N;
-          8'b00110100: nmpc=INC_HL;
-          8'b00110101: nmpc=DEC_HL;
-          8'b00111111: nmpc=CCF;
-          8'b00110111: nmpc=SCF;
-          8'b00100111: nmpc=DAA;
-          8'b00101111: nmpc=CPL;
-          8'b11101000: nmpc=ADD_SPE;
-          8'b00000111: nmpc=RLCA;
-          8'b00001111: nmpc=RRCA;
-          8'b00010111: nmpc=RRCA;
-          8'b00011111: nmpc=RRA;
-          8'b11000011: nmpc=JP_NN;
-          8'b11101001: nmpc=JP_HL;
-          8'b00011000: nmpc=JR_E;
-          8'b11001101: nmpc=CALL_NN;
-          8'b11001001: nmpc=RET;
-          8'b11011001: nmpc=RETI;
-          8'b11110011: nmpc=DI;
-          8'b11111011: nmpc=EI;
-          8'b00010000: nmpc=STOP;
-          8'b01110110: nmpc=HALT;
-          8'b11???111: nmpc=RST_N;
-          8'b110??000: nmpc=RET_CC;
-          8'b110??100: nmpc=CALL_CCNN;
-          8'b110??010: nmpc=JP_CCNN;
-          8'b001??000: nmpc=JR_CCE;
-          8'b00??0011: nmpc=INC_RR;
-          8'b00??1011: nmpc=DEC_RR;
-          8'b00??1001: nmpc=ADD_HLRR;
-          8'b11??0101: nmpc=PUSH;
-          8'b11??0001: nmpc=POP;
-          8'b00??0001: nmpc=LD_RRNN;
-          8'b10000???: nmpc=ADD_R;
-          8'b10001???: nmpc=ADC_R;
-          8'b10010???: nmpc=SUB_R;
-          8'b10011???: nmpc=SBC_R;
-          8'b10111???: nmpc=CP_R;
-          8'b10100???: nmpc=AND_R;
-          8'b10110???: nmpc=OR_R;
-          8'b10101???: nmpc=XOR_R;
-          8'b00???110: nmpc=LD_RN;
-          8'b01???110: nmpc=LD_RHL;
-          8'b00???100: nmpc=INC_R;
-          8'b00???101: nmpc=DEC_R;
-          8'b01110???: nmpc=LD_HLR;
-          8'b01??????: nmpc=LD_RR;
-          default: nmpc = BAD;
+      if(done) begin
+        if(instr == 8'hCB) cb=1;
+        casez(instr)
+          8'hCB: mpc=NOP;
+          8'b00000000: mpc=NOP;
+          8'b00001010: mpc=LD_ABC;
+          8'b00011010: mpc=LD_ADE;
+          8'b00000010: mpc=LD_BCA;
+          8'b00010010: mpc=LD_DEA;
+          8'b11111010: mpc=LD_ANN;
+          8'b11101010: mpc=LD_NNA;
+          8'b00110110: mpc=LD_HLN;
+          8'b11110010: mpc=LDH_AC;
+          8'b11100010: mpc=LDH_CA;
+          8'b11110000: mpc=LDH_AN;
+          8'b11100010: mpc=LDH_NA;
+          8'b00111010: mpc=LD_AHLD;
+          8'b00110010: mpc=LD_HLDA;
+          8'b00101010: mpc=LD_AHLI;
+          8'b00100010: mpc=LD_HLIA;
+          8'b00001000: mpc=LD_NNSP;
+          8'b11111001: mpc=LD_SPHL;
+          8'b11111000: mpc=LD_HLSPE;
+          8'b10000110: mpc=ADD_HL;
+          8'b11000110: mpc=ADD_N;
+          8'b10001110: mpc=ADC_HL;
+          8'b11001110: mpc=ADC_N;
+          8'b10010110: mpc=SUB_HL;
+          8'b11010110: mpc=SUB_N;
+          8'b10011110: mpc=SBC_HL;
+          8'b11011110: mpc=SBC_N;
+          8'b10011110: mpc=CP_HL;
+          8'b11111110: mpc=CP_N;
+          8'b10100110: mpc=AND_HL;
+          8'b11100110: mpc=AND_N;
+          8'b10110110: mpc=OR_HL;
+          8'b11110110: mpc=OR_N;
+          8'b10101110: mpc=XOR_HL;
+          8'b11101110: mpc=XOR_N;
+          8'b00110100: mpc=INC_HL;
+          8'b00110101: mpc=DEC_HL;
+          8'b00111111: mpc=CCF;
+          8'b00110111: mpc=SCF;
+          8'b00100111: mpc=DAA;
+          8'b00101111: mpc=CPL;
+          8'b11101000: mpc=ADD_SPE;
+          8'b00000111: mpc=RLCA;
+          8'b00001111: mpc=RRCA;
+          8'b00010111: mpc=RRCA;
+          8'b00011111: mpc=RRA;
+          8'b11000011: mpc=JP_NN;
+          8'b11101001: mpc=JP_HL;
+          8'b00011000: mpc=JR_E;
+          8'b11001101: mpc=CALL_NN;
+          8'b11001001: mpc=RET;
+          8'b11011001: mpc=RETI;
+          8'b11110011: mpc=DI;
+          8'b11111011: mpc=EI;
+          8'b00010000: mpc=STOP;
+          8'b01110110: mpc=HALT;
+          8'b11???111: mpc=RST_N;
+          8'b110??000: mpc=RET_CC;
+          8'b110??100: mpc=CALL_CCNN;
+          8'b110??010: mpc=JP_CCNN;
+          8'b001??000: mpc=JR_CCE;
+          8'b00??0011: mpc=INC_RR;
+          8'b00??1011: mpc=DEC_RR;
+          8'b00??1001: mpc=ADD_HLRR;
+          8'b11??0101: mpc=PUSH;
+          8'b11??0001: mpc=POP;
+          8'b00??0001: mpc=LD_RRNN;
+          8'b10000???: mpc=ADD_R;
+          8'b10001???: mpc=ADC_R;
+          8'b10010???: mpc=SUB_R;
+          8'b10011???: mpc=SBC_R;
+          8'b10111???: mpc=CP_R;
+          8'b10100???: mpc=AND_R;
+          8'b10110???: mpc=OR_R;
+          8'b10101???: mpc=XOR_R;
+          8'b00???110: mpc=LD_RN;
+          8'b01???110: mpc=LD_RHL;
+          8'b00???100: mpc=INC_R;
+          8'b00???101: mpc=DEC_R;
+          8'b01110???: mpc=LD_HLR;
+          8'b01??????: mpc=LD_RR;
+          default: mpc = BAD;
         endcase
         // CB-prefixed
         if(cbpre)
-          casez(nextInstr)
-            8'b00000110: nmpc=RLC_HL;
-            8'b00001110: nmpc=RRC_HL;
-            8'b00010110: nmpc=RL_HL;
-            8'b00011110: nmpc=RR_HL;
-            8'b00100110: nmpc=SLA_HL;
-            8'b00101110: nmpc=SLA_HL;
-            8'b00110110: nmpc=SWAP_HL;
-            8'b00111110: nmpc=SRL_HL;
-            8'b01???110: nmpc=BIT_HL;
-            8'b10???110: nmpc=RES_HL;
-            8'b11???110: nmpc=SET_HL;
-            8'b00000???: nmpc=RLC_R;
-            8'b00001???: nmpc=RRC_R;
-            8'b00010???: nmpc=RL_R;
-            8'b00011???: nmpc=RR_R;
-            8'b00100???: nmpc=SLA_R;
-            8'b00101???: nmpc=SRA_R;
-            8'b00110???: nmpc=SWAP_R;
-            8'b00111???: nmpc=SRL_R;
-            8'b01??????: nmpc=BIT_R;
-            8'b10??????: nmpc=RES_R;
-            8'b11??????: nmpc=SET_R;
-            default: nmpc = BAD;
+          casez(instr)
+            8'b00000110: mpc=RLC_HL;
+            8'b00001110: mpc=RRC_HL;
+            8'b00010110: mpc=RL_HL;
+            8'b00011110: mpc=RR_HL;
+            8'b00100110: mpc=SLA_HL;
+            8'b00101110: mpc=SLA_HL;
+            8'b00110110: mpc=SWAP_HL;
+            8'b00111110: mpc=SRL_HL;
+            8'b01???110: mpc=BIT_HL;
+            8'b10???110: mpc=RES_HL;
+            8'b11???110: mpc=SET_HL;
+            8'b00000???: mpc=RLC_R;
+            8'b00001???: mpc=RRC_R;
+            8'b00010???: mpc=RL_R;
+            8'b00011???: mpc=RR_R;
+            8'b00100???: mpc=SLA_R;
+            8'b00101???: mpc=SRA_R;
+            8'b00110???: mpc=SWAP_R;
+            8'b00111???: mpc=SRL_R;
+            8'b01??????: mpc=BIT_R;
+            8'b10??????: mpc=RES_R;
+            8'b11??????: mpc=SET_R;
+            default: mpc = BAD;
           endcase
+        if(interupt) mpc = INTERUPT;
       end
 
       // if instr not done mpc++
-      else nmpc = mpc+1;
-    end else nmpc = mpc;
+      else mpc = oldmpc+1;
+    end else mpc = oldmpc;
   end
 
   // register layout
@@ -160,13 +172,28 @@ module decoder (
   // microcode LUT
   always_comb begin
     // basic case
-    ctrl.pcSel = PC_IDU;
+    case(op[5:3])
+      3'b000: pre = 0;
+      3'b001: pre = 8'h08;
+      3'b010: pre = 8'h10;
+      3'b011: pre = 8'h18;
+      3'b100: pre = 8'h20;
+      3'b101: pre = 8'h28;
+      3'b110: pre = 8'h30;
+      3'b111: pre = 8'h38;
+    endcase
+    nmpcen = 1;
+    stop = 0;
+    ctrl.pcSel = PC_1;
+    ctrl.cc = cc_t'(op[4:3]);
     ctrl.adrSel = ADR_PC;
     ctrl.wadrSel = WADR_DC;
     ctrl.wdatSel = WDAT_DC;
     ctrl.memWen = 0;
     ctrl.iduSel = IDU_PC;
     ctrl.pcen = 1;
+    newie = 'x;
+    ieen = 0;
     ctrl.iduSub = 0;
     ctrl.rs1 = DC;
     ctrl.rs2 = DC;
@@ -197,24 +224,20 @@ module decoder (
       // ld r, n    op rd | n
       // rd = r
       LD_RN:  begin
-        ctrl.rd = Z;
-        ctrl.rdSel = RD_MEM;
-        ctrl.rdWen = 1;
+        ctrl.iren = 1;
       end
       LD_RN2: begin
-        ctrl.rs1 = Z;
-        ctrl.aluOp = ALU_R;
         ctrl.rd = reg_t'(op[5:3]);
-        ctrl.rdSel = RD_ALU;
+        ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
       // ld r, r' op rd rs2
       // r <- r'
       LD_RR:  begin
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_R;
-        ctrl.rd = reg_t'(op[5:3]);
+        ctrl.rd = reg_t'(instr[5:3]);
         ctrl.rdSel = RD_ALU;
         ctrl.rdWen = 1;
         ctrl.done = 1;
@@ -262,26 +285,33 @@ module decoder (
       // (hl) <- n
       LD_HLN:  begin
         // read HL from memory and save n in Z
+        // ctrl.rs1 = H;
+        // ctrl.rd = Z;
+        // ctrl.rdSel = RD_MEM;
+        // ctrl.rdWen = 1;
+        // ctrl.adrSel = ADR_RS;
+        // ctrl.pcen = 0;
+        // ctrl.iren = 1;
+      end
+      LD_HLN2:  begin
+        // use H to insert rs2 data into correct spot
+        // then write to memory
         ctrl.rs1 = H;
         ctrl.rd = Z;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
         ctrl.adrSel = ADR_RS;
         ctrl.pcen = 0;
-        ctrl.iren = 1;
+        // ctrl.iren = 1;
       end
-      LD_HLN2:  begin
-        // use H to insert rs2 data into correct spot
-        // then write to memory
+      LD_HLN3:  begin
+        // nothin
         ctrl.rs1 = H;
         ctrl.rs2 = Z;
         ctrl.wadrSel = WADR_RS;
         ctrl.wdatSel = WDAT_RS2;
         ctrl.useOp = 1;
         ctrl.memWen = 1;
-      end
-      LD_HLN3:  begin
-        // nothin
         ctrl.done = 1;
       end
       // ld A,(BC)
@@ -367,21 +397,21 @@ module decoder (
       // ld A,nn
       // (nn)<-A
       LD_ANN:  begin
+      end
+      LD_ANN2:  begin
         // save lsbs nn in Z
         ctrl.rd = Z;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
       end
-      LD_ANN2:  begin
+      LD_ANN3:  begin
         // save msbs nn in W
         ctrl.rd = W;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
-      end
-      LD_ANN3:  begin
         // read addr from memory
-        ctrl.rs1 = W;
-        ctrl.adrSel = ADR_RS;
+        ctrl.rs1 = Z;
+        ctrl.adrSel = ADR_NRS;
         ctrl.pcen = 0;
         ctrl.iren = 1;
       end
@@ -396,21 +426,21 @@ module decoder (
       // ld nn,a
       // A<-(nn)
       LD_NNA:  begin
+      end
+      LD_NNA2:  begin
         // save lsbs nn in Z
         ctrl.rd = Z;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
       end
-      LD_NNA2:  begin
+      LD_NNA3:  begin
         // save msbs nn in W
         ctrl.rd = W;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
-      end
-      LD_NNA3:  begin
         // read addr from memory
-        ctrl.rs1 = W;
-        ctrl.adrSel = ADR_RS;
+        ctrl.rs1 = Z;
+        ctrl.adrSel = ADR_NRS;
         ctrl.pcen = 0;
         ctrl.iren = 1;
       end
@@ -618,32 +648,35 @@ module decoder (
       // ld rr, nn
       // rd = nn
       LD_RRNN:  begin
+        ctrl.iren = 1;
+      end
+      LD_RRNN2:  begin
+        // read lsbs of nn
         ctrl.rd = Z;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
       end
-      LD_RRNN2:  begin
-        ctrl.rd = W;
-        ctrl.rdSel = RD_MEM;
-        ctrl.rdWen = 1;
-      end
       LD_RRNN3: begin
-        ctrl.rs1 = W;
+        // read msbs of nn
+        // store in rr
+        ctrl.rs1 = Z;
         ctrl.rd = reg_t'(op[5:3]);
         ctrl.rdW16 = 1;
-        ctrl.rdSel = RD_RS16;
+        ctrl.rdSel = RD_NRS;
         ctrl.rdWen = 1;
         ctrl.done = 1;
       end
       // ld (nn),sp
       // (nn) = sp
       LD_NNSP:  begin
+      end
+      LD_NNSP2:  begin
         // save lsb of nn
         ctrl.rd = Z;
         ctrl.rdSel = RD_MEM;
         ctrl.rdWen = 1;
       end
-      LD_NNSP2:  begin
+      LD_NNSP3: begin
         // save msb of nn
         // read data from mem
         ctrl.rd = W;
@@ -654,7 +687,7 @@ module decoder (
         ctrl.pcen = 0;
         // dont set iren!
       end
-      LD_NNSP3: begin
+      LD_NNSP4: begin
         // write lsbs of sp to addr
         ctrl.rs1 = W;
         ctrl.rs2 = SPL;
@@ -668,9 +701,6 @@ module decoder (
         ctrl.rdW16 = 1;
         ctrl.rdWen = 1;
         ctrl.pcen = 0;
-        // dont set iren!
-      end
-      LD_NNSP4: begin
         // read nn+1
         ctrl.rs1 = W;
         ctrl.adrSel = ADR_RS;
@@ -799,22 +829,21 @@ module decoder (
       // ld hl,sp+e
       // hl = sp+e
       LD_HLSPE:  begin
-        // store e
-        ctrl.rd = Z;
-        ctrl.rdSel = RD_MEM;
-        ctrl.rdWen = 1;
       end
       LD_HLSPE2:  begin
+        // store e
+        ctrl.rd2 = Z;
+        ctrl.rd2Sel = RD2_MEM;
+        ctrl.rd2Wen = 1;
         // L = lsbs sp + e
         ctrl.rs1 = SPL;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.rd = L;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
         ctrl.aluOp = ALU_ADD;
         ctrl.rdWen = 1;
         ctrl.pcen = 0;
-        ctrl.iren = 1;
       end
       LD_HLSPE3: begin
         // H = msbs sp + carry
@@ -834,7 +863,7 @@ module decoder (
       ADD_R:  begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.rs2 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_ADD;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -863,12 +892,11 @@ module decoder (
       // add n
       // A += n z0hc
       ADD_N:  begin
-        `READN
       end
       ADD_N2: begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.aluOp = ALU_ADD;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -880,7 +908,7 @@ module decoder (
       ADC_R:  begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.rs2 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_ADC;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -909,12 +937,11 @@ module decoder (
       // adc n
       // A += n + c z0hc
       ADC_N:  begin
-        `READN
       end
       ADC_N2: begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.aluOp = ALU_ADC;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -926,7 +953,7 @@ module decoder (
       SUB_R:  begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.rs2 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_SUB;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -957,12 +984,11 @@ module decoder (
       // sub n
       // A -= n  z0hc
       SUB_N:  begin
-        `READN
       end
       SUB_N2: begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.aluOp = ALU_SUB;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -975,7 +1001,7 @@ module decoder (
       SBC_R:  begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.rs2 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_SBC;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -1006,12 +1032,11 @@ module decoder (
       // sbc n
       // A -= n + c z0hc
       SBC_N:  begin
-        `READN
       end
       SBC_N2: begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.aluOp = ALU_SBC;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -1023,7 +1048,7 @@ module decoder (
       // A-R z1hc
       CP_R:  begin
         ctrl.rs1 = A;
-        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.rs2 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_SUB;
         ctrl.flgWen = 4'b1111;
         ctrl.flgSet = 4'b0100;
@@ -1049,11 +1074,10 @@ module decoder (
       // cp n
       // A - n  z0hc
       CP_N:  begin
-        `READN
       end
       CP_N2: begin
         ctrl.rs1 = A;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.aluOp = ALU_SUB;
         ctrl.flgWen = 4'b1111;
         ctrl.flgSet = 4'b0100;
@@ -1064,7 +1088,7 @@ module decoder (
       AND_R:  begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.rs2 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_AND;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -1097,12 +1121,11 @@ module decoder (
       // and r
       // A=A&R z010
       AND_N:  begin
-        `READN
       end
       AND_N2: begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.aluOp = ALU_AND;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -1116,7 +1139,7 @@ module decoder (
       OR_R:  begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.rs2 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_OR;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -1147,12 +1170,11 @@ module decoder (
       // or r
       // A=A|R z000
       OR_N:  begin
-        `READN
       end
       OR_N2: begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.aluOp = ALU_OR;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -1165,7 +1187,7 @@ module decoder (
       XOR_R:  begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = reg_t'(op[2:0]);
+        ctrl.rs2 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_XOR;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -1196,12 +1218,11 @@ module decoder (
       // xor r
       // A=A^R z000
       XOR_N:  begin
-        `READN
       end
       XOR_N2: begin
         ctrl.rd = A;
         ctrl.rs1 = A;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
         ctrl.aluOp = ALU_XOR;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
@@ -1212,8 +1233,8 @@ module decoder (
       // inc rr
       // rr++
       INC_RR:  begin
-        ctrl.rd = reg_t'({op[5:4],1'b0});
-        ctrl.rs1 = reg_t'({op[5:4],1'b0});
+        ctrl.rd = reg_t'({instr[5:4],1'b0});
+        ctrl.rs1 = reg_t'({instr[5:4],1'b0});
         ctrl.iduSel = IDU_RS;
         ctrl.rdSel = RD_IDU;
         ctrl.rdWen = 1;
@@ -1228,8 +1249,8 @@ module decoder (
       // dec rr
       // rr--
       DEC_RR:  begin
-        ctrl.rd = reg_t'({op[5:4],1'b0});
-        ctrl.rs1 = reg_t'({op[5:4],1'b0});
+        ctrl.rd = reg_t'({instr[5:4],1'b0});
+        ctrl.rs1 = reg_t'({instr[5:4],1'b0});
         ctrl.iduSel = IDU_RS;
         ctrl.rdSel = RD_IDU;
         ctrl.iduSub = 1;
@@ -1245,8 +1266,8 @@ module decoder (
       // inc r
       // r++
       INC_R:  begin
-        ctrl.rd = reg_t'(op[5:3]);
-        ctrl.rs1 = reg_t'(op[5:3]);
+        ctrl.rd = reg_t'(instr[5:3]);
+        ctrl.rs1 = reg_t'(instr[5:3]);
         ctrl.rs2Sel = RS2_1;
         ctrl.aluOp = ALU_ADD;
         ctrl.rdSel = RD_ALU;
@@ -1280,8 +1301,8 @@ module decoder (
       // dec r
       // r--
       DEC_R:  begin
-        ctrl.rd = reg_t'(op[5:3]);
-        ctrl.rs1 = reg_t'(op[5:3]);
+        ctrl.rd = reg_t'(instr[5:3]);
+        ctrl.rs1 = reg_t'(instr[5:3]);
         ctrl.rs2Sel = RS2_1;
         ctrl.aluOp = ALU_SUB;
         ctrl.rdSel = RD_ALU;
@@ -1360,7 +1381,7 @@ module decoder (
       ADD_HLRR:  begin
         ctrl.rd = L;
         ctrl.rs1 = L;
-        ctrl.rs2 = &op[5:4] ? SPL : reg_t'({op[5:4],1'b1});
+        ctrl.rs2 = &instr[5:4] ? SPL : reg_t'({instr[5:4],1'b1});
         ctrl.aluOp = ALU_ADD;
         ctrl.flgWen = 4'b0111;
         ctrl.flgKill = 4'b1011;
@@ -1384,17 +1405,19 @@ module decoder (
       // add sp,e
       // SP = SP + e 00hc
       ADD_SPE:  begin
-        `READN
       end
       ADD_SPE2:  begin
         ctrl.rd = SPL;
         ctrl.rs1 = SPL;
-        ctrl.rs2 = Z;
+        ctrl.rs2Sel = RS2_MEM;
+        ctrl.rd2 = Z;
         ctrl.aluOp = ALU_ADD;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b0011;
         ctrl.rdSel = RD_ALU;
+        ctrl.rd2Sel = RD2_MEM;
         ctrl.rdWen = 1;
+        ctrl.rd2Wen = 1;
         ctrl.pcen = 0;
         ctrl.iren = 1;
       end
@@ -1462,8 +1485,8 @@ module decoder (
       // rlcr
       // R = {R,b7}<<1 z00b7
       RLC_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_RLC;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1001;
@@ -1497,8 +1520,8 @@ module decoder (
       // rrcr
       // R = {b0,R}>>1 z00b0
       RRC_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_RRC;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1001;
@@ -1532,8 +1555,8 @@ module decoder (
       // rl r
       // R = {R,c}<<1 z00b7
       RL_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_RL;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1001;
@@ -1567,8 +1590,8 @@ module decoder (
       // rr r
       // R = {c,R}>>1 z00b0
       RR_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_RR;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1001;
@@ -1602,8 +1625,8 @@ module decoder (
       // sla r
       // R = {R,0}<<1 z00b7
       SLA_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_SLA;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1001;
@@ -1637,8 +1660,8 @@ module decoder (
       // sra r
       // R = {b7,R}>>1 z00b0
       SRA_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_SRA;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1001;
@@ -1672,8 +1695,8 @@ module decoder (
       // srL r
       // R = {0,R}>>1 z00b0
       SRL_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_SRL;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1001;
@@ -1707,8 +1730,8 @@ module decoder (
       // swap r
       // R = {b3-0,b7-4} z000
       SWAP_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
         ctrl.aluOp = ALU_SWAP;
         ctrl.flgWen = 4'b1111;
         ctrl.flgKill = 4'b1000;
@@ -1742,23 +1765,23 @@ module decoder (
       // bit r
       // z = bit b in r z01-
       BIT_R:  begin
-        ctrl.rs1 = reg_t'(op[2:0]);
-        ctrl.b = reg_t'(op[5:3]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
+        ctrl.b = reg_t'(instr[5:3]);
         ctrl.aluOp = ALU_BIT;
         ctrl.flgWen = 4'b1110;
         ctrl.flgSet = 4'b0010;
         ctrl.flgKill = 4'b1011;
         ctrl.done = 1;
       end
-      // swap (HL)
-      // (HL) = {b3-0,b7-4} z000
+      // bit (HL)
+      // z = bit b in (HL) z01-
       BIT_HL:  begin
         `READHL
         ctrl.iren = 1;
       end
       BIT_HL2:  begin
-        ctrl.rd = Z;
         ctrl.rs1Sel = RS1_MEM;
+        ctrl.b = reg_t'(op[5:3]);
         ctrl.aluOp = ALU_BIT;
         ctrl.flgWen = 4'b1110;
         ctrl.flgSet = 4'b0010;
@@ -1769,9 +1792,9 @@ module decoder (
       // res r
       // bit b in r = 0
       RES_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
-        ctrl.b = reg_t'(op[5:3]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
+        ctrl.b = reg_t'(instr[5:3]);
         ctrl.aluOp = ALU_RES;
         ctrl.rdSel = RD_ALU;
         ctrl.rdWen = 1;
@@ -1802,9 +1825,9 @@ module decoder (
       // set r
       // set b in r = 1
       SET_R:  begin
-        ctrl.rd = reg_t'(op[2:0]);
-        ctrl.rs1 = reg_t'(op[2:0]);
-        ctrl.b = reg_t'(op[5:3]);
+        ctrl.rd = reg_t'(instr[2:0]);
+        ctrl.rs1 = reg_t'(instr[2:0]);
+        ctrl.b = reg_t'(instr[5:3]);
         ctrl.aluOp = ALU_SET;
         ctrl.rdSel = RD_ALU;
         ctrl.rdWen = 1;
@@ -1837,23 +1860,479 @@ module decoder (
       JP_HL:  begin
         ctrl.rs1 = H;
         ctrl.pcSel = PC_RS;
+        ctrl.adrSel = ADR_RS;
         ctrl.done = 1;
       end
-      // // jp nn
-      // // pc = nn
-      // JP_NN:  begin
-      //   `READN
-      // end
-      // JP_NN2:  begin
-      //   `READNN
-      // end
-      // JP_NN3:  begin
-      //   ctrl.rs1 = W;
-      //   ctrl.pcSel = PC_RS;
-      // end
-      // JP_NN4:  begin
-      //   ctrl.done = 1;
-      // end
+      // jp nn
+      // pc = nn
+      JP_NN:  begin
+      end
+      JP_NN2:  begin
+        `READN
+      end
+      JP_NN3:  begin
+        `READNN
+      end
+      JP_NN4:  begin
+        ctrl.rs1 = W;
+        ctrl.pcSel = PC_RS;
+        ctrl.adrSel = ADR_RS;
+        ctrl.done = 1;
+      end
+      // jp cc,nn
+      // if cc pc = nn
+      JP_CCNN:  begin
+        ctrl.iren = 1;
+      end
+      JP_CCNN2:  begin
+        `READN
+      end
+      JP_CCNN3:  begin
+        `READNN
+        ctrl.done = ~jmp;
+      end
+      JP_CCNN4:  begin
+        ctrl.rs1 = W;
+        ctrl.pcSel = PC_RS;
+        ctrl.adrSel = ADR_RS;
+        ctrl.done = 1;
+      end
+      // jr e
+      // pc += e
+      JR_E:  begin
+      end
+      JR_E2:  begin
+        `READN
+        // ctrl.pcen=0;
+      end
+      JR_E3:  begin
+        ctrl.rs1 = Z;
+        ctrl.iduSel = IDU_PCE;
+        ctrl.pcSel = PC_IDU;
+        ctrl.adrSel = ADR_IDU;
+        ctrl.done = 1;
+      end
+      // jr e
+      // pc += e
+      JR_CCE:  begin
+        ctrl.iren = 1;
+      end
+      JR_CCE2:  begin
+        `READN
+        ctrl.done = ~jmp;
+        // ctrl.pcen=0;
+      end
+      JR_CCE3:  begin
+        ctrl.rs1 = Z;
+        ctrl.iduSel = IDU_PCE;
+        ctrl.pcSel = PC_IDU;
+        ctrl.adrSel = ADR_IDU;
+        ctrl.done = 1;
+      end
+      // call nn
+      // SP-=2 push PC PC = nn 
+      CALL_NN:  begin
+      end
+      CALL_NN2:  begin
+        `READN
+      end
+      CALL_NN3:  begin
+        // subtract sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
+        // save msbs nn
+        ctrl.rd2 = W;
+        ctrl.rd2Sel = RD2_MEM;
+        ctrl.rd2Wen = 1;
+        ctrl.pcen = 0;
+      end
+      CALL_NN4:  begin
+        // write msbs of pc to memory
+        ctrl.rs1 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_PC;
+        ctrl.memWen = 1;
+        // SP--
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = SP;
+        ctrl.rdW16 = 1;
+        ctrl.rdWen = 1;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
+        ctrl.pcen = 0;
+      end
+      CALL_NN5:  begin
+        // write lsbs to memory
+        ctrl.rs1 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_PCL;
+        ctrl.memWen = 1;
+        ctrl.useOp = 1;
+        ctrl.pcen = 0;
+      end
+      CALL_NN6:  begin
+        // update pc
+        ctrl.rs1 = W;
+        ctrl.pcSel = PC_RS;
+        ctrl.adrSel = ADR_RS;
+        ctrl.done = 1;
+      end
+      // call cc,nn
+      // if cc SP-=2 push PC PC = nn 
+      CALL_CCNN:  begin
+        ctrl.iren = 1;
+      end
+      CALL_CCNN2:  begin
+        `READN
+      end
+      CALL_CCNN3:  begin
+        // subtract sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = jmp;
+        ctrl.rdW16 = jmp;
+        // read sp-- from memory
+        ctrl.adrSel = jmp ? ADR_IDU : ADR_PC;
+        // save msbs nn
+        ctrl.rd2 = W;
+        ctrl.rd2Sel = RD2_MEM;
+        ctrl.rd2Wen = 1;
+        ctrl.pcen = ~jmp;
+        ctrl.done = ~jmp;
+      end
+      CALL_CCNN4:  begin
+        // write msbs of pc to memory
+        ctrl.rs1 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_PC;
+        ctrl.memWen = 1;
+        // SP--
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = SP;
+        ctrl.rdW16 = 1;
+        ctrl.rdWen = 1;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
+        ctrl.pcen = 0;
+      end
+      CALL_CCNN5:  begin
+        // write lsbs to memory
+        ctrl.rs1 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_PCL;
+        ctrl.memWen = 1;
+        ctrl.useOp = 1;
+        ctrl.pcen = 0;
+      end
+      CALL_CCNN6:  begin
+        // update pc
+        ctrl.rs1 = W;
+        ctrl.pcSel = PC_RS;
+        ctrl.adrSel = ADR_RS;
+        ctrl.done = 1;
+      end
+      // ret
+      // pop pc
+      RET:  begin
+        // add sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        // read sp
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      RET2:  begin
+        // store lsbs
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        // read from sp
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        // dont set iren!
+      end
+      RET3: begin
+        // store msbs
+        ctrl.rd2 = W;
+        ctrl.rd2Sel = RD2_MEM;
+        ctrl.rd2Wen = 1;
+        // SP++
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        // ctrl.adrSel = ADR_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.useOp = 1;
+      end
+      RET4: begin
+        ctrl.rs1 = W;
+        ctrl.pcSel = PC_RS;
+        ctrl.adrSel = ADR_RS;
+        ctrl.done = 1;
+      end
+      // ret cc
+      // pop pc
+      RET_CC:  begin
+        // add sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        // read sp
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      RET_CC2:  begin
+        // store lsbs
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        ctrl.pcen = 0;
+      end
+      RET_CC3: begin
+        // add sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = ~jmp;
+        ctrl.rdW16 = ~jmp;
+        ctrl.pcen = ~jmp;
+        ctrl.done = ~jmp;
+        // read from sp
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.adrSel = jmp ? ADR_RS : ADR_PC;
+      end
+      RET_CC4: begin
+        // store msbs
+        ctrl.rd2 = W;
+        ctrl.rd2Sel = RD2_MEM;
+        ctrl.rd2Wen = 1;
+        // SP++
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        // ctrl.adrSel = ADR_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
+      end
+      RET_CC5: begin
+        ctrl.rs1 = W;
+        ctrl.pcSel = PC_RS;
+        ctrl.adrSel = ADR_RS;
+        ctrl.done = 1;
+      end
+      // reti
+      // pop pc IME = 1
+      RETI:  begin
+        // add sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        // read sp
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        ctrl.iren = 1;
+      end
+      RETI2:  begin
+        // store lsbs
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
+        // read from sp
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.adrSel = ADR_RS;
+        ctrl.pcen = 0;
+        // dont set iren!
+      end
+      RETI3: begin
+        // store msbs
+        ctrl.rd2 = W;
+        ctrl.rd2Sel = RD2_MEM;
+        ctrl.rd2Wen = 1;
+        // SP++
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.rdSel = RD_IDU;
+        // ctrl.adrSel = ADR_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.useOp = 1;
+      end
+      RETI4: begin
+        ctrl.rs1 = W;
+        ctrl.pcSel = PC_RS;
+        ctrl.adrSel = ADR_RS;
+        newie = 8'hff;
+        ieen = 1;
+        ctrl.done = 1;
+        ctrl.done = 1;
+      end
+      // ei
+      // enable interupts
+      EI: begin
+        newie = 8'hff;
+        ieen = 1;
+        ctrl.done = 1;
+      end
+      // di
+      // disable interupts
+      DI: begin
+        newie = 8'h00;
+        ieen = 1;
+        ctrl.done = 1;
+      end
+      // rst n
+      // push pc jp to encoded addr
+      RST_N:  begin
+        // subtract sp
+        ctrl.iren = 1;
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
+      end
+      RST_N2:  begin
+        // write msbs of pc to memory
+        ctrl.rs1 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_PC;
+        ctrl.memWen = 1;
+        // SP--
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = SP;
+        ctrl.rdW16 = 1;
+        ctrl.rdWen = 1;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
+        ctrl.pcen = 0;
+      end
+      RST_N3: begin
+        // write lsbs to memory
+        ctrl.rs1 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_PCL;
+        ctrl.memWen = 1;
+        ctrl.useOp = 1;
+        ctrl.pcen = 0;
+      end
+      RST_N4: begin
+        // jump to prefix-n
+        ctrl.pcSel = PC_PRE;
+        ctrl.adrSel = ADR_PRE;
+        ctrl.done = 1;
+      end
+      HALT: begin
+        // jump to prefix-n
+        nmpcen = interupt;
+        ctrl.pcen = interupt;
+        ctrl.done = 1;
+      end
+      // stop everything
+      STOP: begin
+        // stop everything - inf loop
+        ctrl.pcen = 0;
+        stop = 1;
+        nmpcen = 0;
+      end
+      // interupt
+      // disable interupts and jump
+      INTERUPT:  begin
+      end
+      INTERUPT2:  begin
+        // subtract sp
+        ctrl.rd = SP;
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rdWen = 1;
+        ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
+      end
+      INTERUPT3:  begin
+        // write msbs of pc to memory
+        ctrl.rs1 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_PC;
+        ctrl.memWen = 1;
+        // SP--
+        ctrl.rs1 = SP;
+        ctrl.iduSel = IDU_RS;
+        ctrl.iduSub = 1;
+        ctrl.rdSel = RD_IDU;
+        ctrl.rd = SP;
+        ctrl.rdW16 = 1;
+        ctrl.rdWen = 1;
+        // read sp-- from memory
+        ctrl.adrSel = ADR_IDU;
+        ctrl.pcen = 0;
+      end
+      INTERUPT4: begin
+        // write lsbs to memory
+        ctrl.rs1 = SP;
+        ctrl.wadrSel = WADR_RS;
+        ctrl.wdatSel = WDAT_PCL;
+        ctrl.memWen = 1;
+        ctrl.useOp = 1;
+        ctrl.pcen = 0;
+      end
+      INTERUPT5: begin
+        // jump to prefix-n
+        // set pc and stop interupts
+        newie = 0;
+        ieen = 1;
+        ctrl.pcSel = PC_INT;
+        ctrl.adrSel = ADR_INT;
+        ctrl.done = 1;
+      end
 
     endcase
   end

@@ -11,6 +11,6 @@ PC 0000
 
 ld BC, ff01 ff0101
 push BC c5
-ret NZ c0
+ret NZ c8
 ld D,aa aa16
-ret Z c8
+ret Z c0

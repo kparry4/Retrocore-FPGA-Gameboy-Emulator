@@ -3,8 +3,11 @@
 package defs;
   
   typedef enum logic [2:0] {
-      PC_IDU,                 // PC + instrSz
+      PC_1,                 // PC + instrSz
       PC_RS,                 // PC + instrSz
+      PC_IDU,                 // PC + instrSz
+      PC_PRE,                 // PC + instrSz
+      PC_INT,                 // PC + instrSz
       PC_DC = 'x            // Don't care value
   } pcSel_t;
 
@@ -14,6 +17,8 @@ package defs;
       ADR_RS,                // send 16 bit rs as addr
       ADR_NRS,               // use rs1 and msb of nn
       ADR_IDU,               // IDU result
+      ADR_PRE,               // IDU result
+      ADR_INT,               // IDU result
       ADR_DC = 'x            // Don't care value
   } adr_sel_t;
 
@@ -30,13 +35,16 @@ package defs;
 
   typedef enum logic [2:0] {
       IDU_PC,                // PC as input
+      IDU_PCE,                // PC as input
       IDU_RS,                // rs16 as input
       IDU_DC = 'x            // Don't care value
   } idu_op_t;
 
   typedef enum logic [2:0] {
       WDAT_RS2,                // sleect rs2 as write mem data
-      WDAT_N,                // n as write mem data
+      // WDAT_N,                // n as write mem data
+      WDAT_PC,                // n as write mem data
+      WDAT_PCL,                // n as write mem data
       WDAT_DC = 'x            // Don't care value
   } wdat_sel_t;
 
@@ -72,6 +80,7 @@ package defs;
     RD_IDU,                // IDU result
     RD_MEM,                // memory or n
     RD_RS16,                // rs16
+    RD_NRS,                // rs16
     RD_DC = 'x             // Don't care value
   } rd_sel_t;
 
@@ -92,6 +101,14 @@ package defs;
     RD2_MEM,                // memory or n
     RD2_DC = 'x             // Don't care value
   } rd2_sel_t;
+
+  typedef enum logic [1:0] {
+    CC_NZ,                // not zero
+    CC_Z,                // not zero
+    CC_NC,                // not zero
+    CC_C,                // not zero
+    CC_DC = 'x             // Don't care value
+  } cc_t;
 
   typedef enum logic [3:0] {
     B,
@@ -133,6 +150,7 @@ package defs;
       logic rdW16;             // write 16 bits to regfile
       logic memWen;             // reg file write enable
       rd_sel_t rdSel;          // what value is used for rd
+      cc_t cc;          // what value is used for rd
       rd2_sel_t rd2Sel;          // what value is used for rd
       rs2_sel_t rs2Sel;          // what value is used for rs2
       rs1_sel_t rs1Sel;          // what value is used for rs1
@@ -362,6 +380,11 @@ package defs;
       STOP, // off button
       DI,    // disable interupt
       EI,    // enable interupt
+      INTERUPT,    // enable interupt
+      INTERUPT2,
+      INTERUPT3,
+      INTERUPT4,
+      INTERUPT5,
       BAD = 'x
   } mpc_t;
 endpackage

@@ -5,9 +5,14 @@ module cpu (
   input  logic rst,
   input  logic [15:0] memData,
   input logic memValid,
+  input  logic [7:0] ie,
+  input  logic [7:0] iflg,
+  output logic stop,
   output logic [15:0] memWdata,
   output logic [15:0] memWadr,
   output logic memWen,
+  output logic [7:0] newie,
+  output logic ieen,
   output logic [15:0] memAdr
 );  
   logic [7:0] rs1, rs2;
@@ -17,9 +22,9 @@ module cpu (
   logic [7:0] rd2;
   logic [15:0] rd;
   logic [15:0] rs16;
-  logic [7:0] mem, n;
+  logic [7:0] mem, n, pre, intAdr;
   logic [3:0] flg;
-  logic carry, hcarry, nflg, jmp;
+  logic carry, hcarry, nflg, jmp, zflg;
   logic [15:0] npc, pc;
   ctrl_t ctrl;
   logic preAdr; // lsb of previous acessed memory
@@ -37,18 +42,38 @@ module cpu (
                   .memValid, 
                   .ctrl(ctrl), 
                   .rst, 
+                  .ie,
+                  .newie,
+                  .iflg,
+                  .pre, 
                   .jmp,
                   .clk);
 
+  always_comb casez(ie[4:0]&iflg[4:0])
+    5'b10000: intAdr = 8'h60;
+    5'b?1000: intAdr = 8'h58;
+    5'b??100: intAdr = 8'h50;
+    5'b???10: intAdr = 8'h48;
+    5'b????1: intAdr = 8'h40;
+  endcase
   // pc register
   flopenr #(16) pcflop(clk, rst, ctrl.pcen, npc, pc);
   // select next pc
   always_comb case(ctrl.pcSel)
-    PC_IDU: npc = pc+1;
-    PC_RS: npc = rs16;
+    PC_1: npc = pc+1;
+    PC_IDU: npc = iduOut+1;
+    PC_RS: npc = rs16+1;
+    PC_PRE: npc = pre+1;
+    PC_INT: npc = intAdr+1;
     default: npc = 'x;
   endcase
-  assign jmp = 0;
+  always_comb case(ctrl.cc)
+    CC_NZ: jmp = ~zflg;
+    CC_Z: jmp =  zflg;
+    CC_NC: jmp =  ~carry;
+    CC_C: jmp =  carry;
+    default: jmp = 'x;
+  endcase
 
   // select the data
   always_comb case(ctrl.adrSel)
@@ -57,6 +82,8 @@ module cpu (
     ADR_RS: memAdr = rs16;
     ADR_NRS: memAdr = {mem,rs1};
     ADR_IDU: memAdr = iduOut;
+    ADR_PRE: memAdr = pre;
+    ADR_INT: memAdr = intAdr;
     default: memAdr = 'x;
   endcase
 
@@ -65,6 +92,7 @@ module cpu (
                   .rd, 
                   .rd2,
                   .flg,
+                  .zflg,
                   .rs1, 
                   .rs2,
                   .rs16, 
@@ -108,22 +136,26 @@ module cpu (
   
   //seclet the input to the idu
   always_comb case(ctrl.iduSel)
-    // IDU_PC: iduIn = pc;
+    IDU_PCE: iduIn = pc;
     IDU_RS: iduIn = rs16;
     default: iduIn = 'x;
   endcase
 
   // do idu opperation
-  assign iduOut = ctrl.iduSub ? iduIn-1 : iduIn+1;
+  assign iduOut = ctrl.iduSub ? iduIn-1 : 
+                  iduIn+((ctrl.iduSel==IDU_PCE) ? {{8{src1[7]}},src1} : 1);
 
   // memory write data calculation
   always_comb case(ctrl.wadrSel)
     WADR_RS: memWadr = rs16;
-    WADR_FF: memWadr = rs16;
+    WADR_FF: memWadr = {8'hff,rs1};
     default: memWadr = 'x;
   endcase
-  always_comb case(ctrl.wadrSel)
-    WADR_RS: memWdata = memWadr[0] ? {rs2, memData[7:0]} : {memData[15:8], rs2};
+  always_comb case(ctrl.wdatSel)
+    WDAT_RS2: memWdata = memWadr[0] ? {rs2, memData[7:0]} : {memData[15:8], rs2};
+    // if youre writting pc you better be writting the entire pc
+    WDAT_PCL: memWdata = memWadr[0] ? {pc[7:0], memData[7:0]} : pc;
+    WDAT_PC: memWdata = memWadr[0] ? pc : {memData[15:8], pc[15:8]}; 
     // WADR_RS: memWdata = memWadr[0] ? {n, memData[7:0]} : {memData[15:8], n};
     default: memWdata = 'x;
   endcase
@@ -135,6 +167,7 @@ module cpu (
       RD_ALU: rd = {'0,aluOut};
       RD_MEM: rd = {'0,mem};
       RD_IDU: rd = iduOut;
+      RD_NRS: rd = {mem,rs1};
       RD_RS16: rd = rs16;
       default: rd = 'x;
     endcase

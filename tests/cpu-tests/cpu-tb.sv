@@ -12,7 +12,8 @@ module tb;
   logic memValid;
   logic [9:0][7:0] soln;
   logic rst=0, clk=0;
-  logic memWen;
+  logic memWen, ieen, stop;
+  logic [7:0] newie, ie, iflg;
   logic [15:0] memWadr;
   logic [15:0] memWdata, tmp;
 
@@ -25,6 +26,7 @@ module tb;
                 prog[0][7:0],prog[0][15:8]};
   
   always @(posedge clk) begin 
+    // if(ieen) ie = newie;
     pc = memAdr; 
     tmp = prog[pc[15:1]+6];
     if(memWen) prog[memWadr[15:1]+6] = memWdata;
@@ -218,28 +220,24 @@ module tb;
       tests = {tests, "setbr"};
     end if(`TEST == "setbhl" || `TEST == "all") begin
       tests = {tests, "setbhl"};
-    // end if(`TEST == "jpnn" || `TEST == "all") begin
-    //   tests = {tests, "jpnn"};
+    end if(`TEST == "jpnn" || `TEST == "all") begin
+      tests = {tests, "jpnn"};
     end if(`TEST == "jphl" || `TEST == "all") begin
       tests = {tests, "jphl"};
-    // end if(`TEST == "jpccnn" || `TEST == "all") begin
-    //   tests = {tests, "jpccnn"};
-    // end if(`TEST == "jre" || `TEST == "all") begin
-    //   tests = {tests, "jre"};
-    // end if(`TEST == "jrcce" || `TEST == "all") begin
-    //   tests = {tests, "jrcce"};
-    // end if(`TEST == "callnn" || `TEST == "all") begin
-    //   tests = {tests, "callnn"};
-    // end if(`TEST == "callccnn" || `TEST == "all") begin
-    //   tests = {tests, "callccnn"};
-    // end if(`TEST == "ret" || `TEST == "all") begin
-    //   tests = {tests, "ret"};
-    // end if(`TEST == "retcc" || `TEST == "all") begin
-    //   tests = {tests, "retcc"};
-    // end if(`TEST == "reti" || `TEST == "all") begin
-    //   tests = {tests, "reti"};
-    // end if(`TEST == "rstn" || `TEST == "all") begin
-    //   tests = {tests, "rstn"};
+    end if(`TEST == "jpccnn" || `TEST == "all") begin
+      tests = {tests, "jpccnn"};
+    end if(`TEST == "jre" || `TEST == "all") begin
+      tests = {tests, "jre"};
+    end if(`TEST == "jrcce" || `TEST == "all") begin
+      tests = {tests, "jrcce"};
+    end if(`TEST == "callnn" || `TEST == "all") begin
+      tests = {tests, "callnn"};
+    end if(`TEST == "callccnn" || `TEST == "all") begin
+      tests = {tests, "callccnn"};
+    end if(`TEST == "ret" || `TEST == "all") begin
+      tests = {tests, "ret"};
+    end if(`TEST == "retcc" || `TEST == "all") begin
+      tests = {tests, "retcc"};
     end if(tests[0] == "") begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;

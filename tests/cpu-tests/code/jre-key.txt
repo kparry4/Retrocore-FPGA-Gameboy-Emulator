@@ -10,7 +10,7 @@ SP fffe
 PC 0000
 
 ld L,1a 1a2e
-jr 17 1718
+jr 15 1718
 ld C,ab ab0e
 ld D,ab ab16
 ld D,ab ab16
