@@ -9,8 +9,8 @@ A ab
 SP fffe
 PC 0000
 
-ld A,ab ab06
-jp 1a 1ae3
+ld A,ab ab3e
+jp 1b 1ac3
 nop 00
 ld C,ab ab0e
 ld D,ab ab16

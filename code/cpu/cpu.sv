@@ -19,7 +19,7 @@ module cpu (
   logic [15:0] rs16;
   logic [7:0] mem, n;
   logic [3:0] flg;
-  logic carry, hcarry, nflg;
+  logic carry, hcarry, nflg, jmp;
   logic [15:0] npc, pc;
   ctrl_t ctrl;
   logic preAdr; // lsb of previous acessed memory
@@ -37,6 +37,7 @@ module cpu (
                   .memValid, 
                   .ctrl(ctrl), 
                   .rst, 
+                  .jmp,
                   .clk);
 
   // pc register
@@ -44,8 +45,10 @@ module cpu (
   // select next pc
   always_comb case(ctrl.pcSel)
     PC_IDU: npc = pc+1;
+    PC_RS: npc = rs16;
     default: npc = 'x;
   endcase
+  assign jmp = 0;
 
   // select the data
   always_comb case(ctrl.adrSel)

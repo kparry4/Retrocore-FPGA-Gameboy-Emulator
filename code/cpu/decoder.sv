@@ -4,6 +4,7 @@ module decoder (
   input logic rst, clk,
   input  logic [7:0] instr,
   input  logic memValid,
+  input  logic jmp,
   output ctrl_t ctrl
 );
 
@@ -1831,6 +1832,28 @@ module decoder (
         ctrl.useOp = 1;
         ctrl.done = 1;
       end
+      // jp HL
+      // pc = HL
+      JP_HL:  begin
+        ctrl.rs1 = H;
+        ctrl.pcSel = PC_RS;
+        ctrl.done = 1;
+      end
+      // // jp nn
+      // // pc = nn
+      // JP_NN:  begin
+      //   `READN
+      // end
+      // JP_NN2:  begin
+      //   `READNN
+      // end
+      // JP_NN3:  begin
+      //   ctrl.rs1 = W;
+      //   ctrl.pcSel = PC_RS;
+      // end
+      // JP_NN4:  begin
+      //   ctrl.done = 1;
+      // end
 
     endcase
   end

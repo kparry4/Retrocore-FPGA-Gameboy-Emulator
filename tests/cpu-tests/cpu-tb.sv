@@ -220,8 +220,8 @@ module tb;
       tests = {tests, "setbhl"};
     // end if(`TEST == "jpnn" || `TEST == "all") begin
     //   tests = {tests, "jpnn"};
-    // end if(`TEST == "jphl" || `TEST == "all") begin
-    //   tests = {tests, "jphl"};
+    end if(`TEST == "jphl" || `TEST == "all") begin
+      tests = {tests, "jphl"};
     // end if(`TEST == "jpccnn" || `TEST == "all") begin
     //   tests = {tests, "jpccnn"};
     // end if(`TEST == "jre" || `TEST == "all") begin

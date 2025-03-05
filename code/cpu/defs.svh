@@ -4,6 +4,7 @@ package defs;
   
   typedef enum logic [2:0] {
       PC_IDU,                 // PC + instrSz
+      PC_RS,                 // PC + instrSz
       PC_DC = 'x            // Don't care value
   } pcSel_t;
 
@@ -371,6 +372,10 @@ endpackage
   ctrl.pcen = 0;
 `define READN \
         ctrl.rd = Z;\
+        ctrl.rdSel = RD_MEM;\
+        ctrl.rdWen = 1;
+`define READNN \
+        ctrl.rd = W;\
         ctrl.rdSel = RD_MEM;\
         ctrl.rdWen = 1;
 `define WRITEHL \
