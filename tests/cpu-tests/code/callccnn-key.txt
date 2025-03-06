@@ -1,0 +1,26 @@
+B 00
+C 0b
+D 00
+E ab
+H 00
+L ab
+F 00
+A ab
+SP fffe
+PC 0000
+
+ld A,ab ab3e
+call NZ,1a 001ac2
+nop 00
+ld L,ab ab3e
+call Z,1a 001acc
+nop 00
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld E,ab ab1e
+pop BC c1

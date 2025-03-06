@@ -1,0 +1,19 @@
+B 2e
+C 2e
+D 2e
+E 2e
+H 2e
+L 02
+F 00
+A 2e
+SP fffe
+PC 0000
+
+ld H,00 0026
+ld L,02 022e
+ld A,(HL) 7e
+ld B,(HL) 46
+ld C,(HL) 4e
+ld D,(HL) 56
+ld E,(HL) 5e
+ld H,(HL) 66

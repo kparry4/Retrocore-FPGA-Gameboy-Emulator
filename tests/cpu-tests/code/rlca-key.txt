@@ -1,0 +1,13 @@
+B 00
+C 00
+D 00
+E 00
+H 00
+L 00
+F 01
+A 55
+SP fffe
+PC 0000
+
+ld A, aa aa3e
+rlca 07

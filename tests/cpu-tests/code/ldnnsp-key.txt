@@ -1,0 +1,16 @@
+B aa
+C 00
+D 00
+E 00
+H ff
+L 02
+F xx
+A bb
+SP aabb
+PC 0000
+
+ld SP,aabb aabb31
+ld (nn),SP ff0108
+ld HL,ff01 ff0121
+ld A,(HL+) 2a
+ld B,(HL) 46

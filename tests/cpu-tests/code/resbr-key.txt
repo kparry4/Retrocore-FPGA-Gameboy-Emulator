@@ -1,0 +1,14 @@
+B 7e
+C 00
+D 00
+E 00
+H 00
+L 00
+F 00
+A 00
+SP fffe
+PC 0000
+
+ld B,ff ff06
+res 0,B 80
+res 7,B b8

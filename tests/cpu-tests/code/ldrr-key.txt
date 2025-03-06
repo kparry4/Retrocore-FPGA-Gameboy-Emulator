@@ -1,0 +1,18 @@
+B cc
+C 55
+D cc
+E cc
+H 55
+L 55
+F 00
+A 55
+SP fffe
+PC 0000
+
+ld B,cc cc06
+ld C,55 550e
+ld D,B 50
+ld E,B 58
+ld H,C 61
+ld L,H 6c
+ld A,L 7d

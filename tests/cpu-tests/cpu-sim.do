@@ -24,8 +24,7 @@ vlib work
 # start and run simulation
 # remove +acc flag for faster sim during regressions if there is no need to access internal signals
 # $num = the added words after the call
-#vlog cpu-tb.sv ../../code/cpu/* ../../code/*.sv  -suppress 2583,7063,8607,2697 
-vlog cpu-tb.sv +define+TEST="${1}"  -suppress 2583,7063,8607,2697 
+vlog ../../code/cpu/*.svh cpu-tb.sv ../../code/cpu/*.sv ../../code/*.sv +define+TEST="${1}"  -suppress 2583,7063,8607,2697 
 
 # Change TEST_SIZE to only test certain FP width
 # values are QP, DP, SP, HP or all for all tests

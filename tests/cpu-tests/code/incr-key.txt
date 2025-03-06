@@ -1,0 +1,19 @@
+B 01
+C 01
+D 01
+E 01
+H 01
+L 00
+F 0a
+A 01
+SP 0000
+PC 0000
+
+ld L,ff ff2e
+inc A 3c
+inc B 04
+inc C 0c
+inc D 14
+inc E 1c
+inc H 24
+inc L 2c

@@ -1,0 +1,25 @@
+B 00
+C 00
+D 00
+E ab
+H 00
+L 00
+F 00
+A ab
+SP fffe
+PC 0000
+
+ld A,ab ab3e
+jp 1b 1ac3
+nop 00
+ld C,ab ab0e
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld E,ab ab1e

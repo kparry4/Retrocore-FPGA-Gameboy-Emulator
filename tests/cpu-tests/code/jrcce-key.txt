@@ -1,0 +1,24 @@
+B 00
+C ab
+D 00
+E ab
+H 00
+L 1a
+F 00
+A 00
+SP fffe
+PC 0000
+
+ld L,1a 1a2e
+jp NZ,17 17c2
+ld C,ab ab0e
+jp Z,17 17ca
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld D,ab ab16
+ld E,ab ab1e

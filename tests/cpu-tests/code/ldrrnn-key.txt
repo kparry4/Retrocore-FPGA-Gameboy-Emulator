@@ -1,0 +1,15 @@
+B 12
+C 34
+D 56
+E 78
+H 90
+L 12
+F 00
+A 00
+SP aaaa
+PC 0000
+
+ld BC,1234 123401
+ld DE,5678 567811
+ld HL,9012 901221
+ld SP,aaaa aaaa31

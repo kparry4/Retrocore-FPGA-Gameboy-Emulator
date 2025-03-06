@@ -1,0 +1,23 @@
+B dd
+C ee
+D bb
+E cc
+H af
+L 00
+F 34
+A 12
+SP fffe
+PC 0000
+
+ld A,af af3e
+ld BC,bbcc bbcc01
+ld DE,ddee ddee11
+ld HL,1234 123421
+push AF f5
+push BC c5
+push DE d5
+push HL e5
+pop AF f1
+pop BC c1
+pop DE d1
+pop HL e1

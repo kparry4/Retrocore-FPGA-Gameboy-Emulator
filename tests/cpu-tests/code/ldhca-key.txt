@@ -1,0 +1,16 @@
+B 00
+C 02
+D 00
+E 00
+H 00
+L 00
+F 00
+A 99
+SP fffe
+PC 0000
+
+ld C,02 020e
+ld A,99 993e
+ldh (C),A e2
+ld A,23 233e
+ldh A,(C) f2

@@ -1,0 +1,18 @@
+B 12
+C 23
+D 34
+E 45
+H 56
+L 67
+F 00
+A 89
+SP fffe
+PC 0000
+
+ld B,12
+ld C,23
+ld D,34
+ld E,45
+ld H,56
+ld L,67
+ld A,89

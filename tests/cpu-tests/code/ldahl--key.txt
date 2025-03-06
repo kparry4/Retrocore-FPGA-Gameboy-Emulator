@@ -1,0 +1,14 @@
+B 00
+C 00
+D 00
+E 00
+H 00
+L 01
+F 00
+A 2e
+SP fffe
+PC 0000
+
+ld H,00 0026
+ld L,02 022e
+ld A,(HL-) 3a

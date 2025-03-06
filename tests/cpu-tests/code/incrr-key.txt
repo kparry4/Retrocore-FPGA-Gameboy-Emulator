@@ -1,0 +1,21 @@
+B 01
+C 03
+D 03
+E 05
+H 00
+L 00
+F 00
+A 00
+SP ffff
+PC 0000
+
+ld B,01 0106
+ld C,02 020e
+ld D,03 0316
+ld E,04 041e
+ld H,ff ff26
+ld L,ff ff2e
+incr BC 03
+incr de 13
+incr hl 23
+incr sp 33

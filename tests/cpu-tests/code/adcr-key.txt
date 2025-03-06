@@ -1,0 +1,23 @@
+B 01
+C 02
+D 03
+E 04
+H f5
+L 00
+F 0b
+A 00
+SP 0000
+PC 0000
+
+ld A,80 803e
+ld B,01 0106
+ld C,02 020e
+ld D,03 0316
+ld E,04 041e
+ld H,f5 f526
+adc A 8f
+adc B 88
+adc C 89
+adc D 8a
+adc E 8b
+adc H 8c
