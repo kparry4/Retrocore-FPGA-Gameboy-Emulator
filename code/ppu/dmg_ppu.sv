@@ -141,6 +141,8 @@ module OAM_Search (
 
   parameter SPRITE_HEIGHT = 8;
 
+  localparam OAM_TABLE_BASE_ADDRESS = 16'hFE00;
+
   typedef enum logic [1:0] {
     OAM_IDLE,
     OAM_FETCH,
@@ -187,14 +189,14 @@ module OAM_Search (
           end
         end
         OAM_FETCH: begin
-          oam_port0_addr <= oam_index << 1;
-          oam_port1_addr <= (oam_index << 1) + 16'd1;
-          temp_sprite.y           = oam_port0_data[7:0];
-          temp_sprite.x           = oam_port0_data[15:8];
+          oam_port0_addr <= OAM_TABLE_BASE_ADDRESS + (oam_index << 2);
+          oam_port1_addr <= OAM_TABLE_BASE_ADDRESS + (oam_index << 2) + 16'd2;
+          temp_sprite.y           = oam_port0_data[7:0] - 8'd16;
+          temp_sprite.x           = oam_port0_data[15:8] - 8'd8;
           temp_sprite.tile_index  = oam_port1_data[7:0];
           temp_sprite.flags       = oam_port1_data[15:8];
-          if ((current_line >= (temp_sprite.y - 8'd16)) &&
-              (current_line < (temp_sprite.y - 8'd16 + SPRITE_HEIGHT))) begin
+          if ((current_line >= temp_sprite.y ) &&
+              (current_line < (temp_sprite.y + SPRITE_HEIGHT))) begin
             if (selected_count < 4'd10) begin
               selected_sprites_reg[selected_count] <= temp_sprite;
               selected_count <= selected_count + 1;
@@ -729,6 +731,9 @@ module Render_Sprites (
   input  logic         port_data_valid
 );
 
+  //==================================================================
+  // State Machine Declarations
+  //==================================================================
   typedef enum logic [2:0] {
     IDLE,
     SCAN_CHECK,
@@ -763,7 +768,7 @@ module Render_Sprites (
     candidate_index = 4'd0;
     best_x = 8'hFF;
     for (i = 0; i < 10; i = i + 1) begin
-      if ((x_coord >= sprites[i].x) && (x_coord < (sprites[i].x + 8))) begin
+      if ((i < sprite_count) && (x_coord >= sprites[i].x) && (x_coord < (sprites[i].x + 8))) begin
         if (!candidate_valid) begin
           candidate_valid = 1'b1;
           candidate_index = i[3:0];
@@ -786,39 +791,52 @@ module Render_Sprites (
       candidate_pixel <= '0;
     end else begin
       state <= next_state;
-      if (state == IDLE && start)
+      if (state == IDLE && start) begin
+        // Start at SCX (sprites use SCX as horizontal offset).
         x_coord <= SCX;
-      
+        pixel_index <= 3'd0;
+        sprite_push <= 1'b0;
+      end
       if (state == SCAN_CHECK) begin
         use_sprite <= candidate_valid;
         if (!candidate_valid) begin
-          // No candidate: output transparent pixel.
+          // No sprite candidate: immediately push an empty (transparent) pixel.
           candidate_pixel.x <= x_coord;
           candidate_pixel.y <= LY;
           candidate_pixel.pixel <= 2'b00;
           candidate_pixel.palette <= 8'd0;
           candidate_pixel.sprite_priority <= 1'b1;
+          // Advance x_coord by one pixel.
           x_coord <= x_coord + 1;
+          sprite_push <= 1'b1;
         end
-      end else if (state == DUMP_PIXELS && use_sprite) begin
-        if (pixel_index < 3'd7)
+        else begin 
+          sprite_push <= 1'b0;
+        end 
+        // Otherwise, if candidate_valid is true, we don't push here.
+      end 
+      else if (state == FETCH_TILE) begin
+        // In FETCH_TILE, we do not output any pixel; we wait for tile data.
+        sprite_push <= 1'b0;
+      end 
+      else if (state == DUMP_PIXELS && use_sprite) begin
+        // Dump sprite pixel data.
+        candidate_pixel.x <= x_coord + pixel_index;
+        candidate_pixel.y <= LY;
+        candidate_pixel.pixel <= { tile_data_word[7 - pixel_index], tile_data_word[15 - pixel_index] };
+        candidate_pixel.palette <= (sprites[candidate_index].flags[4]) ? OBP1 : OBP0;
+        candidate_pixel.sprite_priority <= 1'b1;
+        sprite_push <= 1'b1;
+        if (pixel_index < 3'd7) begin
           pixel_index <= pixel_index + 1;
+        end 
         else begin
           pixel_index <= 3'd0;
           x_coord <= x_coord + 8;
         end
-        candidate_pixel.x <= x_coord + pixel_index;
-        candidate_pixel.y <= LY;
-        candidate_pixel.pixel <= { tile_data_word[15 - pixel_index],
-                                     tile_data_word[7 - pixel_index] };
-        candidate_pixel.palette <= (sprites[candidate_index].flags[4]) ? 8'd1 : 8'd0;
-        candidate_pixel.sprite_priority <= 1'b1;
       end
     end
   end
-  
-  // Drive sprite_push from our internal push condition.
-  assign sprite_push = ((state == DUMP_PIXELS) && use_sprite);
   
   // Next state logic.
   always_comb begin
@@ -831,7 +849,7 @@ module Render_Sprites (
         else if (candidate_valid)
           next_state = FETCH_TILE;
         else
-          next_state = SCAN_CHECK;
+          next_state = SCAN_CHECK;  // Remain in SCAN_CHECK to output an empty pixel.
       end
       FETCH_TILE: begin
         if (port_data_valid)
@@ -853,15 +871,16 @@ module Render_Sprites (
   // Update row_offset on SCAN_CHECK.
   always_ff @(posedge clk) begin
     if (state == SCAN_CHECK)
-      row_offset <= LY - (sprites[candidate_index].y - 8'd16);
+      row_offset <= ((LY - (sprites[candidate_index].y)) & 8'h07) << 1;
   end
   
-  assign port_addr = (state == FETCH_TILE && candidate_valid) ?
+  // Memory interface for sprite tile data.
+  assign port_addr = (state == SCAN_CHECK && candidate_valid) ?
          (16'h8000 + (sprites[candidate_index].tile_index * 16) + row_offset) : 16'd0;
-  assign port_read_en = (state == FETCH_TILE);
+  assign port_read_en = (state == SCAN_CHECK && candidate_valid);
   
   always_ff @(posedge clk) begin
-    if (state == FETCH_TILE && port_data_valid)
+    if (state == FETCH_TILE)
       tile_data_word <= port_data;
   end
   
@@ -877,6 +896,9 @@ module Render_Sprites (
   assign sprite_pixel = candidate_pixel;
   
 endmodule
+
+
+
 
 //==================================================================
 // Module: Pixel_Gen
@@ -1010,7 +1032,7 @@ module Pixel_Gen (
   
   // Instantiate FIFO for sprite pixels.
   FIFO #(
-    .DEPTH(16),
+    .DEPTH(64),
     .THRESHOLD(0),
     .T(pixel_t)
   ) sprite_fifo_inst (
@@ -1071,15 +1093,14 @@ module Pixel_Mixer (
     pixel_out_valid <= fetch_pixel;
   end
 
-  assign fetch_pixel = bg_pixel_ready & 1;
+  assign fetch_pixel = bg_pixel_ready & sprite_pixel_ready;
 
   always_ff @(posedge clk or posedge reset) begin
     if(reset)
       pixel_out <= 2'b00;
     else begin
-      if((sprite_pixel_in.sprite_priority && (sprite_pixel_in.pixel != 2'b00)) & 0)
-        // pixel_out <= map_palette(sprite_pixel_in.pixel, sprite_pixel_in.palette);
-        pixel_out <= map_palette(bg_pixel_in.pixel, bg_pixel_in.palette);
+      if(sprite_pixel_in.pixel != 2'b00)
+        pixel_out <= map_palette(sprite_pixel_in.pixel, sprite_pixel_in.palette);
       else
         pixel_out <= map_palette(bg_pixel_in.pixel, bg_pixel_in.palette);
     end 
