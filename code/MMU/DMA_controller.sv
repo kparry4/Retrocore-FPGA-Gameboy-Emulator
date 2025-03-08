@@ -1,4 +1,6 @@
 `default_nettype none
+`include "RegisterPkg.pkg"
+`include "addresses.svh"
 
 module DMA_controller(input logic clock,
                       input logic reset,

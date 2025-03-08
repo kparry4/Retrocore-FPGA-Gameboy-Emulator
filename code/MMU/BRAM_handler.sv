@@ -1,6 +1,7 @@
 `default_nettype none
-
-
+`include "RegisterPkg.pkg"
+`include "addresses.svh"
+`include "addresses.svh"
 
 
 module MM_handler(input logic clock,

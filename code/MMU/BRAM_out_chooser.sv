@@ -1,5 +1,7 @@
 `default_nettype none
-
+`include "RegisterPkg.pkg"
+`include "addresses.svh"
+`include "select.svh"
 
 module MM_out_chooser(input logic clock, 
                       input logic reset,
