@@ -43,10 +43,10 @@ module dualport_readonly_mem (
   // Initialize each array from a HEX file. Provide the correct file names:
   initial begin
     // vram.txt should have 8192 hex bytes.
-    $readmemh("../ppu/drmario/vram.txt", vram);
+    $readmemh("../ppu/tetris/frame3/vram.txt", vram);
 
     // oam.txt should have 160 hex bytes.
-    $readmemh("../ppu/drmario/oam.txt", oam);
+    $readmemh("../ppu/tetris/frame3/oam.txt", oam);
   end
 
   // ----------------------------------------------------------------
@@ -237,7 +237,7 @@ module tb_PPU;
   // Write the captured frame to a PPM file when a full frame is captured.
   initial begin
     wait(pixel_count >= WIDTH * HEIGHT);
-    file = $fopen("frame.ppm", "w");
+    file = $fopen("tetris_game.ppm", "w");
     if (file == 0) begin
       $display("ERROR: Could not open frame.ppm for writing.");
       $finish;
