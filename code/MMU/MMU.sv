@@ -37,9 +37,9 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
             output logic        cpu_data_valid,
 
             output logic [15:0] ppu1_out_data,
-            output logic        ppu2_out_data,
+            output logic [15:0] ppu2_out_data,
 
-            );
+            output logic        ppu_data_valid);
     
     localparam integer NUM_ROM_BANKS = 2
 

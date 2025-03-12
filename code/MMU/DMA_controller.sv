@@ -14,6 +14,7 @@ module DMA_controller(input logic clock,
 
     enum logic[2:0] {IDLE, READING, WRITING, FINISHED} state, nextState;
     localparam DMA_CYCLE_COUNT = 640; //160 M cycles
+    localparam FINAL_OAM_ADDR = 16'hFE9F;
     
     logic [9:0] cycle_count; 
     logic cycle_count_inc_en;
@@ -23,7 +24,7 @@ module DMA_controller(input logic clock,
                                    .Q    (DMA_src_addr), 
                                    .load (load_dma_register),
                                    .en   (dma_addr_inc_en),
-                                   .clear(reset), 
+                                   .clear(), 
                                    .up   (1'b1), 
                                    .clock(clock), 
                                    .reset(reset));  
@@ -32,7 +33,7 @@ module DMA_controller(input logic clock,
                                    .Q    (OAM_dest_addr), 
                                    .load (load_oam_init),
                                    .en   (dma_addr_inc_en),
-                                   .clear(reset), 
+                                   .clear(), 
                                    .up   (1'b1), 
                                    .clock(clock), 
                                    .reset(reset));                                      
@@ -91,7 +92,11 @@ module DMA_controller(input logic clock,
             doing_dma = 1'b1;                       
         end
         WRITING: begin
-            nextState = (cycle_count == DMA_CYCLE_COUNT - 1) ? IDLE : READING;
+            if(dma_dest_addr == FINAL_OAM_ADDR) begin
+                nextState = FINISHED;
+            end else begin
+                nextState = (cycle_count == DMA_CYCLE_COUNT - 1) ? IDLE : READING;
+            end
             //do NOT load dma/oam addr registers
             load_dma_register = 1'b0;
             load_oam_init = 1'b0;

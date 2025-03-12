@@ -71,7 +71,7 @@ module MM_handler(input logic clock,
         HRAM_SELECT:  cpu_out_data = hram_out_data;
         OAM_SELECT:   cpu_out_data = oam_out_data1; 
         INVALID:      cpu_out_data = 16'hFFFF;
-        default:      cpu_out_data = 16'hDEAD;
+        default:      cpu_out_data = 16'hxxxx;
         endcase
     end
     
@@ -90,8 +90,8 @@ module MM_handler(input logic clock,
             ppu_out_data2 = 16'hFFFF;
         end
         default:  begin 
-            ppu_out_data1 = 16'hDEAD;
-            ppu_out_data2 = 16'hDEAD;
+            ppu_out_data1 = 16'hxxxx;
+            ppu_out_data2 = 16'hxxxx;
         end
         endcase
     end       
