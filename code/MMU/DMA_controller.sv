@@ -11,11 +11,7 @@ module DMA_controller(input logic clock,
                       output logic doing_dma,
                       
                       output logic [15:0] dma_src_addr,
-<<<<<<< HEAD
                       output logic [15:0] dma_dest_addr);
-=======
-                      output logic [15:0] dna_dest_addr);
->>>>>>> e94a9d3044ff46914f3a002c84a34d99c7b02a70
 
     enum logic[2:0] {IDLE, READING, WRITING, FINISHED} state, nextState;
     localparam DMA_CYCLE_COUNT = 640; //160 M cycles

@@ -2,6 +2,11 @@
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
 `include "select.svh"
+
+function logic is_even(input logic [15:0] address);
+    return address[0] == 1'b0;
+endfunction    
+
 module IO_handler(input logic clock, 
                   input logic reset,
 
@@ -72,8 +77,9 @@ module IO_handler(input logic clock,
                               || {joypad_dpad_down, joypad_dpad_up, joypad_dpad_left, joypad_dpad_right});
 
 
-    logic [7:0] cpu_IO_in_data, cpu_IO_out_data;
-    assign cpu_IO_in_data = {8'd0, cpu_in_data[7:0]}; //the LOWER bits contain byte-sized register data
+    logic [7:0] cpu_IO_in_data;
+
+    assign cpu_IO_in_data = is_even(cpu_addr) ? cpu_in_data[7:0] : cpu_out_data[15:8];
     
     always_comb begin
         casez(cpu_addr)
