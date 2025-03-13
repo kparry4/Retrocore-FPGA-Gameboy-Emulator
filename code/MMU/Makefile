@@ -14,13 +14,13 @@ CORES = $(shell getconf _NPROCESSORS_ONLN)
 THREADS = $(shell echo $$((2 * $(CORES))))
 
 # Vlogan flags
-VLOGANFLAGS = -full64 -sverilog -debug_all +lint=none,noVCDE +warn=all \
+VLOGANFLAGS = -full64 -sverilog -debug_all,noVCDE +warn=all \
 					 -timescale=1ns/1ps +v2k
-VCSUUMFLAGS = -full64 -sverilog -debug_all +lint=none,noVCDE +warn=all \
+VCSUUMFLAGS = -full64 -sverilog -debug_all,noVCDE +warn=all \
 					 -timescale=1ns/1ps
 
 # VCS flags
-VCSFLAGS = -full64 -sverilog -debug_all +lint=none,noVCDE +warn=all -j$(THREADS) \
+VCSFLAGS = -full64 -sverilog -debug_all,noVCDE +warn=all -j$(THREADS) \
 					 -timescale=1ns/1ps +v2k
 COMMON_FLAGS +=
 

@@ -1,16 +1,17 @@
 `default_nettype none
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
-
+`include "select.svh"
 module DMA_controller(input logic clock,
                       input logic reset,
 
                       input logic [7:0] DMA_R,
+                      input logic start_dma,
                       
                       output logic doing_dma,
                       
-                      output logic [15:0] DMA_src_addr,
-                      output logic [15:0] OAM_dest_addr);
+                      output logic [15:0] dma_src_addr,
+                      output logic [15:0] dna_dest_addr);
 
     enum logic[2:0] {IDLE, READING, WRITING, FINISHED} state, nextState;
     localparam DMA_CYCLE_COUNT = 640; //160 M cycles
@@ -20,8 +21,15 @@ module DMA_controller(input logic clock,
     logic cycle_count_inc_en;
     logic dma_addr_inc_en;
 
-    Counter #(10) dma_addr_cnter  (.D    ({DMA_R, '00}), 
-                                   .Q    (DMA_src_addr), 
+    logic load_dma_register;
+    logic load_oam_init;
+
+    logic cycle_cnt_clear;
+
+
+
+    Counter #(10) dma_addr_cnter  (.D    ({DMA_R, 8'h00}), 
+                                   .Q    (dma_src_addr), 
                                    .load (load_dma_register),
                                    .en   (dma_addr_inc_en),
                                    .clear(), 
@@ -29,8 +37,8 @@ module DMA_controller(input logic clock,
                                    .clock(clock), 
                                    .reset(reset));  
 
-    Counter #(10) oam_addr_cnter  (.D    (OAM_START), 
-                                   .Q    (OAM_dest_addr), 
+    Counter #(10) oam_addr_cnter  (.D    (`OAM_START), 
+                                   .Q    (dma_dest_addr), 
                                    .load (load_oam_init),
                                    .en   (dma_addr_inc_en),
                                    .clear(), 

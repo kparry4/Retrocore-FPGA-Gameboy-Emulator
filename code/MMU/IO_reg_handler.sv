@@ -1,29 +1,30 @@
 `default_nettype none
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
-
+`include "select.svh"
 module IO_handler(input logic clock, 
                   input logic reset,
 
                   input logic vblank,
 
 
-                  input logic [15:0] cpu_addr
+                  input logic [15:0] cpu_addr,
                   input logic        cpu_wren,
 
                   input logic [15:0] cpu_in_data,
 
-                  input logic         joystick_select,
-                  input logic         joystick_start,
+                  input logic         joypad_select,
+                  input logic         joypad_start,
                 
-                  input logic         joystick_dpad_up,
-                  input logic         joystick_dpad_down,
-                  input logic         joystick_dpad_left,  
-                  input logic         joystick_dpad_right,
-
+                  input logic         joypad_dpad_up,
+                  input logic         joypad_dpad_down,
+                  input logic         joypad_dpad_left,  
+                  input logic         joypad_dpad_right,
+                  input logic         joypad_a_button,  
+                  input logic         joypad_b_button,
 
                   input logic [3:0] APU_NR52,
-                  input logic [1:0]   ppu_stat
+                  input logic [1:0] ppu_mode,
 
                   input logic stop_inst_hit,
 
@@ -32,10 +33,7 @@ module IO_handler(input logic clock,
                   output logic restart_after_stop,
                   output logic halted,
 
-
                   output logic [7:0] JOYPAD_OUTPUT,
-                  
-                  
                   
                   output APU_DATA APU_R,
                   output PPU_DATA PPU_R,
@@ -53,17 +51,18 @@ module IO_handler(input logic clock,
                   
                   output logic start_dma);
          
-    localparam interger clock_freq = 4_000_000;
+    localparam integer clock_freq = 4_000_000;
     localparam integer DIV_TICK_COUNT = clock_freq/16384; //should be 244
     logic[10:0] tma_ticks, divider_ticks; 
 
     logic vblank_sync;
+    logic vblank_handler_called;
 
-    assign vblank_handler_called = ~vlbank_sync && vblank;
+    assign vblank_handler_called = ~vblank_sync && vblank;
 
-    logic joystick_press;
-    assign joystick_press = |({joypad_select, joypad_start, joypad_b_button, joypad_a_button}
-                              || {joystick_dpad_down, joystick_dpad_up, joystick_dpad_left, joystick_dpad_right});
+    logic joypad_press;
+    assign joypad_press = |({joypad_select, joypad_start, joypad_b_button, joypad_a_button}
+                              || {joypad_dpad_down, joypad_dpad_up, joypad_dpad_left, joypad_dpad_right});
 
     always_comb begin
         casez(cpu_selected_addr)
@@ -137,18 +136,16 @@ module IO_handler(input logic clock,
     always_comb begin
         casex(JOYPAD_R[5:4])
         2'bx0: JOYPAD_OUTPUT = {joypad_select, joypad_start, joypad_b_button, joypad_a_button};
-        2'b0x: JOYPAD_OUTPUT = {joystick_dpad_down, joystick_dpad_up, joystick_dpad_left, joystick_dpad_right};
+        2'b0x: JOYPAD_OUTPUT = {joypad_dpad_down, joypad_dpad_up, joypad_dpad_left, joypad_dpad_right};
         default: JOYPAD_OUTPUT = '0; //unreachable?
         endcase
     end
 
     always_ff@(posedge clock) begin
-
-        vblank_sync <= vblank;
-        
-
         if(reset) begin
             halted     <= 1'b0;
+            restart_after_stop <= 1'b0;
+            vblank_sync <= 1'b0;
             JOYPAD_R   <= '0;
             APU_NR52   <= '0;
             APU_R      <= '0;
@@ -166,16 +163,19 @@ module IO_handler(input logic clock,
 
         end else if(stop_inst_hit || halted) begin
             //if stop instruction, FREEZE everything, turn off LCDC
-            //keep it this way until a joystick press 
+            //keep it this way until a joypad press 
 
-            if(joystick_press) begin
+            if(joypad_press) begin
                 halted <= 1'b0;
+                restart_after_stop <= 1'b1;
             end
             else begin
                 halted <= 1'b1;
+                restart_after_stop <= 1'b0;
             end
             
             LCDC_R        <= 1'b0; 
+            vblank_sync <= 1'b0;
             JOYPAD_R      <= JOYPAD_R;
             NR52_R        <= NR52_R; //apu register
             APU_R         <= APU_R; //apu regisTERS
@@ -192,15 +192,17 @@ module IO_handler(input logic clock,
             BOOT_ROM_EN_R <= BOOT_ROM_EN_R; //boot rom switch        
         end else begin
             halted <= 1'b0;
+            restart_after_stop <= 1'b0;
+            vblank_sync <= vblank;
             
             //HANDLE joypad:
-            if(cpu_wren && cpu_addr == JOYPAD) begin
+            if(cpu_addr == `JOYPAD && cpu_wren) begin
                 //7,6,5 are empty
                 JOYPAD_R[5:4] <= cpu_data[1:0]; //double check this
             end
 
             //HANDLE DIV: Divider
-            if(cpu_addr == DIV && cpu_wren) begin
+            if(cpu_addr == `DIV && cpu_wren) begin
                 DIV_R <= 8'd0;
             end else begin
                 //based on speed switch (tbd, this can increment double speed)
@@ -214,7 +216,7 @@ module IO_handler(input logic clock,
             end
 
             //HANDLE TMA: timer modulo
-            if(cpu_addr == TMA && cpu_wren) begin
+            if(cpu_addr == `TMA && cpu_wren) begin
                 TIMER_MODULO_R <= cpu_data;
             end else begin
                 TIMER_MODULO_R <= TIMER_MODULO_R;
@@ -239,7 +241,7 @@ module IO_handler(input logic clock,
             end
 
             //HANDLE TAC: timer control
-            if(cpu_addr == TIMA && cpu_wren) begin
+            if(cpu_addr == `TIMA && cpu_wren) begin
                 TIMER_CTRL_R <= cpu_data;
             end else begin
                 TIMER_CTRL_R <= TIMER_CTRL_R;
@@ -254,22 +256,22 @@ module IO_handler(input logic clock,
             IF[0] <= vblank_handler_called;         
 
             //APU-related writes
-            if(within_range(cpu_addr, NR10, WAV_RAM_END) && cpu_wren) begin
-                if(within_range(cpu_addr, NR10, NR14)) begin
-                    APU_R.NR1x_R[cpu_addr - NR10][7:0] <= cpu_data; //TODO: wonder if this is okay 
-                end else if(within_range(cpu_addr, NR21, NR24)) begin
-                    APU_R.NR2x_R[cpu_addr - NR21][7:0] <= cpu_data; //TODO: wonder if this is okay 
-                end else if(within_range(cpu_addr, NR31, NR34)) begin
-                    APU_R.NR3x_R[cpu_addr - NR31][7:0] <= cpu_data; //TODO: wonder if this is okay 
-                end else if(within_range(cpu_addr, NR41, NR44)) begin
-                    APU_R.NR4x_R[cpu_addr - NR41][7:0] <= cpu_data; //TODO: wonder if this is okay 
-                end else if(within_range(cpu_addr, WAV_RAM_START, WAV_RAM_END)) begin
-                    APU_R.WAV_RAM_R[cpu_addr - WAV_RAM_START][7:0] <= cpu_data; //TODO: wonder if this is okay 
-                end else if(cpu_addr == NR50) begin
+            if(within_range(cpu_addr, `NR10, `WAV_RAM_END) && cpu_wren) begin
+                if(within_range(cpu_addr, `NR10, `NR14)) begin
+                    APU_R.NR1x_R[cpu_addr - `NR10][7:0] <= cpu_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `NR21, `NR24)) begin
+                    APU_R.NR2x_R[cpu_addr - `NR21][7:0] <= cpu_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `NR31, `NR34)) begin
+                    APU_R.NR3x_R[cpu_addr - `NR31][7:0] <= cpu_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `NR41, `NR44)) begin
+                    APU_R.NR4x_R[cpu_addr - `NR41][7:0] <= cpu_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `WAV_RAM_START, `WAV_RAM_END)) begin
+                    APU_R.WAV_RAM_R[cpu_addr - `WAV_RAM_START][7:0] <= cpu_data; //TODO: wonder if this is okay 
+                end else if(cpu_addr == `NR50) begin
                     APU_R.NR50_R <= cpu_data;
-                end else if(cpu_addr == NR51) begin
+                end else if(cpu_addr == `NR51) begin
                     APU_R.NR51_R <= cpu_data;
-                end else if(cpu_addr == NR52) begin
+                end else if(cpu_addr == `NR52) begin
                     NR52_R[7] <= cpu_data[7]; //cpu can only write to 7th bit
                 end
             end else begin
@@ -281,7 +283,7 @@ module IO_handler(input logic clock,
 
 
             //DMA transfer write
-            if(cpu_addr == DMA && cpu_wren) begin
+            if(cpu_addr == `DMA && cpu_wren) begin
                 DMA_R <= cpu_data;
                 if(~start_dma) begin
                     start_dma <= 1'b1;
@@ -293,27 +295,27 @@ module IO_handler(input logic clock,
 
 
             //PPU-related writes
-            if((within_range(cpu_addr, LCDC, OBP1_R) && cpu_wren)) begin           
-                if(cpu_addr == LCDC) begin
+            if((within_range(cpu_addr, `LCDC, `OBP1_R) && cpu_wren)) begin           
+                if(cpu_addr == `LCDC) begin
                     LCDC_R <= cpu_data;
                     //NOTE: stat is handled by ppu write
-                end else if(cpu_addr == SCY && cpu_wren) begin
+                end else if(cpu_addr == `SCY) begin
                     PPU_DATA.SCY_R <= cpu_data;
-                end else if(cpu_addr == SCX && cpu_wren) begin
+                end else if(cpu_addr == `SCX) begin
                     PPU_DATA.SCX_R <= cpu_data;
-                end else if(cpu_addr == LY && cpu_wren) begin
+                end else if(cpu_addr == `LY) begin
                     PPU_DATA.LY_R <= cpu_data;
-                end else if(cpu_addr == LYC && cpu_wren) begin
+                end else if(cpu_addr == `LYC) begin
                     PPU_DATA.LYC_R <= cpu_data;
-                end else if(cpu_addr == WX) begin
+                end else if(cpu_addr == `WX) begin
                     PPU_DATA.WX_R <= cpu_data;
-                end else if(cpu_addr == WY) begin
+                end else if(cpu_addr == `WY) begin
                     PPU_DATA.WY_R <= cpu_data;
-                end else if(cpu_addr == BGP) begin
+                end else if(cpu_addr == `BGP) begin
                     PPU_DATA.BGP_R <= cpu_data;
-                end else if(cpu_addr == OBP0) begin
+                end else if(cpu_addr == `OBP0) begin
                     PPU_DATA.OBP0_R <= cpu_data;
-                end else if(cpu_addr == OBP1) begin
+                end else if(cpu_addr == `OBP1) begin
                     PPU_DATA.OBP1_R <= cpu_data;
                 end
             end else begin
@@ -331,13 +333,13 @@ module IO_handler(input logic clock,
 
 
 
-            if(cpu_addr == INTERRUPT_EN && cpu_wren) begin
+            if(cpu_addr == `INTERRUPT_EN && cpu_wren) begin
                 IE_R <= cpu_data
             end else begin
                 IE_R <= IE_R;
             end
 
-            if(cpu_addr == BOOT_ROM && cpu_wren) begin
+            if(cpu_addr == `BOOT_ROM && cpu_wren) begin
                 BOOT_ROM_EN_R <= cpu_data
             end else begin
                 BOOT_ROM_EN_R <= BOOT_ROM_EN_R;

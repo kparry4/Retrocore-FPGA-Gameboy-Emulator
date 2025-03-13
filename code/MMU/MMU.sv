@@ -1,7 +1,7 @@
 `default_netttype none
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
-
+`include "select.svh"
 function logic within_range(input logic [15:0] value, input logic [15:0] min, input logic [15:0] max);
     return (value >= min) && (value <= max);
 endfunction    

@@ -59,7 +59,7 @@ module MM_addr_contention_handler  (input logic clock,
 
                 //allow dma to SOURCE from any part of memory
                 rom0_addr = dma_src_addr - `ROM_0_START;  
-                vram_addr1 = dma_src_addr - `VRAM_0_START;
+                vram_addr1 = dma_src_addr - `VRAM_START;
                 vram_addr2 = 16'hDEAD;                
                 exram_addr = dma_src_addr - `EXRAM_START;        
                 wram_addr = dma_src_addr - `WRAM_START; 
@@ -78,7 +78,7 @@ module MM_addr_contention_handler  (input logic clock,
                 wram_addr = cpu_addr - `WRAM_START; 
                 hram_addr = cpu_addr - `HRAM_START; 
                 
-                if(ppu_mode == 0 || ppu_mode = 1 || ppu_mode == 2) begin
+                if(ppu_mode == 0 || ppu_mode == 1 || ppu_mode == 2) begin
                     //HBLANK or VBLANK or OAM_SEARCH
 
                     if(ppu_mode == 2) begin
