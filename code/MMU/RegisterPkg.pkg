@@ -29,6 +29,7 @@
             logic[7:0] WY_R;  
             logic[7:0] WX_R;  
         } PPU_DATA;
+    endpackage: RegisterPkg
+        
         import RegisterPkg::*;
-        endpackage
 `endif

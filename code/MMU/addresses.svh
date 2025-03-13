@@ -25,10 +25,10 @@
 
     //HARDWARE REGISTER ADDRESSES
 
-    `define IO_REG_START 16'hFF00
-    `define IO_REG_END   16'hFF7F
+    `define IO_START 16'hFF00
+    `define IO_END   16'hFF7F
 
-    `define JOYP 16'hFF00
+    `define JOYPAD 16'hFF00
 
     `define SERIAL_TRANS_D 16'hFF01 //dont think we need this
     `define SERIAL_TRANS_C 16'hFF02 //dont think we need this
@@ -105,8 +105,11 @@
     `define INTERRUPT_EN  16'hFFFF
 
     //note that below are Color gameboy registers
-    `define KEY1    16'hFF4D
-    `define VBK     16'hFF4F
+    `define KEY1     16'hFF4D
+    `define VBK      16'hFF4F
+
+    `define BOOT_ROM 16'hFF50
+
     `define HDMA1   16'hFF51
     `define HDMA2   16'hFF52
     `define HDMA3   16'hFF53

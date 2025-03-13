@@ -1,7 +1,7 @@
 `default_nettype none
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
-
+`include "select.svh"
 module MM_addr_contention_handler  (input logic clock,
                                     input logic reset,
                                     input logic doing_dma,
@@ -20,14 +20,14 @@ module MM_addr_contention_handler  (input logic clock,
                                     output logic vram_wren,
                                     
                                     
-                                    output logic [15:0] rom0_addr,
-                                    output logic [15:0] vram_addr1,
-                                    output logic [15:0] vram_addr2,
-                                    output logic [15:0] exram_addr,
-                                    output logic [15:0] wram_addr,
-                                    output logic [15:0] oam_addr1,
-                                    output logic [15:0] oam_addr2,
-                                    output logic [15:0] hram_addr
+                                    output logic [13:0] rom0_addr,
+                                    output logic [11:0] vram_addr1,
+                                    output logic [11:0] vram_addr2,
+                                    output logic [11:0] exram_addr,
+                                    output logic [11:0] wram_addr,
+                                    output logic [6:0] oam_addr1,
+                                    output logic [6:0] oam_addr2,
+                                    output logic [3:0] hram_addr
 );
 
 
@@ -59,7 +59,7 @@ module MM_addr_contention_handler  (input logic clock,
 
                 //allow dma to SOURCE from any part of memory
                 rom0_addr = dma_src_addr - `ROM_0_START;  
-                vram_addr1 = dma_src_addr - `VRAM_0_START;
+                vram_addr1 = dma_src_addr - `VRAM_START;
                 vram_addr2 = 16'hDEAD;                
                 exram_addr = dma_src_addr - `EXRAM_START;        
                 wram_addr = dma_src_addr - `WRAM_START; 
@@ -78,7 +78,7 @@ module MM_addr_contention_handler  (input logic clock,
                 wram_addr = cpu_addr - `WRAM_START; 
                 hram_addr = cpu_addr - `HRAM_START; 
                 
-                if(ppu_mode == 0 || ppu_mode = 1 || ppu_mode == 2) begin
+                if(ppu_mode == 0 || ppu_mode == 1 || ppu_mode == 2) begin
                     //HBLANK or VBLANK or OAM_SEARCH
 
                     if(ppu_mode == 2) begin

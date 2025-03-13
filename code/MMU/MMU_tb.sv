@@ -1,4 +1,4 @@
-`default_netttype none
+`default_nettype none
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
 
@@ -10,7 +10,7 @@ module MMU_TB();
             logic rst;
 
 
-            logic [15:0] cpu_addr
+            logic [15:0] cpu_addr;
             logic        cpu_wren;
             logic [15:0] cpu_in_data;
             
@@ -19,23 +19,30 @@ module MMU_TB();
 
             logic [1:0]   ppu_mode;
 
-            logic         joystick_select;
-            logic         joystick_start;
-            
-            logic         joystick_dpad_up;
-            logic         joystick_dpad_down;
-            logic         joystick_dpad_left;  
-            logic         joystick_dpad_right;
+            logic hblank;
+            logic vblank;
 
-            logic         joystick_a_button;
-            logic         joystick_b_button;  
+            logic         joypad_select;
+            logic         joypad_start;
+            
+            logic         joypad_dpad_up;
+            logic         joypad_dpad_down;
+            logic         joypad_dpad_left;  
+            logic         joypad_dpad_right;
+
+            logic         joypad_a_button;
+            logic         joypad_b_button;  
 
 
             logic [15:0] cpu_out_data;
             logic        cpu_data_valid;
 
-            logic [15:0] ppu1_out_data;
-            logic        ppu2_out_data;
+            logic [15:0] ppu_out_data1, ppu_out_data2;
+            logic        ppu_data_valid;
+
+            logic        restart_after_stop;
+
+            logic        stop_inst_hit;
 
     MMU dut (.*);
 
