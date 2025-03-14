@@ -1,1 +1,2 @@
 vsim -c -do "do cpu-sim.do $1"
+./clean

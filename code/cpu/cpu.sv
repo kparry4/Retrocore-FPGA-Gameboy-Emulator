@@ -5,14 +5,12 @@ module cpu (
   input  logic rst,
   input  logic [15:0] memData,
   input logic memValid,
-  input  logic [7:0] ie,
-  input  logic [7:0] iflg,
+  input  logic [15:0] ie,
+  input  logic [15:0] iflg,
   output logic stop,
   output logic [15:0] memWdata,
   output logic [15:0] memWadr,
   output logic memWen,
-  output logic [7:0] newie,
-  output logic ieen,
   output logic [15:0] memAdr
 );  
   logic [7:0] rs1, rs2;
@@ -24,6 +22,7 @@ module cpu (
   logic [15:0] rs16;
   logic [7:0] mem, n, pre, intAdr;
   logic [3:0] flg;
+  logic [7:0] newiflg;
   logic carry, hcarry, nflg, jmp, zflg;
   logic [15:0] npc, pc;
   ctrl_t ctrl;
@@ -43,21 +42,22 @@ module cpu (
                   .ctrl(ctrl), 
                   .rst, 
                   .ie,
-                  .newie,
                   .iflg,
+                  .stop,
                   .pre, 
                   .jmp,
                   .clk);
 
-  always_comb casez(ie[4:0]&iflg[4:0])
+  always_comb casez(ie[12:8]&iflg[12:8])
     5'b10000: intAdr = 8'h60;
     5'b?1000: intAdr = 8'h58;
     5'b??100: intAdr = 8'h50;
     5'b???10: intAdr = 8'h48;
     5'b????1: intAdr = 8'h40;
+    default: intAdr = 'x;
   endcase
   // pc register
-  flopenr #(16) pcflop(clk, rst, ctrl.pcen, npc, pc);
+  flopenr #(16,16'h100) pcflop(clk, rst, ctrl.pcen, npc, pc);
   // select next pc
   always_comb case(ctrl.pcSel)
     PC_1: npc = pc+1;
@@ -79,6 +79,7 @@ module cpu (
   always_comb case(ctrl.adrSel)
     ADR_PC: memAdr = pc;
     ADR_FF: memAdr = {8'hff,rs1};
+    ADR_FFN: memAdr = {8'hff,mem};
     ADR_RS: memAdr = rs16;
     ADR_NRS: memAdr = {mem,rs1};
     ADR_IDU: memAdr = iduOut;
@@ -145,10 +146,20 @@ module cpu (
   assign iduOut = ctrl.iduSub ? iduIn-1 : 
                   iduIn+((ctrl.iduSel==IDU_PCE) ? {{8{src1[7]}},src1} : 1);
 
+  // new flag register write data
+  always_comb casez(ie[12:8]&iflg[12:8])
+    5'b10000: newiflg = {iflg[15:13],1'b0,iflg[11:0]};
+    5'b?1000: newiflg = {iflg[15:12],1'b0,iflg[10:0]};
+    5'b??100: newiflg = {iflg[15:11],1'b0,iflg[9:0]};
+    5'b???10: newiflg = {iflg[15:10],1'b0,iflg[8:0]};
+    5'b????1: newiflg = {iflg[15:9],1'b0,iflg[7:0]};
+    default: newiflg = 'x;
+  endcase
   // memory write data calculation
   always_comb case(ctrl.wadrSel)
     WADR_RS: memWadr = rs16;
     WADR_FF: memWadr = {8'hff,rs1};
+    WADR_FLG: memWadr = 16'hff0f;
     default: memWadr = 'x;
   endcase
   always_comb case(ctrl.wdatSel)
@@ -156,6 +167,7 @@ module cpu (
     // if youre writting pc you better be writting the entire pc
     WDAT_PCL: memWdata = memWadr[0] ? {pc[7:0], memData[7:0]} : pc;
     WDAT_PC: memWdata = memWadr[0] ? pc : {memData[15:8], pc[15:8]}; 
+    WDAT_FLG: memWdata = newiflg; 
     // WADR_RS: memWdata = memWadr[0] ? {n, memData[7:0]} : {memData[15:8], n};
     default: memWdata = 'x;
   endcase

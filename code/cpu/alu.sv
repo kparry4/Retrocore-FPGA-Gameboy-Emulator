@@ -13,7 +13,8 @@ module alu (
 
   logic [7:0] addIn2;
   logic [3:0] bsum,tsum;
-  logic bcarry;
+  // logic bcarry;
+  logic [1:0] bcarry;
   logic carry;
   logic selb;
   logic [7:0] addCin, adj, bitRes;
@@ -24,10 +25,15 @@ module alu (
   assign daa = (aluOp==ALU_DAA);
 
   // add/subtract
-  assign addIn2 = daa ? nflg ? -adj : adj : sub ? -(aluOp==ALU_ADD2 ? {7{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {7{src2[7]}} : src2);
-  assign addCin = sub ? -(useC&cin) : useC&cin;
+  // assign addIn2 = daa ? nflg ? -adj : adj : sub ? -(aluOp==ALU_ADD2 ? {7{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {7{src2[7]}} : src2);
+  // assign addCin = sub ? -(useC&cin) : useC&cin;
+  // // assign addIn1 = aluOp==ALU_ADD2 ? 0 : src1;
+  // assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0];
+  // assign {carry, tsum} = src1[7:4] + addIn2[7:4] + bcarry + addCin[7:4];
+  assign addIn2 = daa ? nflg ? -adj : adj : sub ? ~(aluOp==ALU_ADD2 ? {7{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {7{src2[7]}} : src2);
+  assign addCin = sub ? -(useC&cin) : useC&cin; //*** may be a tad slow
   // assign addIn1 = aluOp==ALU_ADD2 ? 0 : src1;
-  assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0];
+  assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0] + sub;
   assign {carry, tsum} = src1[7:4] + addIn2[7:4] + bcarry + addCin[7:4];
 
   always_comb begin

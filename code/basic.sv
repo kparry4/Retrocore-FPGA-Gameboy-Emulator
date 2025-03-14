@@ -19,13 +19,13 @@ module flopen #(parameter WIDTH = 8) (
 endmodule
 
 // flip flop with enable and reset
-module flopenr #(parameter WIDTH = 8) (
+module flopenr #(parameter WIDTH = 8, RST=0) (
   input  logic             clk, reset, en,
   input  logic [WIDTH-1:0] d, 
   output logic [WIDTH-1:0] q);
 
   always_ff @(posedge clk)
-    if (reset)   q <= '0;
+    if (reset)   q <= RST;
     else if (en) q <= d;
 endmodule
 

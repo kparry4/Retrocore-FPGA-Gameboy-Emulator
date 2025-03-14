@@ -17,7 +17,18 @@ module regfile (
   logic [11:0][7:0] regs;
   always_ff @(posedge clk) begin : rf
     if(rst) begin 
-      regs = 0; 
+      `ifdef DOC
+       regs[A] = 8'h01;
+       regs[F] = 8'hB0;
+       regs[B] = 8'h00;
+       regs[C] = 8'h13;
+       regs[D] = 8'h00;
+       regs[E] = 8'hd8;
+       regs[H] = 8'h01;
+       regs[L] = 8'h4d;
+      `else
+      regs = 0;
+      `endif
       {regs[SP], regs[SPL]} = 16'hfffe;
     end
     else if(rdWen) // if write
@@ -35,17 +46,17 @@ module regfile (
     if(~rst && rd2Wen) regs[rd2Adr] = rd2;
       // write to flags if needed
     if(~rst) begin 
-      if(flgWen[0]) regs[F][0] = flg[0];
-      if(flgWen[1]) regs[F][1] = flg[1];
-      if(flgWen[2]) regs[F][2] = flg[2];
-      if(flgWen[3]) regs[F][3] = flg[3];
+      if(flgWen[0]) regs[F][4] = flg[0];
+      if(flgWen[1]) regs[F][5] = flg[1];
+      if(flgWen[2]) regs[F][6] = flg[2];
+      if(flgWen[3]) regs[F][7] = flg[3];
     end
   end
 
-  assign carry = regs[F][0];
-  assign hcarry = regs[F][1];
-  assign nflg = regs[F][2];
-  assign zflg = regs[F][3];
+  assign carry = regs[F][4];
+  assign hcarry = regs[F][5];
+  assign nflg = regs[F][6];
+  assign zflg = regs[F][7];
   assign rs1 = regs[adr1];
   assign rs2 = regs[adr2];
   always_comb case(adr1)

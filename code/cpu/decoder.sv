@@ -2,12 +2,12 @@
 `include "defs.svh"
 module decoder (
   input logic rst, clk,
-  input  logic [7:0] instr, ie, iflg,
+  input  logic [7:0] instr,
+  input  logic [15:0] ie, iflg,
   input  logic memValid,
   input  logic jmp,
   output logic stop,
-  output logic [7:0] newie, pre,
-  output logic ieen,
+  output logic [7:0] pre,
   output ctrl_t ctrl
 );
 
@@ -15,10 +15,10 @@ module decoder (
   logic [$bits(mpc_enum)-1:0] oldmpc,mpc;
   logic [7:0] op, nextOp, oldop;
   logic [7:0] nextInstr;
-  logic cb,cbpre, done;
+  logic cb,cbpre, done, ime,imeen,newime;
   logic mpcen, nmpcen, interupt;
 
-  assign interupt = |(iflg[4:0]&ie[4:0]);
+  assign interupt = |(iflg[12:8]&ie[12:8])&ime;
 
   assign mpc_enum = mpc_t'(mpc);
   assign nextInstr = ctrl.useOp ? nextOp : instr;
@@ -27,6 +27,7 @@ module decoder (
   flopenr #(8) oldopreg (clk,rst,ctrl.iren,instr,op);
   flopenr #(8) nextopreg (clk,rst,ctrl.iren,instr,nextOp);
   flopr #(1) cbprereg (clk,rst,cb,cbpre);
+  flopenr #(1) imereg (clk,rst,imeen,newime,ime);
   always_ff @(posedge clk) begin
     if(rst) mpcen = 1;
     else mpcen = nmpcen;
@@ -55,7 +56,7 @@ module decoder (
           8'b11110010: mpc=LDH_AC;
           8'b11100010: mpc=LDH_CA;
           8'b11110000: mpc=LDH_AN;
-          8'b11100010: mpc=LDH_NA;
+          8'b11100000: mpc=LDH_NA;
           8'b00111010: mpc=LD_AHLD;
           8'b00110010: mpc=LD_HLDA;
           8'b00101010: mpc=LD_AHLI;
@@ -192,8 +193,6 @@ module decoder (
     ctrl.memWen = 0;
     ctrl.iduSel = IDU_PC;
     ctrl.pcen = 1;
-    newie = 'x;
-    ieen = 0;
     ctrl.iduSub = 0;
     ctrl.rs1 = DC;
     ctrl.rs2 = DC;
@@ -493,18 +492,14 @@ module decoder (
         ctrl.memWen = 1;
         ctrl.done = 1;
       end
-      // ld A,(n)
+      // ld A,(0xff,n)
       // A <- (n)
       LDH_AN:  begin
-        // save n in Z
-        ctrl.rd = Z;
-        ctrl.rdSel = RD_MEM;
-        ctrl.rdWen = 1;
+        // do nothing
       end
       LDH_AN2:  begin
-        // read addr from memory
-        ctrl.rs1 = Z;
-        ctrl.adrSel = ADR_FF;
+        // read addr from memory using n
+        ctrl.adrSel = ADR_FFN;
         ctrl.pcen = 0;
         ctrl.iren = 1;
       end
@@ -519,15 +514,16 @@ module decoder (
       // ld (n), A
       // (n) <- A
       LDH_NA:  begin
-        // save n in Z
-        ctrl.rd = Z;
-        ctrl.rdSel = RD_MEM;
-        ctrl.rdWen = 1;
+        // do nothing
       end
       LDH_NA2:  begin
         // read addr from memory
         ctrl.rs1 = Z;
-        ctrl.adrSel = ADR_FF;
+        ctrl.adrSel = ADR_FFN;
+        // save n in Z
+        ctrl.rd = Z;
+        ctrl.rdSel = RD_MEM;
+        ctrl.rdWen = 1;
         ctrl.pcen = 0;
         ctrl.iren = 1;
       end
@@ -1903,7 +1899,7 @@ module decoder (
       end
       JR_E2:  begin
         `READN
-        // ctrl.pcen=0;
+        ctrl.pcen=0;
       end
       JR_E3:  begin
         ctrl.rs1 = Z;
@@ -1913,14 +1909,14 @@ module decoder (
         ctrl.done = 1;
       end
       // jr e
-      // pc += e
+      // pc += e if cc
       JR_CCE:  begin
         ctrl.iren = 1;
       end
       JR_CCE2:  begin
         `READN
         ctrl.done = ~jmp;
-        // ctrl.pcen=0;
+        ctrl.pcen=~jmp;
       end
       JR_CCE3:  begin
         ctrl.rs1 = Z;
@@ -2200,23 +2196,23 @@ module decoder (
         ctrl.rs1 = W;
         ctrl.pcSel = PC_RS;
         ctrl.adrSel = ADR_RS;
-        newie = 8'hff;
-        ieen = 1;
+        imeen = 1;
+        newime = 1;
         ctrl.done = 1;
         ctrl.done = 1;
       end
       // ei
       // enable interupts
       EI: begin
-        newie = 8'hff;
-        ieen = 1;
+        imeen = 1;
+        newime = 1;
         ctrl.done = 1;
       end
       // di
       // disable interupts
       DI: begin
-        newie = 8'h00;
-        ieen = 1;
+        imeen = 1;
+        newime = 0;
         ctrl.done = 1;
       end
       // rst n
@@ -2327,8 +2323,12 @@ module decoder (
       INTERUPT5: begin
         // jump to prefix-n
         // set pc and stop interupts
-        newie = 0;
-        ieen = 1;
+        // update interupt flags
+        imeen = 1;
+        newime = 0;
+        ctrl.wadrSel = WADR_FLG;
+        ctrl.wdatSel = WDAT_FLG;
+        ctrl.memWen = 1;
         ctrl.pcSel = PC_INT;
         ctrl.adrSel = ADR_INT;
         ctrl.done = 1;
