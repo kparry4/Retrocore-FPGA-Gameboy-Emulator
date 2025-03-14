@@ -191,12 +191,12 @@ module OAM_Search (
         OAM_FETCH: begin
           oam_port0_addr <= OAM_TABLE_BASE_ADDRESS + (oam_index << 2);
           oam_port1_addr <= OAM_TABLE_BASE_ADDRESS + (oam_index << 2) + 16'd2;
-          temp_sprite.y           = oam_port0_data[7:0] - 8'd16;
-          temp_sprite.x           = oam_port0_data[15:8] - 8'd8;
+          temp_sprite.y           = oam_port0_data[7:0];
+          temp_sprite.x           = oam_port0_data[15:8];
           temp_sprite.tile_index  = oam_port1_data[7:0];
           temp_sprite.flags       = oam_port1_data[15:8];
-          if ((current_line >= temp_sprite.y ) &&
-              (current_line < (temp_sprite.y + SPRITE_HEIGHT))) begin
+          if ((current_line >= (oam_port0_data[7:0] - 8'd16)) &&
+              (current_line < (oam_port0_data[7:0] - 8'd16 + SPRITE_HEIGHT))) begin
             if (selected_count < 4'd10) begin
               selected_sprites_reg[selected_count] <= temp_sprite;
               selected_count <= selected_count + 1;
@@ -315,16 +315,15 @@ endmodule
 //==================================================================
 module FIFO #(
   parameter DEPTH = 16,
-  parameter THRESHOLD = 8,
-  parameter type T = pixel_t
+  parameter THRESHOLD = 8
 ) (
   input  logic clk,
   input  logic reset,
   input  logic clear,
   input  logic push,
-  input  T data_in,
+  input  pixel_t data_in,
   input  logic pop,
-  output T data_out,
+  output pixel_t data_out,
   output logic empty,
   output logic full,
   output logic [$clog2(DEPTH+1)-1:0] size,
@@ -334,7 +333,7 @@ module FIFO #(
   logic [FIFO_ADDR_WIDTH-1:0] wr_ptr;
   logic [FIFO_ADDR_WIDTH-1:0] rd_ptr;
   logic [$clog2(DEPTH+1)-1:0] count;
-  T fifo_mem [0:DEPTH-1];
+  pixel_t fifo_mem [0:DEPTH-1];
 
   always_ff @(posedge clk or posedge reset) begin
     if(reset) begin
@@ -629,7 +628,9 @@ module Render_BG (
   // BG Done Flag: Assert when a complete scanline (160 pixels) is processed.
   //==================================================================
   always_ff @(posedge clk or posedge reset) begin
-    if (reset || fifo_clear)
+    if (reset)
+      bg_done <= 1'b0;
+    else if (fifo_clear)
       bg_done <= 1'b0;
     else if (state == BG_DONE)
       bg_done <= 1'b1;
@@ -802,7 +803,7 @@ module Render_Sprites (
         if (!candidate_valid) begin
           // No sprite candidate: immediately push an empty (transparent) pixel.
           candidate_pixel.x <= x_coord;
-          candidate_pixel.y <= LY;
+          candidate_pixel.y <= LY + SCY;
           candidate_pixel.pixel <= 2'b00;
           candidate_pixel.palette <= 8'd0;
           candidate_pixel.sprite_priority <= 1'b1;
@@ -822,7 +823,7 @@ module Render_Sprites (
       else if (state == DUMP_PIXELS && use_sprite) begin
         // Dump sprite pixel data.
         candidate_pixel.x <= x_coord + pixel_index;
-        candidate_pixel.y <= LY;
+        candidate_pixel.y <= LY + SCY;
         candidate_pixel.pixel <= { tile_data_word[7 - pixel_index], tile_data_word[15 - pixel_index] };
         candidate_pixel.palette <= (sprites[candidate_index].flags[4]) ? OBP1 : OBP0;
         candidate_pixel.sprite_priority <= 1'b1;
@@ -885,7 +886,9 @@ module Render_Sprites (
   end
   
   always_ff @(posedge clk or posedge reset) begin
-    if (reset || fifo_clear)
+    if (reset)
+      sprite_done <= 1'b0;
+    else if (fifo_clear)
       sprite_done <= 1'b0;
     else if (state == DONE)
       sprite_done <= 1'b1;
@@ -1014,8 +1017,7 @@ module Pixel_Gen (
   // Instantiate FIFO for background pixels.
   FIFO #(
     .DEPTH(16),
-    .THRESHOLD(0),
-    .T(pixel_t)
+    .THRESHOLD(0)
   ) bg_fifo_inst (
     .clk(clk),
     .reset(reset),
@@ -1033,8 +1035,7 @@ module Pixel_Gen (
   // Instantiate FIFO for sprite pixels.
   FIFO #(
     .DEPTH(64),
-    .THRESHOLD(0),
-    .T(pixel_t)
+    .THRESHOLD(0)
   ) sprite_fifo_inst (
     .clk(clk),
     .reset(reset),
@@ -1088,17 +1089,16 @@ module Pixel_Mixer (
       default: map_palette = 2'b00;
     endcase
   endfunction
-  
-  always_ff @(posedge clk or posedge reset) begin
-    pixel_out_valid <= fetch_pixel;
-  end
 
   assign fetch_pixel = bg_pixel_ready & sprite_pixel_ready;
 
   always_ff @(posedge clk or posedge reset) begin
-    if(reset)
+    if(reset) begin 
       pixel_out <= 2'b00;
+      pixel_out_valid <= '0;
+    end 
     else begin
+      pixel_out_valid <= fetch_pixel;
       if(sprite_pixel_in.pixel != 2'b00)
         pixel_out <= map_palette(sprite_pixel_in.pixel, sprite_pixel_in.palette);
       else
@@ -1107,6 +1107,7 @@ module Pixel_Mixer (
   end 
 
 endmodule
+
 
 //==================================================================
 // Module: DMG_Color_Mapper
@@ -1118,15 +1119,15 @@ endmodule
 //==================================================================
 module DMG_Color_Mapper(
   input  logic [1:0] dmg_color,
-  output logic [11:0] vga_color
+  output logic [23:0] vga_color
 );
   always_comb begin
     case(dmg_color)
-      2'd0: vga_color = 12'hFFF;
-      2'd1: vga_color = 12'hCCC;
-      2'd2: vga_color = 12'h888;
-      2'd3: vga_color = 12'h000;
-      default: vga_color = 12'h000;
+      2'd0: vga_color = 24'hFFFFFF;
+      2'd1: vga_color = 24'hCCCCCC;
+      2'd2: vga_color = 24'h888888;
+      2'd3: vga_color = 24'h000000;
+      default: vga_color = 24'h000000;
     endcase
   end
 endmodule
@@ -1146,7 +1147,7 @@ module VGA_Controller (
   input  logic [1:0] fb_pixel,
   output logic hsync,
   output logic vsync,
-  output logic [11:0] vga_color
+  output logic [23:0] vga_color
 );
   parameter H_ACTIVE = 160, H_FRONT = 8, H_SYNC = 16, H_BACK = 8;
   parameter V_ACTIVE = 144, V_FRONT = 4, V_SYNC = 2, V_BACK = 4;
@@ -1213,6 +1214,7 @@ module PPU_Wrapper (
   input  logic [7:0]   BGP,
   input  logic [7:0]   OBP0,
   input  logic [7:0]   OBP1,
+  output logic [1:0]   mode, 
   // Memory ports (used either for OAM or for VRAM depending on mode)
   output logic [15:0]  port0_addr,
   output logic         port0_read_en,
@@ -1221,16 +1223,12 @@ module PPU_Wrapper (
   output logic         port1_read_en,
   input  logic [15:0]  port1_data,
   output logic [1:0]   frame_pixel,
-  output logic         frame_pixel_valid,
-  output logic         hsync,
-  output logic         vsync,
-  output logic [11:0]  vga_color
+  output logic         frame_pixel_valid
 );
 
   // Internal timing signals from the mode controller.
   logic [8:0] dot;
   logic [7:0] line;
-  logic [1:0] mode;
   logic       fifo_clear;
   logic [7:0] STAT_out;
   logic       stat_interrupt;
@@ -1345,16 +1343,6 @@ module PPU_Wrapper (
     .fetch_pixel(fetch_pixel),
     .pixel_out_valid(pixel_out_valid),
     .pixel_out(mixed_pixel)
-  );
-  
-  // VGA controller instantiation.
-  VGA_Controller vga_ctrl_inst (
-    .clk(clk),
-    .reset(reset),
-    .fb_pixel(mixed_pixel),
-    .hsync(hsync),
-    .vsync(vsync),
-    .vga_color(vga_color)
   );
   
   // Frame pixel outputs.

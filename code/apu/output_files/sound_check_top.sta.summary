@@ -1,0 +1,77 @@
+------------------------------------------------------------
+Timing Analyzer Summary
+------------------------------------------------------------
+
+Type  : Slow 1200mV 85C Model Setup 'CLOCK_50'
+Slack : -1.777
+TNS   : -3.809
+
+Type  : Slow 1200mV 85C Model Setup 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : -1.454
+TNS   : -20.665
+
+Type  : Slow 1200mV 85C Model Hold 'CLOCK_50'
+Slack : 0.402
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 0.402
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : -1.285
+TNS   : -23.130
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'CLOCK_50'
+Slack : 9.755
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'CLOCK_50'
+Slack : -1.505
+TNS   : -3.109
+
+Type  : Slow 1200mV 0C Model Setup 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : -1.233
+TNS   : -17.109
+
+Type  : Slow 1200mV 0C Model Hold 'CLOCK_50'
+Slack : 0.354
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 0.354
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : -1.285
+TNS   : -23.130
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'CLOCK_50'
+Slack : 9.776
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'CLOCK_50'
+Slack : -0.444
+TNS   : -0.721
+
+Type  : Fast 1200mV 0C Model Setup 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : -0.173
+TNS   : -1.195
+
+Type  : Fast 1200mV 0C Model Hold 'CLOCK_50'
+Slack : 0.181
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 0.181
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : -1.000
+TNS   : -18.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'CLOCK_50'
+Slack : 9.437
+TNS   : 0.000
+
+------------------------------------------------------------
