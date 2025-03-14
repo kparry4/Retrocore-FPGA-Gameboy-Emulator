@@ -1,0 +1,2 @@
+vsim -c -do "do doc-sim.do $1"
+./clean

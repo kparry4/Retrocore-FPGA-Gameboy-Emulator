@@ -1,0 +1,4 @@
+rm wl*
+rm transcript
+rm vsim.wlf
+rm -r work
