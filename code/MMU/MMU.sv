@@ -2,9 +2,17 @@
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
 `include "select.svh"
+
+
+
 function logic within_range(input logic [15:0] value, input logic [15:0] min, input logic [15:0] max);
     return (value >= min) && (value <= max);
+endfunction   
+
+function logic is_even(input logic [15:0] address);
+    return address[0] == 1'b0;
 endfunction    
+
 
 module MMU (input logic CLK_4MHZ, // 5 Mhz?
             input logic rst,
@@ -102,7 +110,13 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
     always_comb begin
         if(within_range(cpu_addr, `IO_START, `IO_END)) begin
-            cpu_out_data = IO_out_cpu_data;
+            /* even case: {8'd0, IO_data}
+               odd case: {IO_data, 8'd0}  */            
+            if(is_even(cpu_addr)) begin
+                cpu_out_data = {8'd0, IO_out_cpu_data};
+            end else begin
+                cpu_out_data = {IO_out_cpu_data, 8'd0};
+            end
         end else begin
             cpu_out_data = memory_out_cpu_data;
         end
@@ -148,7 +162,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
     
     //TODO: sanity check hwo dma data is passed, do i need antoher register
-    MM_handler memory_units  (.clock(CLK_4MHZ), 
+    BRAM_handler memory_units (.clock(CLK_4MHZ), 
                               .reset(rst), 
                               .cpu_addr,
                               .cpu_wren,

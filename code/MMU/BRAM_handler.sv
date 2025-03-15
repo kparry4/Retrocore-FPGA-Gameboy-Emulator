@@ -4,7 +4,8 @@
 `include "select.svh"
 
 
-module MM_handler(input logic clock,
+
+module BRAM_handler(input logic clock,
                   input logic reset,
 
                   input logic [15:0] cpu_addr,
@@ -63,14 +64,16 @@ module MM_handler(input logic clock,
 
     //--- DMA related signals (addrs) ---
     logic [15:0] dma_src_addr, dma_dest_addr;
+    logic [15:0] dma_in_data;
 
     //--- OUTPUT handler ------
 
-    logic[5:0] cpu_memory_selector;
-    logic[5:0] ppu_memory_selector;
+    logic[5:0] cpu_memory_selector, ppu_memory_selector, dma_memory_selector;
 
     //--- MISC signals ------
     logic doing_dma;
+
+    assign oam_in_data1 = (doing_dma) ? dma_in_data : cpu_in_data;
 
 
     always_comb begin
@@ -90,11 +93,11 @@ module MM_handler(input logic clock,
         case(ppu_memory_selector)
         `VRAM_SELECT: begin 
             ppu_out_data1 = vram_out_data1;
-            ppu_out_data2 = vram_out_data1;
+            ppu_out_data2 = vram_out_data2;
         end
         `OAM_SELECT: begin
             ppu_out_data1 = oam_out_data1;
-            ppu_out_data2 = oam_out_data1;
+            ppu_out_data2 = oam_out_data2;
         end
         `INVALID: begin 
             ppu_out_data1 = 8'hFF;
@@ -108,6 +111,20 @@ module MM_handler(input logic clock,
     end       
 
 
+    always_comb begin
+        case(dma_memory_selector)
+        `ROM_SELECT:   dma_in_data = rom0_out_data;
+        `VRAM_SELECT:  dma_in_data = vram_out_data1;
+        `EXRAM_SELECT: dma_in_data = exram_out_data;
+        `WRAM_SELECT:  dma_in_data = wram_out_data;
+        `HRAM_SELECT:  dma_in_data = hram_out_data;
+        `INVALID:      dma_in_data = 8'hFF;
+        default:      dma_in_data = 8'hxx;
+        endcase
+    end
+        
+
+
     DMA_controller dma_guy (.clock,
                             .reset,
                             .DMA_R, 
@@ -119,9 +136,13 @@ module MM_handler(input logic clock,
     MM_out_chooser memory_out_muxer ( .clock, 
                                       .reset,     
                                       .doing_dma,
+                                      .ppu_mode,
                                       .cpu_addr, .ppu_addr1, .ppu_addr2,
                                       .cpu_memory_selector,
-                                      .ppu_memory_selector);
+                                      .ppu_memory_selector,
+
+                                      .dma_src_addr,
+                                      .dma_memory_selector);
 
     //------for handling contention between cpu/ppu/dma --> STRICTLY related to OAM/VRAM wrens
     MM_addr_contention_handler addr_handler (.clock,
@@ -145,6 +166,15 @@ module MM_handler(input logic clock,
 
     assign cpu_data_valid = (cpu_memory_selector != `INVALID && cpu_memory_selector != `UNKNOWN && ~within_range(cpu_addr, `IO_START, `IO_END));
     assign ppu_data_valid = (ppu_memory_selector != `INVALID && ppu_memory_selector != `UNKNOWN);
+
+
+    always_ff @(posedge clock) begin
+        if(doing_dma) begin
+
+        end else begin
+        end
+    end
+
 
     //////////////////////////////////////////////////
     //------------  MEMORY MODULES  --------------------
@@ -180,9 +210,11 @@ module MM_handler(input logic clock,
                       .data_a   (oam_in_data1),   .data_b   (16'hDEAD));
 
     //--- HRAM  ------  this feels too small to make a memory unit.                      
-    logic[0:7][15:0] HRAM;
-    assign hram_out_data = HRAM[hram_addr];
+    logic[0:15][15:0] HRAM;
+    logic[15:0] unbuffered_hram_out;
+    assign unbuffered_hram_out = HRAM[hram_addr];
     always_ff @(posedge clock) begin
+        hram_out_data <= unbuffered_hram_out;
         if(reset) begin
             HRAM <= '0;
         end else begin
@@ -193,7 +225,7 @@ module MM_handler(input logic clock,
             end
         end
     end
-endmodule: MM_handler;
+endmodule: BRAM_handler;
 
 
 

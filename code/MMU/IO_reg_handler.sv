@@ -2,10 +2,7 @@
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
 `include "select.svh"
-
-function logic is_even(input logic [15:0] address);
-    return address[0] == 1'b0;
-endfunction    
+ 
 
 module IO_handler(input logic clock, 
                   input logic reset,
@@ -62,15 +59,18 @@ module IO_handler(input logic clock,
                   output logic start_dma);
          
     localparam integer clock_freq = 4_000_000;
-    localparam integer DIV_TICK_COUNT = clock_freq/16384; //should be 244
-    logic [10:0] TMA_TICK_COUNT; //this would be local param but it gets set during runtime
+    localparam integer DIV_TICK_COUNT = clock_freq/16384 * 2; //should be 244
+    logic [11:0] TIMA_TICK_COUNT; //this would be local param but it gets set during runtime
     
-    logic[10:0] tma_ticks, divider_ticks; 
+    logic[10:0] tima_ticks, divider_ticks; 
 
     logic vblank_sync;
-    logic vblank_handler_called;
+    logic vblank_posedge;
 
-    assign vblank_handler_called = ~vblank_sync && vblank;
+    logic tima_overflow;
+    assign tima_overflow = (tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2] && TIMA_R == 16'hFF);
+
+    assign vblank_posedge = ~vblank_sync && vblank;
 
     logic joypad_press;
     assign joypad_press = |({joypad_select, joypad_start, joypad_b_button, joypad_a_button}
@@ -79,75 +79,80 @@ module IO_handler(input logic clock,
 
     logic [7:0] cpu_IO_in_data;
 
-    assign cpu_IO_in_data = is_even(cpu_addr) ? cpu_in_data[7:0] : cpu_out_data[15:8];
+    logic even_cpu_io_addr;
+    assign even_cpu_io_addr = is_even(cpu_addr);
+
+    assign cpu_IO_in_data = is_even(cpu_addr) ? cpu_in_data[7:0] : cpu_in_data[15:8];
+
+    logic [15:0] out_data;
     
     always_comb begin
         casez(cpu_addr)
-        `JOYPAD:         cpu_out_data = JOYPAD_OUTPUT;
-        `SERIAL_TRANS_D: cpu_out_data = 16'hFF;//dont think we need this
-        `SERIAL_TRANS_C: cpu_out_data = 16'hFF;//dont think we need this
-        `DIV:            cpu_out_data = DIV_R;
-        `TIMA:           cpu_out_data = TIMA_R;
-        `TMA:            cpu_out_data = TMA_R;
-        `TAC:            cpu_out_data = TAC_R;
-        `INTERRUPT_FLAG: cpu_out_data = IF_R;
+        `JOYPAD:         out_data = JOYPAD_OUTPUT;
+        `SERIAL_TRANS_D: out_data = 16'hFF;//dont think we need this
+        `SERIAL_TRANS_C: out_data = 16'hFF;//dont think we need this
+        `DIV:            out_data = DIV_R;
+        `TIMA:           out_data = TIMA_R;
+        `TMA:            out_data = TMA_R;
+        `TAC:            out_data = TAC_R;
+        `IF: out_data = IF_R;
 
         `NR10,          
         `NR11,          
         `NR12,          
         `NR13,          
-        `NR14:           cpu_out_data = APU_R.NR1x_R[cpu_addr - `NR10][7:0];
+        `NR14:           out_data = APU_R.NR1x_R[cpu_addr - `NR10][7:0];
         
         `NR21,          
         `NR22,           
         `NR23,           
-        `NR24:           cpu_out_data = APU_R.NR2x_R[cpu_addr - `NR21][7:0];
+        `NR24:           out_data = APU_R.NR2x_R[cpu_addr - `NR21][7:0];
         
         `NR30,           
         `NR31,           
         `NR32,           
         `NR33,           
-        `NR34:           cpu_out_data = APU_R.NR3x_R[cpu_addr - `NR30][7:0];
+        `NR34:           out_data = APU_R.NR3x_R[cpu_addr - `NR30][7:0];
         
         `NR41,           
         `NR42,           
         `NR43,           
-        `NR44:           cpu_out_data = APU_R.NR4x_R[cpu_addr - `NR41][7:0];    
+        `NR44:           out_data = APU_R.NR4x_R[cpu_addr - `NR41][7:0];    
         
-        `NR50:           cpu_out_data = APU_R.NR50_R;
-        `NR51:           cpu_out_data = APU_R.NR51_R;
-        `NR52:           cpu_out_data = NR52_R;
-        
-        
-        16'hFF3?:        cpu_out_data = APU_R.WAV_RAM_R[cpu_addr - `WAV_RAM_START][7:0];
+        `NR50:           out_data = APU_R.NR50_R;
+        `NR51:           out_data = APU_R.NR51_R;
+        `NR52:           out_data = NR52_R;
         
         
-        `LCDC:           cpu_out_data = LCDC_R;
-        `STAT:           cpu_out_data = STAT_R;
-        `SCY:            cpu_out_data = PPU_R.SCY_R;
-        `SCX:            cpu_out_data = PPU_R.SCX_R;
-        `LY:             cpu_out_data = PPU_R.LY_R;
-        `LYC:            cpu_out_data = PPU_R.LYC_R;
-        `DMA:            cpu_out_data = DMA_R;
-        `BGP:            cpu_out_data = PPU_R.BGP_R;
-        `OBP0:            cpu_out_data = PPU_R.OBP0_R;
-        `OBP1:            cpu_out_data = PPU_R.OBP1_R;
-        `WY:            cpu_out_data = PPU_R.WY_R;
-        `WX:            cpu_out_data = PPU_R.WX_R;
+        16'hFF3?:        out_data = APU_R.WAV_RAM_R[cpu_addr - `WAV_RAM_START][7:0];
+        
+        
+        `LCDC:           out_data = LCDC_R;
+        `STAT:           out_data = STAT_R;
+        `SCY:            out_data = PPU_R.SCY_R;
+        `SCX:            out_data = PPU_R.SCX_R;
+        `LY:             out_data = PPU_R.LY_R;
+        `LYC:            out_data = PPU_R.LYC_R;
+        `DMA:            out_data = DMA_R;
+        `BGP:            out_data = PPU_R.BGP_R;
+        `OBP0:            out_data = PPU_R.OBP0_R;
+        `OBP1:            out_data = PPU_R.OBP1_R;
+        `WY:            out_data = PPU_R.WY_R;
+        `WX:            out_data = PPU_R.WX_R;
 
-        `INTERRUPT_EN:     cpu_out_data = IE_R; 
-        default:           cpu_out_data = 16'hxx;  
+        `IE:     out_data = IE_R; 
+        default:           out_data = 16'hxx;  
         endcase
     end
     
     
     always_comb begin
         case(TAC_R[1:0])
-        2'b00: TMA_TICK_COUNT = 1024;
-        2'b01: TMA_TICK_COUNT = 16;
-        2'b10: TMA_TICK_COUNT = 64;
-        2'b11: TMA_TICK_COUNT = 256;
-        default: TMA_TICK_COUNT = 0; //HOPEFULLY unreachable
+        2'b00: TIMA_TICK_COUNT = 2048; //1024 cpu cycles
+        2'b01: TIMA_TICK_COUNT = 32; //16 cpu cycles
+        2'b10: TIMA_TICK_COUNT = 128; //64 cpu cycles
+        2'b11: TIMA_TICK_COUNT = 512; //256 cpu cycles
+        default: TIMA_TICK_COUNT = 0; //HOPEFULLY unreachable
         endcase
     end
 
@@ -160,10 +165,14 @@ module IO_handler(input logic clock,
     end
 
     always_ff@(posedge clock) begin
+        cpu_out_data <= out_data; //delay by a cycle to be consistent with BRAM behavior
         if(reset) begin
-            halted     <= 1'b0;
+            halted             <= 1'b0;
             restart_after_stop <= 1'b0;
-            vblank_sync <= 1'b0;
+            vblank_sync        <= 1'b0;
+            tima_ticks          <= '0;
+            divider_ticks      <= '0;
+
             JOYPAD_R   <= '0;
             NR52_R     <= '0;
             APU_R      <= '0;
@@ -226,7 +235,7 @@ module IO_handler(input logic clock,
                 //based on speed switch (tbd, this can increment double speed)
                 if(divider_ticks == DIV_TICK_COUNT - 1) begin
                     divider_ticks <= '0;
-                    DIV_R <= 8'd0;
+                    DIV_R <= DIV_R + 8'd1;
                 end else begin
                     divider_ticks <= divider_ticks + 1;
                     DIV_R <= DIV_R;
@@ -241,37 +250,57 @@ module IO_handler(input logic clock,
             end
 
             //HANDLE TIMA: Timer Counter
-            if(tma_ticks == TMA_TICK_COUNT - 1 && TAC_R[2]) begin
+            if(tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2]) begin
                 if(TIMA_R == 8'hFF) begin
                     TIMA_R <= TMA_R;
-                    IF_R[2] <= 1'b1; //interrupt requested
+                    tima_ticks <= '0;
                 end else if(TAC_R[2]) begin
                     TIMA_R <= TIMA_R + 8'h1;
-                    IF_R[2] <= 1'b0;
                 end else begin
                     TIMA_R <= TIMA_R;
-                    IF_R[2] <= 1'b0;
                 end         
             end else begin
                 TIMA_R <= TIMA_R;
-                tma_ticks <= tma_ticks + 1'b1;
-                IF_R[2] <= 1'b0;
+                tima_ticks <= tima_ticks + 1'b1;
             end
 
             //HANDLE TAC: timer control
-            if(cpu_addr == `TIMA && cpu_wren) begin
+            if(cpu_addr == `TAC && cpu_wren) begin
                 TAC_R <= cpu_IO_in_data;
             end else begin
                 TAC_R <= TAC_R;
             end
 
 
-            //handle INTERRUPT FLAG (7,6,5 are dont cares):
-            IF_R[4] <= joypad_press; 
-            //note that IF_R[2] is handled in time section
-            IF_R[3] <= 1'b0; //wserial control (not implented)
-            IF_R[1] <= |(STAT_R[6:3]); 
-            IF_R[0] <= vblank_handler_called;         
+
+            if(cpu_addr == `IF && cpu_wren) begin
+                IF_R <= cpu_IO_in_data;
+            end else begin
+                //handle INTERRUPT FLAG (7,6,5 are dont cares):
+
+                if(IF_R[4] == 1'b0) begin
+                    IF_R[4] <= joypad_press; 
+                end else begin
+                    IF_R[4] <= IF_R[4]; 
+                end
+                
+                if(IF_R[2] == 1'b0) begin
+                    IF_R[2] <= tima_overflow;
+                end else begin
+                    IF_R[2] <= IF_R[2];
+                end
+                
+                IF_R[3] <= 1'b0; //wserial control (not implented)
+                
+                
+                IF_R[1] <= |(STAT_R[6:3]); 
+
+                if(IF_R[0] == 1'b0) begin
+                    IF_R[0] <= vblank_posedge;   
+                end else begin
+                    IF_R[0] <= IF_R[0];   
+                end
+            end      
 
             //APU-related writes
             if(within_range(cpu_addr, `NR10, `WAV_RAM_END) && cpu_wren) begin
@@ -351,7 +380,7 @@ module IO_handler(input logic clock,
 
 
 
-            if(cpu_addr == `INTERRUPT_EN && cpu_wren) begin
+            if(cpu_addr == `IE && cpu_wren) begin
                 IE_R <= cpu_IO_in_data;
             end else begin
                 IE_R <= IE_R;

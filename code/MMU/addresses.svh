@@ -2,10 +2,10 @@
     `define ADDRESSES_H
     //MEMORY RANGES
     `define ROM_0_START 16'h0000
-    `define ROM_0_END   16'h3FFF
+    `define ROM_0_END   16'h3FFF //don't forget to change this back!!!!!!!!!!!
 
-    `define ROM_B_START 16'h4000
-    `define ROM_B_END   16'h7FFF
+    `define ROM_1_START 16'h4000
+    `define ROM_1_END   16'h7FFF
 
     `define VRAM_START  16'h8000
     `define VRAM_END    16'h9FFF
@@ -33,12 +33,12 @@
     `define SERIAL_TRANS_D 16'hFF01 //dont think we need this
     `define SERIAL_TRANS_C 16'hFF02 //dont think we need this
 
-    `define DIV 16'hFF04
+    `define DIV  16'hFF04
     `define TIMA 16'hFF05
     `define TMA  16'hFF05
-    `define TAC 16'hFF07
+    `define TAC  16'hFF07
 
-    `define INTERRUPT_FLAG 16'hFF0F
+    `define IF 16'hFF0F
 
     `define NR10 16'hFF10
     `define NR11 16'hFF11
@@ -102,7 +102,7 @@
     `define WY   16'hFF4A
     `define WX   16'hFF4B
 
-    `define INTERRUPT_EN  16'hFFFF
+    `define IE  16'hFFFF
 
     //note that below are Color gameboy registers
     `define KEY1     16'hFF4D

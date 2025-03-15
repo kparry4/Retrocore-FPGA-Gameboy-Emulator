@@ -36,15 +36,15 @@ def main():
 
     footer_template = "\nEND;"
 
-    mif_file_path = f"{args.name}rom.mif"
+    mif_file_path = f"{args.name}.mif"
 
     try:
         with open(args.binpath, 'rb') as binary_file, open(mif_file_path, 'w') as mif_file:
-            mif_file.write("WIDTH=16;\n")  # Data width is 16 bits (2 bytes)
             mif_file.write("DEPTH=16384;\n") # 32kb = 32768 bytes, 32768/2 = 16384 rows
+            mif_file.write("WIDTH=16;\n")  # Data width is 16 bits (2 bytes)
             mif_file.write("ADDRESS_RADIX=HEX;\n")
             mif_file.write("DATA_RADIX=HEX;\n")
-            mif_file.write("CONTENT BEGIN\n")
+            mif_file.write("\nCONTENT BEGIN\n\n")
 
             address = 0
             while True:
@@ -57,11 +57,6 @@ def main():
                 data = (byte1[0] << 8) | byte0[0]
                 mif_file.write(f"{address:04X} : {data:04x};\n")
                 address+=1
-            # if(address < 0x7FFF):
-            #     print("ROM only went up to 0x3fff, padding with 0s")
-            #     for j in range(address, 0x8000):
-            #         mif_file.write(f"{j:04X} : {0:04x};\n")
-                
             mif_file.write("END; \n")
     except FileNotFoundError:
         print(f"Error: File not found: {args.binpath}")

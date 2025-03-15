@@ -2,6 +2,13 @@
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
 `include "select.svh"
+
+
+function logic[15:0] convert_to_BRAM_addr(input logic[15:0] cpu_addr, input logic[15:0] memory_start_region);
+    return (cpu_addr >> 1) - memory_start_region;
+endfunction
+
+
 module MM_addr_contention_handler  (input logic clock,
                                     input logic reset,
                                     input logic doing_dma,
@@ -58,57 +65,58 @@ module MM_addr_contention_handler  (input logic clock,
                 vram_wren = 1'b0;
 
                 //allow dma to SOURCE from any part of memory
-                rom0_addr = dma_src_addr - `ROM_0_START;  
-                vram_addr1 = dma_src_addr - `VRAM_START;
+                rom0_addr  = convert_to_BRAM_addr(dma_src_addr, `ROM_0_START);
+                vram_addr1 = convert_to_BRAM_addr(dma_src_addr, `VRAM_START);
                 vram_addr2 = 16'hDEAD;                
-                exram_addr = dma_src_addr - `EXRAM_START;        
-                wram_addr = dma_src_addr - `WRAM_START; 
+                exram_addr = convert_to_BRAM_addr(dma_src_addr, `EXRAM_START);        
+                wram_addr  = convert_to_BRAM_addr(dma_src_addr, `WRAM_START); 
 
                 //alow dma to COPY to oam table 
-                oam_addr1 = dma_dest_addr - `OAM_START; //allow dma 
+                oam_addr1 = convert_to_BRAM_addr(dma_dest_addr, `OAM_START);; //allow dma 
                 oam_addr2 = 16'hDEAD;
 
-                hram_addr = dma_src_addr - `HRAM_START;                 
+                hram_addr = dma_src_addr - `HRAM_START; //hram is LUTS, not bram          
 
             end else begin
 
                 //if NO dma, address is offset from CPU's input addr
-                rom0_addr = cpu_addr - `ROM_0_START;  
-                exram_addr = cpu_addr - `EXRAM_START;        
-                wram_addr = cpu_addr - `WRAM_START; 
-                hram_addr = cpu_addr - `HRAM_START; 
+                rom0_addr  = convert_to_BRAM_addr(cpu_addr, `ROM_0_START);
+                exram_addr = convert_to_BRAM_addr(cpu_addr, `EXRAM_START);        
+                wram_addr  = convert_to_BRAM_addr(cpu_addr, `WRAM_START);                 
+                hram_addr  = cpu_addr - `HRAM_START;  //hram is LUTS, not bram 
+
                 
                 if(ppu_mode == 0 || ppu_mode == 1 || ppu_mode == 2) begin
                     //HBLANK or VBLANK or OAM_SEARCH
 
                     if(ppu_mode == 2) begin
                         //OAM search is occurring, block CPU writes
-                        oam_addr1 = ppu_addr1 - `OAM_START;
-                        oam_addr2 = ppu_addr2 - `OAM_START;
-                        oam_wren = 1'b0;
+                        oam_addr1 = convert_to_BRAM_addr(ppu_addr1, `OAM_START);
+                        oam_addr2 = convert_to_BRAM_addr(ppu_addr2, `OAM_START);
+                        oam_wren  = 1'b0;
                         
                     end else begin
-                        oam_addr1 = cpu_addr - `OAM_START;
+                        oam_addr1 = convert_to_BRAM_addr(cpu_addr, `OAM_START);
                         oam_addr2 = 16'hDEAD;   
                         //cpu can write 
-                        oam_wren = cpu_wren && within_range(cpu_addr, `OAM_START, `OAM_END);                    
+                        oam_wren  = cpu_wren && within_range(cpu_addr, `OAM_START, `OAM_END);                    
                     end
 
-                    vram_addr1 = cpu_addr - `VRAM_START;
+                    vram_addr1 = convert_to_BRAM_addr(cpu_addr, `VRAM_START);
                     vram_addr2 = 16'hDEAD;  
                     //cpu can write
-                    vram_wren = cpu_wren && within_range(cpu_addr, `VRAM_START, `VRAM_END);  
+                    vram_wren  = cpu_wren && within_range(cpu_addr, `VRAM_START, `VRAM_END);  
 
                 end else begin
                         //in DRAWING MODE
-                        vram_addr1 = ppu_addr1 - `VRAM_START;
-                        vram_addr2 = ppu_addr2 - `VRAM_START;                                
+                        vram_addr1 = convert_to_BRAM_addr(ppu_addr1, `VRAM_START);
+                        vram_addr2 = convert_to_BRAM_addr(ppu_addr2, `VRAM_START);                                
 
-                        oam_addr1 = ppu_addr1 - `OAM_START;
-                        oam_addr2 = ppu_addr2 - `OAM_START;  
+                        oam_addr1  = convert_to_BRAM_addr(ppu_addr1, `OAM_START);
+                        oam_addr2  = convert_to_BRAM_addr(ppu_addr2, `OAM_START);  
 
                         //no writes from anybody allowed
-                        oam_wren = 1'b0;
+                        oam_wren  = 1'b0;
                         vram_wren = 1'b0;                              
                 end
             end
