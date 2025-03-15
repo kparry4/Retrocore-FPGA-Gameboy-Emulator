@@ -2081,6 +2081,7 @@ module decoder (
         ctrl.iduSel = IDU_RS;
         ctrl.rdSel = RD_IDU;
         // ctrl.adrSel = ADR_IDU;
+        ctrl.pcen = 0;
         ctrl.rdWen = 1;
         ctrl.rdW16 = 1;
         ctrl.useOp = 1;
@@ -2279,6 +2280,8 @@ module decoder (
       // interupt
       // disable interupts and jump
       INTERUPT:  begin
+        // subtract from pc
+        ctrl.pcSel = PC_M1;
       end
       INTERUPT2:  begin
         // subtract sp

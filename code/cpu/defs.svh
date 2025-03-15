@@ -4,7 +4,8 @@ package defs;
   `define DOC
   
   typedef enum logic [2:0] {
-      PC_1,                 // PC + instrSz
+      PC_1,                 // PC + 1
+      PC_M1,                 // PC - 1
       PC_RS,                 // PC + instrSz
       PC_IDU,                 // PC + instrSz
       PC_PRE,                 // PC + instrSz

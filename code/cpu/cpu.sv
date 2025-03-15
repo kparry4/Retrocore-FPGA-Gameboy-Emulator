@@ -61,6 +61,7 @@ module cpu (
   // select next pc
   always_comb case(ctrl.pcSel)
     PC_1: npc = pc+1;
+    PC_M1: npc = pc-1;
     PC_IDU: npc = iduOut+1;
     PC_RS: npc = rs16+1;
     PC_PRE: npc = pre+1;
@@ -162,6 +163,7 @@ module cpu (
     WADR_FLG: memWadr = 16'hff0f;
     default: memWadr = 'x;
   endcase
+  
   always_comb case(ctrl.wdatSel)
     WDAT_RS2: memWdata = memWadr[0] ? {rs2, memData[7:0]} : {memData[15:8], rs2};
     // if youre writting pc you better be writting the entire pc

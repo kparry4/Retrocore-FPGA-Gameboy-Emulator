@@ -30,7 +30,7 @@ module alu (
   // // assign addIn1 = aluOp==ALU_ADD2 ? 0 : src1;
   // assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0];
   // assign {carry, tsum} = src1[7:4] + addIn2[7:4] + bcarry + addCin[7:4];
-  assign addIn2 = daa ? nflg ? -adj : adj : sub ? ~(aluOp==ALU_ADD2 ? {7{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {7{src2[7]}} : src2);
+  assign addIn2 = daa ? nflg ? -adj : adj : sub ? ~(aluOp==ALU_ADD2 ? {8{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {8{src2[7]}} : src2);
   assign addCin = sub ? {8{useC&cin}} : useC&cin; //*** may be a tad slow
   // assign addIn1 = aluOp==ALU_ADD2 ? 0 : src1;
   assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0] + sub;

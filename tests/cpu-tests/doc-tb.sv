@@ -63,7 +63,7 @@ module tb;
       cnts = {cnts, 1256634};
     end if(`TEST == "intr" || `TEST == "2" || `TEST == "all") begin
       tests = {tests, "02-interrupts"};
-      cnts = {cnts, 0};
+      cnts = {cnts, 161058};
     end if(`TEST == "sphl" || `TEST == "3" || `TEST == "all") begin
       tests = {tests, "03-opsp,hl"};
       cnts = {cnts, 0};
@@ -105,7 +105,7 @@ module tb;
 
 
   always @(negedge clk) begin
-    if(cpu.ctrl.done&(cpu.decoder.cb!==1'b1)) begin
+    if(cpu.ctrl.done&(cpu.decoder.cb!==1'b1)&(cpu.decoder.mpc!==INTERUPT5)) begin
       @(posedge clk);
       $fwrite(f,"A:%02h F:%02h B:%02h C:%02h D:%02h E:%02h H:%02h L:%02h SP:%04h PC:%04h PCMEM:%02h,%02h,%02h,%02h\n",
               cpu.regfile.regs[A],cpu.regfile.regs[F],
@@ -117,8 +117,8 @@ module tb;
               );
     cnt++;
     end
-    if(cnt>cnts[progNum]) begin $display("finish early");$fclose(f); $finish; end
-    // if(cnt>2554101) begin $display("finish early");$fclose(f); $finish; end
+    // if(cnt>cnts[progNum]) begin $display("finish");$fclose(f); $finish; end
+    if(cnt>152009) begin $display("finish early");$fclose(f); $finish; end
     if(stop) begin
       $display("Finshed %s\n", tests[progNum]);
       progNum++;
