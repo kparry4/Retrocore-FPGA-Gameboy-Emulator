@@ -20,7 +20,7 @@
 ## PROGRAM "Quartus Prime"
 ## VERSION "Version 23.1std.1 Build 993 05/14/2024 SC Standard Edition"
 
-## DATE    "Wed Mar 12 13:23:05 2025"
+## DATE    "Fri Mar 14 17:54:32 2025"
 
 ##
 ## DEVICE  "EP4CE115F29C7"
@@ -40,7 +40,7 @@ set_time_format -unit ns -decimal_places 3
 #**************************************************************
 
 create_clock -name {CLOCK_50} -period 50.000 -waveform { 0.000 25.000 } [get_ports { CLOCK_50 }]
-create_clock -name {wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE} -period 50.000 -waveform { 0.000 25.000 } [get_registers {wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE}]
+create_clock -name {wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE} -period 50.000 -waveform { 0.000 25.000 } [get_registers { wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE }]
 
 
 #**************************************************************

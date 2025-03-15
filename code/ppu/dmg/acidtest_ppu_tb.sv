@@ -42,10 +42,10 @@ module dualport_readonly_mem (
   // Initialize each array from a HEX file. Provide the correct file names:
   initial begin
     // vram.txt should have 8192 hex bytes.
-    $readmemh("../ppu/dmgacid2/vram.txt", vram);
+    $readmemh("../dmg/dmgacid2/vram.txt", vram);
 
     // oam.txt should have 160 hex bytes.
-    $readmemh("../ppu/dmgacid2/oam.txt", oam);
+    $readmemh("../dmg/dmgacid2/oam.txt", oam);
   end
 
   // ----------------------------------------------------------------
@@ -306,7 +306,7 @@ module tb_PPU;
   // Write the captured frame to a PPM file when a full frame is captured.
   initial begin
     wait(pixel_count >= WIDTH * HEIGHT);
-    file = $fopen("dmgacid2_new2.ppm", "w");
+    file = $fopen("dmgacid2.ppm", "w");
     if (file == 0) begin
       $display("ERROR: Could not open frame.ppm for writing.");
       $finish;

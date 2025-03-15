@@ -20,61 +20,6 @@ module I2S_Master (
   logic [15:0] tx_shift;
   logic [4:0]  bit_cnt;  // Count 0 to 31
 
-  // Generate mclk: simple divider by 4.
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-      mclk_div <= 2'd0;
-    else
-      mclk_div <= mclk_div + 1;
-  end
-  assign mclk = mclk_div[1];  // mclk = 12.5 MHz
-
-  // Generate bclk: divide mclk by 4 (example)
-  always_ff @(posedge mclk or negedge rst_n) begin
-    if (!rst_n)
-      bclk_div <= 3'd0;
-    else
-      bclk_div <= bclk_div + 1;
-  end
-  assign bclk = bclk_div[2];  // For example, adjust the division as needed
-
-  // Generate lrclk: toggles every sample period.
-  // For stereo, one sample per channel – here assume 32 bclk cycles per channel.
-  always_ff @(posedge bclk or negedge rst_n) begin
-    if (!rst_n)
-      sample_cnt <= 10'd0;
-    else if (sample_cnt == 10'd63)
-      sample_cnt <= 10'd0;
-    else
-      sample_cnt <= sample_cnt + 1;
-  end
-  // When sample_cnt < 32, assume left channel; otherwise, right.
-  assign lrclk = (sample_cnt < 32) ? 1'b1 : 1'b0;
-
-  // Transmit logic:
-  // Load a new audio sample when new_sample is asserted and at the beginning of a channel period.
-  always_ff @(posedge bclk or negedge rst_n) begin
-    if (!rst_n) begin
-      tx_shift <= 16'd0;
-      bit_cnt  <= 5'd0;
-    end else begin
-      // At the start of a new sample period (e.g., when sample_cnt == 0), load new data.
-      if (sample_cnt == 10'd0 && new_sample)
-        tx_shift <= audio_data;
-      else if (bit_cnt < 5'd16) begin
-        // Shift out data on the proper bclk edge. For I²S, data is typically updated on the rising edge.
-        sdata   <= tx_shift[15];
-        tx_shift <= {tx_shift[14:0], 1'b0};
-        bit_cnt <= bit_cnt + 1;
-      end else begin
-        // After 16 valid bits, the remaining bits can be zeros.
-        sdata   <= 1'b0;
-      end
-
-      // Reset bit counter at the end of the sample period.
-      if (sample_cnt == 10'd31 || sample_cnt == 10'd63)
-        bit_cnt <= 5'd0;
-    end
-  end
+ 
 
 endmodule
