@@ -42,10 +42,10 @@ module dualport_readonly_mem (
   // Initialize each array from a HEX file. Provide the correct file names:
   initial begin
     // vram.txt should have 8192 hex bytes.
-    $readmemh("../ppu/dmgacid2/vram.txt", vram);
+    $readmemh("../dmg/pokemon_red/vram.txt", vram);
 
     // oam.txt should have 160 hex bytes.
-    $readmemh("../ppu/dmgacid2/oam.txt", oam);
+    $readmemh("../dmg/pokemon_red/oam.txt", oam);
   end
 
   // ----------------------------------------------------------------
@@ -181,17 +181,17 @@ module tb_PPU;
   // Basic initialization.
   initial begin
     reset = 1;
-    LCDC   = 8'hd1;
+    LCDC   = 8'he3;
     STAT_in = 8'd0;
     LY     = 8'd0;
     LYC    = 8'd0;
-    SCX    = 8'hf3;
-    SCY    = 8'h20;
-    WX     = 8'h5f;
-    WY     = 8'h28;
+    SCX    = 8'h0;
+    SCY    = 8'h0;
+    WX     = 8'h0;
+    WY     = 8'h0;
     BGP    = 8'he4;
-    OBP0   = 8'he4;
-    OBP1   = 8'h2c;
+    OBP0   = 8'h00;
+    OBP1   = 8'h00;
     #20;
     reset = 0;
     
@@ -235,7 +235,7 @@ module tb_PPU;
   // Write the captured frame to a PPM file when a full frame is captured.
   initial begin
     wait(pixel_count >= WIDTH * HEIGHT);
-    file = $fopen("dmgacid2_new2.ppm", "w");
+    file = $fopen("pokemon_red.ppm", "w");
     if (file == 0) begin
       $display("ERROR: Could not open frame.ppm for writing.");
       $finish;

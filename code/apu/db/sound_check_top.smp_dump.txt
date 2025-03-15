@@ -1,9 +1,0 @@
-
-State Machine - |sound_check_top|wm8731_configurator:u_config|i2c_master:u_i2c|state
-Name state.I2C_COMPLETE state.I2C_STOP state.I2C_WAIT_ACK state.I2C_SEND state.I2C_START state.I2C_IDLE 
-state.I2C_IDLE 0 0 0 0 0 0 
-state.I2C_START 0 0 0 0 1 1 
-state.I2C_SEND 0 0 0 1 0 1 
-state.I2C_WAIT_ACK 0 0 1 0 0 1 
-state.I2C_STOP 0 1 0 0 0 1 
-state.I2C_COMPLETE 1 0 0 0 0 1 

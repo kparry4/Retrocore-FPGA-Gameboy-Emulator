@@ -130,6 +130,7 @@ module OAM_Search (
   input  logic          reset,
   input  logic          start,
   input  logic [7:0]    current_line,
+  input  logic [7:0]    LCDC,
   output logic [15:0]   oam_port0_addr,
   input  logic [15:0]   oam_port0_data,
   output logic [15:0]   oam_port1_addr,
@@ -139,9 +140,12 @@ module OAM_Search (
   output sprite_t       selected_sprites [0:9]
 );
 
-  parameter SPRITE_HEIGHT = 8;
-
   localparam OAM_TABLE_BASE_ADDRESS = 16'hFE00;
+
+  logic [7:0] sprite_height;
+  always_comb begin
+    sprite_height = (LCDC[2] ? 8'd16 : 8'd8);
+  end
 
   typedef enum logic [1:0] {
     OAM_IDLE,
@@ -160,7 +164,7 @@ module OAM_Search (
   typedef enum logic { SORT_EVEN, SORT_ODD } sort_phase_t;
   sort_phase_t sort_phase;
 
-  assign sprite_count = selected_count;
+  assign sprite_count = LCDC[1] ? selected_count : 4'd0;
   
   // Sequential logic for fetching and sorting OAM sprites.
   always_ff @(posedge clk or posedge reset) begin
@@ -196,7 +200,7 @@ module OAM_Search (
           temp_sprite.tile_index  = oam_port1_data[7:0];
           temp_sprite.flags       = oam_port1_data[15:8];
           if ((current_line >= (oam_port0_data[7:0] - 8'd16)) &&
-              (current_line < (oam_port0_data[7:0] - 8'd16 + SPRITE_HEIGHT))) begin
+              (current_line < (oam_port0_data[7:0] - 8'd16 + sprite_height))) begin
             if (selected_count < 4'd10) begin
               selected_sprites_reg[selected_count] <= temp_sprite;
               selected_count <= selected_count + 1;
@@ -441,13 +445,22 @@ module Render_BG (
   // Register to hold the fetched tile data word (16 bits covering the current tile row).
   logic [15:0] bg_tile_data_word;
 
+  // Latch SCX at start of scanline.
+  logic [7:0] scx_latched;
+  always_ff @(posedge clk or posedge reset) begin
+    if(reset)
+      scx_latched <= 8'd0;
+    else if(state == BG_IDLE && start)
+      scx_latched <= SCX;
+  end
+
   //==================================================================
   // Window / BG Mode Calculations
   //==================================================================
   // Window mode is active if LCDC[5] is set, LY >= WY, and (SCX + pixel_total) >= (WX - 7)
   logic use_window;
   always_comb begin
-    use_window = (LCDC[5] && (LY >= WY) && ((SCX + pixel_total) >= (WX - 7)));
+    use_window = (LCDC[5] && (LY >= WY) && ((scx_latched + pixel_total) >= (WX - 7)));
   end
 
   // Compute the effective screen X coordinate.
@@ -470,7 +483,7 @@ module Render_BG (
   logic [4:0] tile_x, tile_y;
   always_comb begin
     if (!use_window) begin
-      tile_x = ((SCX + pixel_total) >> 3) & 5'b11111;
+      tile_x = ((scx_latched + pixel_total) >> 3) & 5'b11111;
       tile_y = (bg_y >> 3) & 5'b11111;
     end else begin
       tile_x = (((screen_x - (WX - 7)) >> 3)) & 5'b11111;
@@ -499,20 +512,24 @@ module Render_BG (
   //==================================================================
   // Tile Data Address Calculation
   //==================================================================
-  // Determine the row offset within a tile: each tile row uses 2 bytes.
-  // (effective_line % 8) * 2.
   logic [3:0] tile_row_offset;
   assign tile_row_offset = (effective_line[2:0] * 2);
-
-  // Use the captured tile_map_index_reg in place of the direct port0_data.
-  // When LCDC[4] is 1, use unsigned addressing (base 0x8000); otherwise, use signed addressing (base 0x9000).
   logic signed [7:0] tile_number;
   assign tile_map_index_reg = port0_data[7:0];
-  assign tile_number = tile_map_index_reg; // For signed addressing, values >= 128 are negative.
+  assign tile_number = tile_map_index_reg;
   logic [15:0] tile_data_addr;
-  assign tile_data_addr = (LCDC[4])
-                          ? (16'h8000 + (tile_map_index_reg * 16) + tile_row_offset)
-                          : (16'h9000 + (tile_number * 16) + tile_row_offset);
+
+  always_comb begin 
+    if (LCDC[4]) begin 
+      tile_data_addr = 16'h8000 + (tile_map_index_reg * 16) + tile_row_offset;
+    end else begin 
+      if (tile_number > 8'd127) begin 
+        tile_data_addr = 16'h8800 + ((tile_number - 8'd128) * 16) + tile_row_offset;
+      end else begin 
+        tile_data_addr = 16'h9000 + (tile_number * 16) + tile_row_offset;
+      end 
+    end 
+  end 
 
   //==================================================================
   // Pixel Data Generation
@@ -588,7 +605,7 @@ module Render_BG (
         BG_PROCESS_PIXELS: begin
           // Compute the X coordinate for the current pixel.
           bg_pixel.x <= (use_window ? (pixel_total + (WX - 7))
-                                     : ((SCX + pixel_total) & 8'hFF))
+                                     : ((scx_latched + pixel_total) & 8'hFF))
                         + pixel_index;
           bg_pixel.y <= effective_line;
           // If BG is disabled, output transparent pixel (00); otherwise, extract pixel data.
@@ -769,7 +786,7 @@ module Render_Sprites (
     candidate_index = 4'd0;
     best_x = 8'hFF;
     for (i = 0; i < 10; i = i + 1) begin
-      if ((i < sprite_count) && (x_coord >= sprites[i].x) && (x_coord < (sprites[i].x + 8))) begin
+      if ((i < sprite_count) && (x_coord < sprites[i].x) && (x_coord >= (sprites[i].x - 8))) begin
         if (!candidate_valid) begin
           candidate_valid = 1'b1;
           candidate_index = i[3:0];
@@ -1184,7 +1201,6 @@ module VGA_Controller (
   );
 endmodule
 
-
 //==================================================================
 // Module: PPU_Wrapper
 // Description: Top-level PPU module integrating mode control, STAT,
@@ -1283,6 +1299,7 @@ module PPU_Wrapper (
     .reset(reset),
     .start((dot == 9'd0) ? 1'b1 : 1'b0),
     .current_line(LY),
+    .LCDC(LCDC),
     .oam_port0_addr(oam0_addr_sig),
     .oam_port0_data(port0_data),  // In OAM mode, port0_data comes from memory.
     .oam_port1_addr(oam1_addr_sig),
