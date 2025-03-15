@@ -51,6 +51,7 @@ module regfile (
       if(flgWen[2]) regs[F][6] = flg[2];
       if(flgWen[3]) regs[F][7] = flg[3];
     end
+    regs[F][3:0] = 4'b0;
   end
 
   assign carry = regs[F][4];

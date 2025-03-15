@@ -163,9 +163,15 @@ module cpu (
     WADR_FLG: memWadr = 16'hff0f;
     default: memWadr = 'x;
   endcase
-  
+
+  logic [7:0] rs2old;
+  logic [15:1] wadrOld;
+  logic [15:1] tmp;
+  assign tmp = memWadr[15:1];
+  flopenr #(23) memfwdflop(clk,rst,memWen,{memWadr[0]?memWdata[15:8]:memWdata[7:0],tmp},{rs2old,wadrOld});
   always_comb case(ctrl.wdatSel)
-    WDAT_RS2: memWdata = memWadr[0] ? {rs2, memData[7:0]} : {memData[15:8], rs2};
+    WDAT_RS2: memWdata = memWadr[0] ? memWadr[15:1]==wadrOld ? {rs2, rs2old} : {rs2, memData[7:0]} : 
+                                      memWadr[15:1]==wadrOld ? {rs2old, rs2} : {memData[15:8], rs2};
     // if youre writting pc you better be writting the entire pc
     WDAT_PCL: memWdata = memWadr[0] ? {pc[7:0], memData[7:0]} : pc;
     WDAT_PC: memWdata = memWadr[0] ? pc : {memData[15:8], pc[15:8]}; 

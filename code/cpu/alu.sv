@@ -80,7 +80,7 @@ module alu (
   assign selb = src1[b];
 
   // zero flag
-  assign flg[3] = ((aluOp == ALU_BIT) ? selb : ~|aluOut)&flgKill[3]|flgSet[3];
+  assign flg[3] = ((aluOp == ALU_BIT) ? ~selb : ~|aluOut)&flgKill[3]|flgSet[3];
   // neg flag
   assign flg[2] = flgSet[2];
   // to calculate carry include sign extension for both the half and full carry

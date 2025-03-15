@@ -60,37 +60,37 @@ module tb;
 
     if(`TEST == "spec" || `TEST == "1" || `TEST == "all") begin
       tests = {tests, "01-special"};
-      cnts = {cnts, 1256634};
+      cnts = {cnts, 1256634}; // works
     end if(`TEST == "intr" || `TEST == "2" || `TEST == "all") begin
       tests = {tests, "02-interrupts"};
-      cnts = {cnts, 161058};
+      cnts = {cnts, 161058}; // test later
     end if(`TEST == "sphl" || `TEST == "3" || `TEST == "all") begin
       tests = {tests, "03-opsp,hl"};
-      cnts = {cnts, 0};
+      cnts = {cnts, 1066161}; // works
     end if(`TEST == "rimm" || `TEST == "4" || `TEST == "all") begin
       tests = {tests, "04-opr,imm"};
-      cnts = {cnts, 0};
+      cnts = {cnts, 1260505};
     end if(`TEST == "rp" || `TEST == "5" || `TEST == "all") begin
       tests = {tests, "05-oprp"};
-      cnts = {cnts, 0};
+      cnts = {cnts, 1761127};
     end if(`TEST == "ldrr" || `TEST == "6" || `TEST == "all") begin
       tests = {tests, "06-ldr,r"};
-      cnts = {cnts, 241012};
+      cnts = {cnts, 241012}; // works
     end if(`TEST == "jp" || `TEST == "7" || `TEST == "all") begin
       tests = {tests, "07-jr,jp,call,ret,rst"};
-      cnts = {cnts, 0};
+      cnts = {cnts, 587416};
     end if(`TEST == "misc" || `TEST == "8" || `TEST == "all") begin
-      tests = {tests, "08-misc instrs"};
-      cnts = {cnts, 0};
+      tests = {tests, "08-miscinstrs"};
+      cnts = {cnts, 221631};
     end if(`TEST == "rr" || `TEST == "9" || `TEST == "all") begin
       tests = {tests, "09-opr,r"};
-      cnts = {cnts, 4418121};
+      cnts = {cnts, 4418121}; // works
     end if(`TEST == "bit" || `TEST == "10" || `TEST == "all") begin
-      tests = {tests, "10-bit ops"};
-      cnts = {cnts, 0};
+      tests = {tests, "10-bitops"};
+      cnts = {cnts, 6712462};
     end if(`TEST == "ahl" || `TEST == "11" || `TEST == "all") begin
       tests = {tests, "11-opa,(hl)"};
-      cnts = {cnts, 0};
+      cnts = {cnts, 7427501};
     end if(tests[0] == "") begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;
@@ -117,8 +117,8 @@ module tb;
               );
     cnt++;
     end
-    // if(cnt>cnts[progNum]) begin $display("finish");$fclose(f); $finish; end
-    if(cnt>152009) begin $display("finish early");$fclose(f); $finish; end
+    if(cnt>cnts[progNum]) begin $display("finish");$fclose(f); $finish; end
+    // if(cnt>1462901) begin $display("finish early");$fclose(f); $finish; end
     if(stop) begin
       $display("Finshed %s\n", tests[progNum]);
       progNum++;

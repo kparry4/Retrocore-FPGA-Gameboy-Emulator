@@ -42,7 +42,7 @@ module decoder (
       cb=0;
       // if finished an instr then get new mpc
       if(done) begin
-        if(instr == 8'hCB) cb=1;
+        if((instr == 8'hCB) & ~cbpre) cb=1;
         casez(instr)
           8'hCB: mpc=NOP;
           8'b00000000: mpc=NOP;
@@ -72,7 +72,7 @@ module decoder (
           8'b11010110: mpc=SUB_N;
           8'b10011110: mpc=SBC_HL;
           8'b11011110: mpc=SBC_N;
-          8'b10011110: mpc=CP_HL;
+          8'b10111110: mpc=CP_HL;
           8'b11111110: mpc=CP_N;
           8'b10100110: mpc=AND_HL;
           8'b11100110: mpc=AND_N;
@@ -136,7 +136,7 @@ module decoder (
             8'b00010110: mpc=RL_HL;
             8'b00011110: mpc=RR_HL;
             8'b00100110: mpc=SLA_HL;
-            8'b00101110: mpc=SLA_HL;
+            8'b00101110: mpc=SRA_HL;
             8'b00110110: mpc=SWAP_HL;
             8'b00111110: mpc=SRL_HL;
             8'b01???110: mpc=BIT_HL;
@@ -837,6 +837,7 @@ module decoder (
         ctrl.rd = L;
         ctrl.rdSel = RD_ALU;
         ctrl.flgWen = 4'b1111;
+        ctrl.flgKill = 4'b0011;
         ctrl.aluOp = ALU_ADD;
         ctrl.rdWen = 1;
         ctrl.pcen = 0;
@@ -848,8 +849,6 @@ module decoder (
         ctrl.rd = H;
         ctrl.rdSel = RD_ALU;
         ctrl.rdWen = 1;
-        ctrl.flgWen = 4'b1111;
-        ctrl.flgKill = 4'b0011;
         ctrl.aluOp = ALU_ADD2;
         ctrl.useOp = 1;
         ctrl.done = 1;
@@ -2228,6 +2227,7 @@ module decoder (
         ctrl.rdSel = RD_IDU;
         ctrl.rdWen = 1;
         ctrl.rdW16 = 1;
+        ctrl.pcen = 0;
         // read sp-- from memory
         ctrl.adrSel = ADR_IDU;
       end
