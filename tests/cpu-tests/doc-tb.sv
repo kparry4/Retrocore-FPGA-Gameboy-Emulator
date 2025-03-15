@@ -84,7 +84,7 @@ module tb;
       cnts = {cnts, 0};
     end if(`TEST == "rr" || `TEST == "9" || `TEST == "all") begin
       tests = {tests, "09-opr,r"};
-      cnts = {cnts, 0};
+      cnts = {cnts, 4418121};
     end if(`TEST == "bit" || `TEST == "10" || `TEST == "all") begin
       tests = {tests, "10-bit ops"};
       cnts = {cnts, 0};
@@ -118,6 +118,7 @@ module tb;
     cnt++;
     end
     if(cnt>cnts[progNum]) begin $display("finish early");$fclose(f); $finish; end
+    // if(cnt>2554101) begin $display("finish early");$fclose(f); $finish; end
     if(stop) begin
       $display("Finshed %s\n", tests[progNum]);
       progNum++;

@@ -89,7 +89,7 @@ module decoder (
           8'b11101000: mpc=ADD_SPE;
           8'b00000111: mpc=RLCA;
           8'b00001111: mpc=RRCA;
-          8'b00010111: mpc=RRCA;
+          8'b00010111: mpc=RLA;
           8'b00011111: mpc=RRA;
           8'b11000011: mpc=JP_NN;
           8'b11101001: mpc=JP_HL;
