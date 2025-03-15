@@ -12,8 +12,8 @@ module tb;
   logic memValid;
   logic [9:0][7:0] soln;
   logic rst=0, clk=0;
-  logic memWen, ieen, stop;
-  logic [7:0] newie, ie, iflg;
+  logic memWen, iflgen, stop;
+  logic [7:0] newiflg, ie, iflg;
   logic [15:0] memWadr;
   logic [15:0] memWdata, tmp;
 
@@ -34,7 +34,7 @@ module tb;
     memData = tmp;
   end
   cpu cpu (.memData, .memAdr, .memValid, .rst, .clk,
-           .memWen, .memWadr, .memWdata);
+           .memWen, .memWadr, .memWdata, .*);
 
   always #5 clk = ~clk;
 

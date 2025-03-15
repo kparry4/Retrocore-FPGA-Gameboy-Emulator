@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Fri Mar 14 20:18:25 2025
+Quartus Prime Version : 23.1std.1 Build 993 05/14/2024 SC Standard Edition
+Revision Name : sound_check_top
+Top-level Entity Name : sound_check_top
+Family : Cyclone IV E
+Total logic elements : 996
+    Total combinational functions : 620
+    Dedicated logic registers : 740
+Total registers : 740
+Total pins : 26
+Total virtual pins : 0
+Total memory bits : 180,224
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0

@@ -1,9 +1,11 @@
 `ifndef DEFS
 `define DEFS
 package defs;
+  `define DOC
   
   typedef enum logic [2:0] {
-      PC_1,                 // PC + instrSz
+      PC_1,                 // PC + 1
+      PC_M1,                 // PC - 1
       PC_RS,                 // PC + instrSz
       PC_IDU,                 // PC + instrSz
       PC_PRE,                 // PC + instrSz
@@ -14,6 +16,7 @@ package defs;
   typedef enum logic [2:0] {
       ADR_PC,                // PC
       ADR_FF,                // FF00+rs1
+      ADR_FFN,                // FF00+n
       ADR_RS,                // send 16 bit rs as addr
       ADR_NRS,               // use rs1 and msb of nn
       ADR_IDU,               // IDU result
@@ -25,6 +28,7 @@ package defs;
   typedef enum logic [2:0] {
       WADR_RS,                // send 16 bit rs as addr
       WADR_FF,                // send FF00+rs1 as addr
+      WADR_FLG,                // interupt flag register adr
       WADR_DC = 'x            // Don't care value
   } wadr_sel_t;
 
@@ -43,8 +47,9 @@ package defs;
   typedef enum logic [2:0] {
       WDAT_RS2,                // sleect rs2 as write mem data
       // WDAT_N,                // n as write mem data
-      WDAT_PC,                // n as write mem data
-      WDAT_PCL,                // n as write mem data
+      WDAT_PC,                // write upper pc
+      WDAT_PCL,                // write lower pc
+      WDAT_FLG,                // write to flags
       WDAT_DC = 'x            // Don't care value
   } wdat_sel_t;
 

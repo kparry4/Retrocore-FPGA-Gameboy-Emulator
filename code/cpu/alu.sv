@@ -13,7 +13,8 @@ module alu (
 
   logic [7:0] addIn2;
   logic [3:0] bsum,tsum;
-  logic bcarry;
+  // logic bcarry;
+  logic [1:0] bcarry;
   logic carry;
   logic selb;
   logic [7:0] addCin, adj, bitRes;
@@ -24,10 +25,15 @@ module alu (
   assign daa = (aluOp==ALU_DAA);
 
   // add/subtract
-  assign addIn2 = daa ? nflg ? -adj : adj : sub ? -(aluOp==ALU_ADD2 ? {7{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {7{src2[7]}} : src2);
-  assign addCin = sub ? -(useC&cin) : useC&cin;
+  // assign addIn2 = daa ? nflg ? -adj : adj : sub ? -(aluOp==ALU_ADD2 ? {7{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {7{src2[7]}} : src2);
+  // assign addCin = sub ? -(useC&cin) : useC&cin;
+  // // assign addIn1 = aluOp==ALU_ADD2 ? 0 : src1;
+  // assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0];
+  // assign {carry, tsum} = src1[7:4] + addIn2[7:4] + bcarry + addCin[7:4];
+  assign addIn2 = daa ? nflg ? -adj : adj : sub ? ~(aluOp==ALU_ADD2 ? {8{src2[7]}} : src2) : (aluOp==ALU_ADD2 ? {8{src2[7]}} : src2);
+  assign addCin = sub ? {8{useC&cin}} : useC&cin; //*** may be a tad slow
   // assign addIn1 = aluOp==ALU_ADD2 ? 0 : src1;
-  assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0];
+  assign {bcarry, bsum} = src1[3:0] + addIn2[3:0] + addCin[3:0] + sub;
   assign {carry, tsum} = src1[7:4] + addIn2[7:4] + bcarry + addCin[7:4];
 
   always_comb begin
@@ -74,16 +80,17 @@ module alu (
   assign selb = src1[b];
 
   // zero flag
-  assign flg[3] = ((aluOp == ALU_BIT) ? selb : ~|aluOut)&flgKill[3]|flgSet[3];
+  assign flg[3] = ((aluOp == ALU_BIT) ? ~selb : ~|aluOut)&flgKill[3]|flgSet[3];
   // neg flag
   assign flg[2] = flgSet[2];
+  // to calculate carry include sign extension for both the half and full carry
   // half carry flag
-  assign flg[1] = ((bcarry^sub)&flgKill[1])|flgSet[1];
+  assign flg[1] = ((bcarry^(sub&~addCin[7]))&flgKill[1])|flgSet[1];
   // carry flag
-  assign flg[0] = (aluOp == ALU_DAA) ? |adj[7:4] : 
+  assign flg[0] = (((aluOp == ALU_DAA) ? |adj[7:4] : 
                   (aluOp==ALU_RLC)|(aluOp==ALU_RL)|(aluOp==ALU_SLA) ? src1[7] : 
                   (aluOp==ALU_RRC)|(aluOp==ALU_RR)|(aluOp==ALU_SRA)|(aluOp==ALU_SRL) ? src1[0] : 
                   (aluOp == ALU_CCF) ? ~cin : 
-                  ((carry^sub)&flgKill[0])|flgSet[0];
+                  (carry^(sub&~addCin[7]))&flgKill[0]))|flgSet[0];
 
 endmodule

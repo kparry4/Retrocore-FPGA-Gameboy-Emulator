@@ -1,7 +1,6 @@
 `timescale 1ns/1ps
 `default_nettype none
 
-
 module dualport_readonly_mem (
   input  logic        clk,
 
@@ -43,10 +42,10 @@ module dualport_readonly_mem (
   // Initialize each array from a HEX file. Provide the correct file names:
   initial begin
     // vram.txt should have 8192 hex bytes.
-    $readmemh("../ppu/tetris/frame3/vram.txt", vram);
+    $readmemh("../dmg/dmgacid2/vram.txt", vram);
 
     // oam.txt should have 160 hex bytes.
-    $readmemh("../ppu/tetris/frame3/oam.txt", oam);
+    $readmemh("../dmg/dmgacid2/oam.txt", oam);
   end
 
   // ----------------------------------------------------------------
@@ -109,10 +108,12 @@ module dualport_readonly_mem (
 
 endmodule
 
-
 //------------------------------------------------------------------
 // Testbench for PPU_Wrapper with File Output in PPM Format
 //------------------------------------------------------------------
+`timescale 1ns/1ps
+`default_nettype none
+
 module tb_PPU;
   // Clock and reset signals.
   logic         clk;
@@ -134,6 +135,7 @@ module tb_PPU;
   logic         frame_pixel_valid;
   logic         hsync, vsync;
   logic [11:0]  vga_color;
+  logic [1:0]   mode;
   
   // Instantiate the PPU_Wrapper.
   PPU_Wrapper uut (
@@ -150,6 +152,7 @@ module tb_PPU;
     .BGP(BGP),
     .OBP0(OBP0),
     .OBP1(OBP1),
+    .mode(mode),
     .port0_addr(port0_addr),
     .port0_read_en(port0_read_en),
     .port0_data(port0_data),
@@ -157,10 +160,7 @@ module tb_PPU;
     .port1_read_en(port1_read_en),
     .port1_data(port1_data),
     .frame_pixel(frame_pixel),
-    .frame_pixel_valid(frame_pixel_valid),
-    .hsync(hsync),
-    .vsync(vsync),
-    .vga_color(vga_color)
+    .frame_pixel_valid(frame_pixel_valid)
   );
   
   // Instantiate the dual-port memory.
@@ -180,26 +180,95 @@ module tb_PPU;
     forever #5 clk = ~clk;
   end
   
-  // Basic initialization.
+  // Basic initialization and dynamic register updates.
+  // The following loop simulates one frame (154 scanlines, 456 cycles each)
+  // and updates registers at specific scanlines to mimic the assembly routines.
   initial begin
-    reset = 1;
-    LCDC   = 8'h91;
+    reset   = 1;
+    // Set initial registers (matching your original testbench values)
+    LCDC    = 8'hd1;  // Initially: LCD on, window map $9C00, BG on, and (sprite size = 8x16)
     STAT_in = 8'd0;
-    LY     = 8'd0;
-    LYC    = 8'd0;
-    SCX    = 8'd0;
-    SCY    = 8'd0;
-    WX     = 8'd7;
-    WY     = 8'd0;
-    BGP    = 8'he4;
-    OBP0   = 8'hd2;
-    OBP1   = 8'hd2;
+    LY      = 8'd0;
+    LYC     = 8'h08;  // Schedule first mid‑frame change at scanline 8.
+    SCX     = 8'hf3;
+    SCY     = 8'h20;
+    WX      = 8'h5F;  // On‑screen position (0x58+7)
+    WY      = 8'h28;
+    BGP     = 8'he4;
+    OBP0    = 8'he4;
+    OBP1    = 8'h2c;
     #20;
     reset = 0;
     
-    // Drive LY for one frame (154 scanlines, 456 cycles each).
+    // For each scanline, update LY and check for mid‑frame changes.
     for (integer line = 0; line < 154; line = line + 1) begin
       LY = line;
+      
+      // Implement the same mid‑frame changes as in the assembly routines:
+      if (line == 8) begin
+        // LY_08: disable background (clear bit0) then set LYC = 0x10.
+        LCDC = LCDC & ~8'h01;
+        LYC  = 8'h10;
+      end else if (line == 16) begin
+        // LY_10: enable background (set bit0) and window (set bit5); set LYC = 0x30.
+        LCDC = LCDC | 8'h01;  // set bit0
+        LCDC = LCDC | 8'h20;  // set bit5
+        LYC  = 8'h30;
+      end else if (line == 48) begin
+        // LY_30: disable alternate tile data (clear bit4); set LYC = 0x38.
+        LCDC = LCDC & ~8'h10;
+        LYC  = 8'h38;
+      end else if (line == 56) begin
+        // LY_38: disable window by moving WX off‐screen and re‑enable tile data (set bit4); set LYC = 0x3F.
+        WX   = 8'd240;       // 240 is off‐screen.
+        LCDC = LCDC | 8'h10;  // set bit4
+        LYC  = 8'h3F;
+      end else if (line == 63) begin
+        // LY_3F: again ensure window is disabled (WX remains off‑screen); set LYC = 0x58.
+        WX   = 8'd240;
+        LYC  = 8'h58;
+      end else if (line == 88) begin
+        // LY_58: set sprite size to 8x16 (set bit2); set LYC = 0x68.
+        LCDC = LCDC | 8'h04;  // set bit2
+        LYC  = 8'h68;
+      end else if (line == 104) begin
+        // LY_68: change sprite size to 8x8 (clear bit2) and disable sprites (clear bit1); set LYC = 0x70.
+        LCDC = LCDC & ~8'h04;  // clear bit2
+        LCDC = LCDC & ~8'h02;  // clear bit1
+        LYC  = 8'h70;
+      end else if (line == 112) begin
+        // LY_70: enable window by positioning WX on‑screen (0x5F) and disable window map $9800 (clear bit6); set LYC = 0x80.
+        WX   = 8'h5F;
+        LCDC = LCDC & ~8'h40;  // clear bit6
+        LYC  = 8'h80;
+      end else if (line == 128) begin
+        // LY_80: enable bg map $9C00 (set bit3) and disable alternate tile data (clear bit4); set LYC = 0x81.
+        LCDC = LCDC | 8'h08;   // set bit3
+        LCDC = LCDC & ~8'h10;  // clear bit4
+        LYC  = 8'h81;
+      end else if (line == 129) begin
+        // LY_81: disable window (clear bit5) and switch to window map $9C00 (set bit6); set LYC = 0x82.
+        LCDC = LCDC & ~8'h20;  // clear bit5
+        LCDC = LCDC | 8'h40;   // set bit6
+        LYC  = 8'h82;
+      end else if (line == 130) begin
+        // LY_82: adjust SCX for proper footer positioning; set LYC = 0x8F.
+        SCX  = 8'hf3;
+        LYC  = 8'h8F;
+      end else if (line == 143) begin
+        // LY_8F: disable bg map $9800 (clear bit3) and enable tile data bank $8000-8FFF (set bit4); set LYC = 0x90.
+        LCDC = LCDC & ~8'h08;  // clear bit3
+        LCDC = LCDC | 8'h10;   // set bit4
+        LYC  = 8'h90;
+      end else if (line == 144) begin
+        // LY_90: enable sprites (set bit1) and restore SCX to 0; then cycle LYC back to 0x08.
+        LCDC = LCDC | 8'h02;   // set bit1
+        SCX  = 8'h00;
+        LYC  = 8'h08;
+        // (In the assembly code a frame counter is decremented here.)
+      end
+      
+      // Simulate each scanline taking 456 clock cycles.
       repeat (456) @(posedge clk);
     end
     repeat (10) @(posedge clk);
@@ -207,7 +276,7 @@ module tb_PPU;
   end
   
   //------------------------------------------------------------------
-  // Frame Capture and PPM File Writing
+  // Frame Capture and PPM File Writing (unchanged)
   //------------------------------------------------------------------
   localparam WIDTH  = 160;
   localparam HEIGHT = 144;
@@ -237,7 +306,7 @@ module tb_PPU;
   // Write the captured frame to a PPM file when a full frame is captured.
   initial begin
     wait(pixel_count >= WIDTH * HEIGHT);
-    file = $fopen("tetris_game.ppm", "w");
+    file = $fopen("dmgacid2.ppm", "w");
     if (file == 0) begin
       $display("ERROR: Could not open frame.ppm for writing.");
       $finish;

@@ -1,0 +1,137 @@
+------------------------------------------------------------
+Timing Analyzer Summary
+------------------------------------------------------------
+
+Type  : Slow 1200mV 85C Model Setup 'CLOCK_50'
+Slack : 22.911
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Setup 'altera_reserved_tck'
+Slack : 43.638
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Setup 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 45.242
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'CLOCK_50'
+Slack : 0.295
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'altera_reserved_tck'
+Slack : 0.403
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Hold 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 0.403
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Recovery 'altera_reserved_tck'
+Slack : 94.664
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Removal 'altera_reserved_tck'
+Slack : 1.411
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'CLOCK_50'
+Slack : 24.628
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 24.755
+TNS   : 0.000
+
+Type  : Slow 1200mV 85C Model Minimum Pulse Width 'altera_reserved_tck'
+Slack : 49.560
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'CLOCK_50'
+Slack : 23.047
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'altera_reserved_tck'
+Slack : 44.137
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Setup 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 45.642
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'CLOCK_50'
+Slack : 0.302
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'altera_reserved_tck'
+Slack : 0.354
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Hold 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 0.354
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Recovery 'altera_reserved_tck'
+Slack : 95.235
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Removal 'altera_reserved_tck'
+Slack : 1.294
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'CLOCK_50'
+Slack : 24.648
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 24.733
+TNS   : 0.000
+
+Type  : Slow 1200mV 0C Model Minimum Pulse Width 'altera_reserved_tck'
+Slack : 49.486
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'CLOCK_50'
+Slack : 23.810
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'altera_reserved_tck'
+Slack : 46.932
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Setup 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 47.630
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'CLOCK_50'
+Slack : 0.115
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 0.181
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Hold 'altera_reserved_tck'
+Slack : 0.182
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Recovery 'altera_reserved_tck'
+Slack : 97.119
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Removal 'altera_reserved_tck'
+Slack : 0.669
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'CLOCK_50'
+Slack : 24.372
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'wm8731_configurator:u_config|i2c_master:u_i2c|state.I2C_COMPLETE'
+Slack : 24.775
+TNS   : 0.000
+
+Type  : Fast 1200mV 0C Model Minimum Pulse Width 'altera_reserved_tck'
+Slack : 49.454
+TNS   : 0.000
+
+------------------------------------------------------------
