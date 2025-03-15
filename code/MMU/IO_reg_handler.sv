@@ -31,6 +31,7 @@ module IO_handler(input logic clock,
                   input logic stop_inst_hit,
 
                   output logic [15:0] cpu_out_data,
+                  output logic        cpu_data_valid,
                   
                   output logic restart_after_stop,
                   output logic halted,
@@ -88,60 +89,150 @@ module IO_handler(input logic clock,
     
     always_comb begin
         casez(cpu_addr)
-        `JOYPAD:         out_data = JOYPAD_OUTPUT;
-        `SERIAL_TRANS_D: out_data = 16'hFF;//dont think we need this
-        `SERIAL_TRANS_C: out_data = 16'hFF;//dont think we need this
-        `DIV:            out_data = DIV_R;
-        `TIMA:           out_data = TIMA_R;
-        `TMA:            out_data = TMA_R;
-        `TAC:            out_data = TAC_R;
-        `IF: out_data = IF_R;
+        `JOYPAD:         begin  
+                              out_data       = JOYPAD_OUTPUT; 
+                              cpu_data_valid = 1'b1; 
+                         end
+        `SERIAL_TRANS_D: begin 
+                              out_data       = 16'hFF;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `SERIAL_TRANS_C: begin 
+                              out_data       = 16'hFF; 
+                              cpu_data_valid = 1'b1; 
+                         end
+        `DIV:            begin 
+                              out_data       = DIV_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `TIMA:           begin 
+                              out_data       = TIMA_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `TMA:            begin 
+                              out_data       = TMA_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `TAC:            begin 
+                              out_data       = TAC_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `IF:             begin 
+                              out_data       = IF_R;
+                              cpu_data_valid = 1'b1; 
+                         end
 
         `NR10,          
         `NR11,          
         `NR12,          
         `NR13,          
-        `NR14:           out_data = APU_R.NR1x_R[cpu_addr - `NR10][7:0];
+        `NR14:           begin 
+                              out_data       = APU_R.NR1x_R[cpu_addr - `NR10][7:0];
+                              cpu_data_valid = 1'b1; 
+                         end
         
         `NR21,          
         `NR22,           
         `NR23,           
-        `NR24:           out_data = APU_R.NR2x_R[cpu_addr - `NR21][7:0];
+        `NR24:           begin 
+                              out_data       = APU_R.NR2x_R[cpu_addr - `NR21][7:0];
+                              cpu_data_valid = 1'b1; 
+                         end
         
         `NR30,           
         `NR31,           
         `NR32,           
         `NR33,           
-        `NR34:           out_data = APU_R.NR3x_R[cpu_addr - `NR30][7:0];
+        `NR34:           begin 
+                              out_data       = APU_R.NR3x_R[cpu_addr - `NR30][7:0];
+                              cpu_data_valid = 1'b1; 
+                         end
         
         `NR41,           
         `NR42,           
         `NR43,           
-        `NR44:           out_data = APU_R.NR4x_R[cpu_addr - `NR41][7:0];    
+        `NR44:           begin 
+                              out_data       = APU_R.NR4x_R[cpu_addr - `NR41][7:0];
+                              cpu_data_valid = 1'b1; 
+                         end    
         
-        `NR50:           out_data = APU_R.NR50_R;
-        `NR51:           out_data = APU_R.NR51_R;
-        `NR52:           out_data = NR52_R;
+        `NR50:           begin 
+                              out_data       = APU_R.NR50_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `NR51:           begin 
+                              out_data       = APU_R.NR51_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `NR52:           begin 
+                              out_data       = NR52_R;
+                              cpu_data_valid = 1'b1; 
+                         end
         
         
-        16'hFF3?:        out_data = APU_R.WAV_RAM_R[cpu_addr - `WAV_RAM_START][7:0];
+        16'hFF3?:        begin 
+                              out_data       = APU_R.WAV_RAM_R[cpu_addr - `WAV_RAM_START][7:0]; 
+                              cpu_data_valid = 1'b1; 
+                         end
         
         
-        `LCDC:           out_data = LCDC_R;
-        `STAT:           out_data = STAT_R;
-        `SCY:            out_data = PPU_R.SCY_R;
-        `SCX:            out_data = PPU_R.SCX_R;
-        `LY:             out_data = PPU_R.LY_R;
-        `LYC:            out_data = PPU_R.LYC_R;
-        `DMA:            out_data = DMA_R;
-        `BGP:            out_data = PPU_R.BGP_R;
-        `OBP0:            out_data = PPU_R.OBP0_R;
-        `OBP1:            out_data = PPU_R.OBP1_R;
-        `WY:            out_data = PPU_R.WY_R;
-        `WX:            out_data = PPU_R.WX_R;
+        `LCDC:           begin 
+                              out_data       = LCDC_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `STAT:           begin 
+                              out_data       = STAT_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `SCY:            begin 
+                              out_data       = PPU_R.SCY_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `SCX:            begin 
+                              out_data       = PPU_R.SCX_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `LY:             begin 
+                              out_data        = PPU_R.LY_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `LYC:            begin 
+                              out_data           = PPU_R.LYC_R;
+                              cpu_data_valid = 1'b1;
+                         end
+        `DMA:            begin 
+                              out_data       = DMA_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `BGP:            begin 
+                              out_data       = PPU_R.BGP_R;
+                              cpu_data_valid = 1'b1;
+                         end
+        `OBP0:           begin 
+                              out_data       = PPU_R.OBP0_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `OBP1:           begin 
+                              out_data       = PPU_R.OBP1_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `WY:            begin 
+                              out_data       = PPU_R.WY_R;
+                              cpu_data_valid = 1'b1;
+                        end
+        `WX:            begin 
+                              out_data       = PPU_R.WX_R;
+                              cpu_data_valid = 1'b1; 
+                        end
 
-        `IE:     out_data = IE_R; 
-        default:           out_data = 16'hxx;  
+        `IE:            begin 
+                              out_data       = IE_R;
+                              cpu_data_valid = 1'b1;
+                        end 
+        default:        begin 
+                              out_data       = 16'hxx;
+                              cpu_data_valid = 1'b0; 
+                        end  
         endcase
     end
     
@@ -256,8 +347,10 @@ module IO_handler(input logic clock,
                     tima_ticks <= '0;
                 end else if(TAC_R[2]) begin
                     TIMA_R <= TIMA_R + 8'h1;
+                    tima_ticks <= '0;
                 end else begin
                     TIMA_R <= TIMA_R;
+                    tima_ticks <= '0;
                 end         
             end else begin
                 TIMA_R <= TIMA_R;

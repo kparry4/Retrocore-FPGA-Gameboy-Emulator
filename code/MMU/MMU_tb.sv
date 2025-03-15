@@ -100,6 +100,7 @@ module MMU_TB();
         cpu_in_data <= data;    
         @(posedge cpu_clock);
         cpu_wren <= 1'b0;
+        @(posedge cpu_clock);
     endtask
 
     task init_ppu_address();
@@ -142,8 +143,10 @@ module MMU_TB();
     endtask
 
 
-    task write_tac(input logic enable, input logic[1:0] clock_select);
+    task write_TAC(input logic enable, input logic[1:0] clock_select);    
         write_IO(`TAC, {5'b0, enable, clock_select});
+
+
     endtask
 
 
@@ -304,17 +307,35 @@ module MMU_TB();
             **/
 
             for(int timer_clock_select = 0; timer_clock_select < 4; timer_clock_select++) begin
-                write_tac(1'b1, timer_clock_select);
+                do_cpu_read(`ROM_0_START);
+                @(posedge cpu_clock);
+                @(posedge cpu_clock);
+                @(posedge cpu_clock);
+                write_TAC(1'b1, timer_clock_select);
+                @(posedge cpu_clock);
                 $display("changing tac to %d \n", timer_clock_select);
                 
                 for(int timer_modulo = 5; timer_modulo < 30; timer_modulo+=10) begin
                     write_IO(`TMA, timer_modulo);
                     $display("changing tma to %d \n", timer_modulo);
-                    for(int j = 0; j < 2500; j++) begin
-                        @(posedge cpu_clock);
-                    end
+                    clock_cycles(2500);
                     $display("finished clockc cylces, moving on\n");
                 end
+
+                clock_cycles(3);
+                write_IO(`DIV, 16'h1); //this should clear divider
+                clock_cycles(20);
+                do_cpu_read(`TAC);
+                @(posedge cpu_clock);
+                do_cpu_read(`DIV);
+                @(posedge cpu_clock);
+                do_cpu_read(`TIMA);
+                @(posedge cpu_clock);
+                do_cpu_read(`TMA);
+                @(posedge cpu_clock);
+                clock_cycles(5);
+                @(posedge cpu_clock);
+
 
                 do_reset();
             end

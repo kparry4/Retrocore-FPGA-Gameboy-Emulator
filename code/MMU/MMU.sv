@@ -104,6 +104,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     logic[15:0] memory_out_cpu_data;
     logic[15:0] IO_out_cpu_data;
 
+    logic cpu_IO_data_valid, cpu_memory_data_valid;
+
     ///////////////////////////////////////////
     //      MEMORY DECLARATIONS
     ///////////////////////////////////////////  
@@ -111,7 +113,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     always_comb begin
         if(within_range(cpu_addr, `IO_START, `IO_END)) begin
             /* even case: {8'd0, IO_data}
-               odd case: {IO_data, 8'd0}  */            
+               odd case: {IO_data, 8'd0}  */    
+            cpu_data_valid = cpu_IO_data_valid;        
             if(is_even(cpu_addr)) begin
                 cpu_out_data = {8'd0, IO_out_cpu_data};
             end else begin
@@ -119,6 +122,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
             end
         end else begin
             cpu_out_data = memory_out_cpu_data;
+            cpu_data_valid = cpu_memory_data_valid;
         end
     end  
 
@@ -141,6 +145,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .ppu_mode,
                               .stop_inst_hit,
                               .cpu_out_data(IO_out_cpu_data),
+                              .cpu_data_valid(cpu_IO_data_valid),
                               .restart_after_stop,
                               .halted,
                               .JOYPAD_R,
@@ -175,7 +180,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .cpu_out_data(memory_out_cpu_data),
                               .ppu_out_data1,
                               .ppu_out_data2,
-                              .cpu_data_valid(cpu_data_valid),
+                              .cpu_data_valid(cpu_memory_data_valid),
                               .ppu_data_valid(ppu_data_valid));
 endmodule: MMU
 
