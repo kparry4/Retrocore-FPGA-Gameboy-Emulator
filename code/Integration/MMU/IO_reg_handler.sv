@@ -1,0 +1,487 @@
+//`default_nettype none
+`include "RegisterPkg.svh"
+`include "addresses.svh"
+`include "select.svh"
+ 
+
+module IO_handler(input logic clock, 
+                  input logic reset,
+
+                  input logic vblank,
+
+
+                  input logic [15:0] cpu_addr,
+                  input logic        cpu_wren,
+
+                  input logic [15:0] cpu_in_data,
+
+                  input logic         joypad_select,
+                  input logic         joypad_start,
+                
+                  input logic         joypad_dpad_up,
+                  input logic         joypad_dpad_down,
+                  input logic         joypad_dpad_left,  
+                  input logic         joypad_dpad_right,
+                  input logic         joypad_a_button,  
+                  input logic         joypad_b_button,
+
+                  input logic [3:0] APU_NR52_bits,
+                  input logic [1:0] ppu_mode,
+
+                  input logic stop_inst_hit,
+
+                  output logic [15:0] cpu_out_data,
+                  output logic        cpu_data_valid,
+                  
+                  output logic restart_after_stop,
+                  output logic halted,
+
+                  output logic [7:0] JOYPAD_R,
+                  output logic [7:0] JOYPAD_OUTPUT,
+                  
+                  output logic[7:0] NR52_R, //Audio registers
+                  output APU_DATA   APU_R,
+
+                  output logic[7:0] LCDC_R, //PPU Registers
+                  output logic[7:0] STAT_R,
+                  output PPU_DATA   PPU_R,
+                  
+                  output logic[7:0] DIV_R,// (FF04)
+                  output logic[7:0] TIMA_R,  // (FF05)
+                  output logic[7:0] TMA_R,  // (FF06)
+                  output logic[7:0] TAC_R, // (FF07)
+
+                  output logic [7:0] IF_R, //interrupt flag
+                  output logic [7:0] IE_R, //interrupt enable
+
+                  output logic [7:0] DMA_R,
+                  output logic [7:0] BOOT_ROM_EN_R,
+                  
+                  output logic start_dma);
+         
+    localparam integer clock_freq = 4_000_000;
+    localparam integer DIV_TICK_COUNT = clock_freq/16384 * 2; //should be 244
+    logic [11:0] TIMA_TICK_COUNT; //this would be local param but it gets set during runtime
+    
+    logic[10:0] tima_ticks, divider_ticks; 
+
+    logic vblank_sync;
+    logic vblank_posedge;
+
+    logic tima_overflow;
+    assign tima_overflow = (tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2] && TIMA_R == 16'hFF);
+
+    assign vblank_posedge = ~vblank_sync && vblank;
+
+    logic joypad_press;
+    assign joypad_press = |({joypad_select, joypad_start, joypad_b_button, joypad_a_button}
+                              || {joypad_dpad_down, joypad_dpad_up, joypad_dpad_left, joypad_dpad_right});
+
+
+    logic [7:0] cpu_IO_in_data;
+
+    logic even_cpu_io_addr;
+    assign even_cpu_io_addr = is_even(cpu_addr);
+
+    assign cpu_IO_in_data = is_even(cpu_addr) ? cpu_in_data[7:0] : cpu_in_data[15:8];
+
+    logic [15:0] out_data;
+    
+    always_comb begin
+        casez(cpu_addr)
+        `JOYPAD:         begin  
+                              out_data       = JOYPAD_OUTPUT; 
+                              cpu_data_valid = 1'b1; 
+                         end
+        `SERIAL_TRANS_D: begin 
+                              out_data       = 16'hFF;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `SERIAL_TRANS_C: begin 
+                              out_data       = 16'hFF; 
+                              cpu_data_valid = 1'b1; 
+                         end
+        `DIV:            begin 
+                              out_data       = DIV_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `TIMA:           begin 
+                              out_data       = TIMA_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `TMA:            begin 
+                              out_data       = TMA_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `TAC:            begin 
+                              out_data       = TAC_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `IF:             begin 
+                              out_data       = IF_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+
+        `NR10,          
+        `NR11,          
+        `NR12,          
+        `NR13,          
+        `NR14:           begin 
+                              out_data       = APU_R.NR1x_R[cpu_addr - `NR10][7:0];
+                              cpu_data_valid = 1'b1; 
+                         end
+        
+        `NR21,          
+        `NR22,           
+        `NR23,           
+        `NR24:           begin 
+                              out_data       = APU_R.NR2x_R[cpu_addr - `NR21][7:0];
+                              cpu_data_valid = 1'b1; 
+                         end
+        
+        `NR30,           
+        `NR31,           
+        `NR32,           
+        `NR33,           
+        `NR34:           begin 
+                              out_data       = APU_R.NR3x_R[cpu_addr - `NR30][7:0];
+                              cpu_data_valid = 1'b1; 
+                         end
+        
+        `NR41,           
+        `NR42,           
+        `NR43,           
+        `NR44:           begin 
+                              out_data       = APU_R.NR4x_R[cpu_addr - `NR41][7:0];
+                              cpu_data_valid = 1'b1; 
+                         end    
+        
+        `NR50:           begin 
+                              out_data       = APU_R.NR50_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `NR51:           begin 
+                              out_data       = APU_R.NR51_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `NR52:           begin 
+                              out_data       = NR52_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        
+        
+        16'hFF3?:        begin 
+                              out_data       = APU_R.WAV_RAM_R[cpu_addr - `WAV_RAM_START][7:0]; 
+                              cpu_data_valid = 1'b1; 
+                         end
+        
+        
+        `LCDC:           begin 
+                              out_data       = LCDC_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `STAT:           begin 
+                              out_data       = STAT_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `SCY:            begin 
+                              out_data       = PPU_R.SCY_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `SCX:            begin 
+                              out_data       = PPU_R.SCX_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `LY:             begin 
+                              out_data        = PPU_R.LY_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `LYC:            begin 
+                              out_data           = PPU_R.LYC_R;
+                              cpu_data_valid = 1'b1;
+                         end
+        `DMA:            begin 
+                              out_data       = DMA_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `BGP:            begin 
+                              out_data       = PPU_R.BGP_R;
+                              cpu_data_valid = 1'b1;
+                         end
+        `OBP0:           begin 
+                              out_data       = PPU_R.OBP0_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `OBP1:           begin 
+                              out_data       = PPU_R.OBP1_R;
+                              cpu_data_valid = 1'b1; 
+                         end
+        `WY:            begin 
+                              out_data       = PPU_R.WY_R;
+                              cpu_data_valid = 1'b1;
+                        end
+        `WX:            begin 
+                              out_data       = PPU_R.WX_R;
+                              cpu_data_valid = 1'b1; 
+                        end
+
+        `IE:            begin 
+                              out_data       = IE_R;
+                              cpu_data_valid = 1'b1;
+                        end 
+        default:        begin 
+                              out_data       = 16'hxx;
+                              cpu_data_valid = 1'b0; 
+                        end  
+        endcase
+    end
+    
+    
+    always_comb begin
+        case(TAC_R[1:0])
+        2'b00: TIMA_TICK_COUNT = 2048; //1024 cpu cycles
+        2'b01: TIMA_TICK_COUNT = 32; //16 cpu cycles
+        2'b10: TIMA_TICK_COUNT = 128; //64 cpu cycles
+        2'b11: TIMA_TICK_COUNT = 512; //256 cpu cycles
+        default: TIMA_TICK_COUNT = 0; //HOPEFULLY unreachable
+        endcase
+    end
+
+    always_comb begin
+        casex(JOYPAD_R[5:4])
+        2'bx0: JOYPAD_OUTPUT = {joypad_select, joypad_start, joypad_b_button, joypad_a_button};
+        2'b0x: JOYPAD_OUTPUT = {joypad_dpad_down, joypad_dpad_up, joypad_dpad_left, joypad_dpad_right};
+        default: JOYPAD_OUTPUT = '0; //unreachable?
+        endcase
+    end
+
+    always_ff@(posedge clock) begin
+        cpu_out_data <= out_data; //delay by a cycle to be consistent with BRAM behavior
+        if(reset) begin
+            halted             <= 1'b0;
+            restart_after_stop <= 1'b0;
+            vblank_sync        <= 1'b0;
+            tima_ticks          <= '0;
+            divider_ticks      <= '0;
+
+            JOYPAD_R   <= '0;
+            NR52_R     <= '0;
+            APU_R      <= '0;
+            LCDC_R     <= '0;
+            STAT_R     <= 8'h80; //1 in MSB for dmg mode
+            PPU_R      <= '0;
+            DIV_R      <= '0;
+            TIMA_R     <= '0;
+            TMA_R      <= '0;
+            TAC_R      <= '0;
+            IF_R       <= '0;
+            IE_R       <= '0;
+            DMA_R      <= '0;
+            BOOT_ROM_EN_R <= 1'b1;
+
+        end else if(stop_inst_hit || halted) begin
+            //if stop instruction, FREEZE everything, turn off LCDC
+            //keep it this way until a joypad press 
+
+            if(joypad_press) begin
+                halted <= 1'b0;
+                restart_after_stop <= 1'b1;
+            end
+            else begin
+                halted <= 1'b1;
+                restart_after_stop <= 1'b0;
+            end
+            
+            LCDC_R        <= 1'b0; 
+            vblank_sync   <= 1'b0;
+            JOYPAD_R      <= JOYPAD_R;
+            NR52_R        <= NR52_R; //apu register
+            APU_R         <= APU_R; //apu regisTERS
+            STAT_R        <= STAT_R; //ppu register
+            PPU_R         <= PPU_R;  //ppu regisTERS
+            DIV_R         <= DIV_R; //timers
+            TIMA_R        <= TIMA_R;
+            TMA_R         <= TMA_R;
+            TAC_R         <= TAC_R;
+            IF_R          <= IF_R; //interrupts
+            IE_R          <= IE_R;
+            DMA_R         <= DMA_R; //dma
+            BOOT_ROM_EN_R <= BOOT_ROM_EN_R; //boot rom switch        
+        end else begin
+            halted <= 1'b0;
+            restart_after_stop <= 1'b0;
+            vblank_sync <= vblank;
+            
+            //HANDLE joypad:
+            if(cpu_addr == `JOYPAD && cpu_wren) begin
+                //7,6,5 are empty
+                JOYPAD_R[5:4] <= cpu_IO_in_data[1:0]; //double check this
+            end
+
+            //HANDLE DIV: Divider
+            if(cpu_addr == `DIV && cpu_wren) begin
+                DIV_R <= 8'd0;
+            end else begin
+                //based on speed switch (tbd, this can increment double speed)
+                if(divider_ticks == DIV_TICK_COUNT - 1) begin
+                    divider_ticks <= '0;
+                    DIV_R <= DIV_R + 8'd1;
+                end else begin
+                    divider_ticks <= divider_ticks + 1;
+                    DIV_R <= DIV_R;
+                end
+            end
+
+            //HANDLE TMA: timer modulo
+            if(cpu_addr == `TMA && cpu_wren) begin
+                TMA_R <= cpu_IO_in_data;
+            end else begin
+                TMA_R <= TMA_R;
+            end
+
+            //HANDLE TIMA: Timer Counter
+            if(tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2]) begin
+                if(TIMA_R == 8'hFF) begin
+                    TIMA_R <= TMA_R;
+                    tima_ticks <= '0;
+                end else if(TAC_R[2]) begin
+                    TIMA_R <= TIMA_R + 8'h1;
+                    tima_ticks <= '0;
+                end else begin
+                    TIMA_R <= TIMA_R;
+                    tima_ticks <= '0;
+                end         
+            end else begin
+                TIMA_R <= TIMA_R;
+                tima_ticks <= tima_ticks + 1'b1;
+            end
+
+            //HANDLE TAC: timer control
+            if(cpu_addr == `TAC && cpu_wren) begin
+                TAC_R <= cpu_IO_in_data;
+            end else begin
+                TAC_R <= TAC_R;
+            end
+
+
+
+            if(cpu_addr == `IF && cpu_wren) begin
+                IF_R <= cpu_IO_in_data;
+            end else begin
+                //handle INTERRUPT FLAG (7,6,5 are dont cares):
+                IF_R[3] <= 1'b0; //wserial control (not implented)
+                IF_R[1] <= |(STAT_R[6:3]); 
+
+                if(IF_R[4] == 1'b0) begin
+                    IF_R[4] <= joypad_press; 
+                end else begin
+                    IF_R[4] <= IF_R[4]; 
+                end
+
+                if(IF_R[2] == 1'b0) begin
+                    IF_R[2] <= tima_overflow;
+                end else begin
+                    IF_R[2] <= IF_R[2];
+                end
+
+                if(IF_R[0] == 1'b0) begin
+                    IF_R[0] <= vblank_posedge;   
+                end else begin
+                    IF_R[0] <= IF_R[0];   
+                end
+            end      
+
+            //APU-related writes
+            if(within_range(cpu_addr, `NR10, `WAV_RAM_END) && cpu_wren) begin
+                if(within_range(cpu_addr, `NR10, `NR14)) begin
+                    APU_R.NR1x_R[cpu_addr - `NR10][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `NR21, `NR24)) begin
+                    APU_R.NR2x_R[cpu_addr - `NR21][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `NR30, `NR34)) begin
+                    APU_R.NR3x_R[cpu_addr - `NR30][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `NR41, `NR44)) begin
+                    APU_R.NR4x_R[cpu_addr - `NR41][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `WAV_RAM_START, `WAV_RAM_END)) begin
+                    APU_R.WAV_RAM_R[cpu_addr - `WAV_RAM_START][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
+                end else if(cpu_addr == `NR50) begin
+                    APU_R.NR50_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `NR51) begin
+                    APU_R.NR51_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `NR52) begin
+                    NR52_R[7] <= cpu_IO_in_data[7]; //cpu can only write to 7th bit
+                end
+            end else begin
+                APU_R <= APU_R;
+                NR52_R[7] <= NR52_R[7];
+            end
+
+            NR52_R[3:0] <= NR52_R; //this is read only, always gets populated by APU
+
+
+            //DMA transfer write
+            if(cpu_addr == `DMA && cpu_wren) begin
+                DMA_R <= cpu_IO_in_data;
+                if(~start_dma) begin
+                    start_dma <= 1'b1;
+                end
+            end else begin
+                DMA_R <= DMA_R;
+                start_dma <= 1'b0;
+            end      
+
+
+            //PPU-related writes
+            if((within_range(cpu_addr, `LCDC, `OBP1) && cpu_wren)) begin           
+                if(cpu_addr == `LCDC) begin
+                    LCDC_R <= cpu_IO_in_data;//NOTE: stat is handled by ppu write
+                end else if(cpu_addr == `SCY) begin
+                    PPU_R.SCY_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `SCX) begin
+                    PPU_R.SCX_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `LY) begin
+                    PPU_R.LY_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `LYC) begin
+                    PPU_R.LYC_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `WX) begin
+                    PPU_R.WX_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `WY) begin
+                    PPU_R.WY_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `BGP) begin
+                    PPU_R.BGP_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `OBP0) begin
+                    PPU_R.OBP0_R <= cpu_IO_in_data;
+                end else if(cpu_addr == `OBP1) begin
+                    PPU_R.OBP1_R <= cpu_IO_in_data;
+                end
+            end else begin
+                LCDC_R <= LCDC_R;
+                PPU_R <= PPU_R;
+            end
+
+            STAT_R[1:0] <= ppu_mode;
+            STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R); 
+            STAT_R[3] <= (ppu_mode == 2'd0);
+            STAT_R[4] <= (ppu_mode == 2'd1);
+            STAT_R[5] <= (ppu_mode == 2'd2);
+            STAT_R[6] <= (PPU_R.LY_R == PPU_R.LYC_R); 
+
+
+
+
+            if(cpu_addr == `IE && cpu_wren) begin
+                IE_R <= cpu_IO_in_data;
+            end else begin
+                IE_R <= IE_R;
+            end
+
+            if(cpu_addr == `BOOT_ROM && cpu_wren) begin
+                BOOT_ROM_EN_R <= cpu_IO_in_data;
+            end else begin
+                BOOT_ROM_EN_R <= BOOT_ROM_EN_R;
+            end            
+        end
+    end
+
+endmodule: IO_handler
+
+

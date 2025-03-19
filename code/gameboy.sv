@@ -1,0 +1,49 @@
+module gameboy(
+  input logic clk,clk2, //*** make a second clock
+  input  logic rst,
+  input  logic ppu_mode
+);
+
+  logic [15:0] memData;
+  logic memValid;
+  logic [15:0] ie;
+  logic [15:0] iflg;
+  logic stop;
+  logic [15:0] memWdata;
+  logic [15:0] memWadr;
+  logic memWen;
+  logic [15:0] memAdr;
+  cpu cpu(.clk,
+          .rst,
+          .memData,
+          .memValid,
+          .ie,.iflg,
+          .stop,
+          .memWdata,
+          .memWadr,
+          .memWen,
+          .memAdr);
+
+  MMU mmu(.CLK_4MHZ(clk),
+          .rst,
+          .cpu_addr(memAdr),
+          .cpu_waddr(memWadr),
+          .cpu_wren(memWen),
+          .cpu_in_data(memWdata),
+          .stop_inst_hit(stop),
+          .ppu_mode(ppu_mode),
+          .hblank(ppu_mode==0),
+          .vblank(ppu_mode==1),
+          .joypad_select(1),
+          .joypad_start(1),
+          .joypad_dpad_up(0),
+          .joypad_dpad_down(0),
+          .joypad_dpad_left(0),
+          .joypad_dpad_right(0),
+          .joypad_a_button(1),
+          .joypad_b_button(1),
+          .APU_NR52(0),
+          .cpu_out_data(memData),
+          .cpu_data_valid(memValid));
+
+endmodule
