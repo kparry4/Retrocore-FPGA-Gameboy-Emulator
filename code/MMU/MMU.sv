@@ -41,6 +41,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
             input logic         joypad_a_button,
             input logic         joypad_b_button,  
 
+            input logic  [3:0]  APU_NR52,
+
 
             output logic [15:0] cpu_out_data,
             output logic        cpu_data_valid,
@@ -67,9 +69,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     logic[7:0] NR52_R; //mixed r/w register
     APU_DATA APU_R;
 
-    //----------INPUT from the APU
-    logic[3:0] APU_NR52_bits;
-    assign APU_NR52_bits = 4'b0000;    
+  
 
     //---PPU Registers
     logic[7:0] LCDC_R;
@@ -141,7 +141,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .joypad_dpad_right,
                               .joypad_a_button,
                               .joypad_b_button, 
-                              .APU_NR52_bits, 
+                              .APU_NR52_bits(APU_NR52), 
                               .ppu_mode,
                               .stop_inst_hit,
                               .cpu_out_data(IO_out_cpu_data),

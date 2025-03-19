@@ -18,6 +18,8 @@ module MMU_TB();
 
     logic [1:0]   ppu_mode;
 
+    logic [3:0]  APU_NR52;
+
     logic hblank;
     logic vblank;
 
@@ -117,6 +119,7 @@ module MMU_TB();
 
     task set_ppu_mode(input logic[1:0] new_mode);
         ppu_mode <= new_mode;
+        @(posedge cpu_clock);
     endtask    
 
 
@@ -142,17 +145,20 @@ module MMU_TB();
         end
     endtask
 
+    task dump_NR52(input logic[3:0] bits);
+        APU_NR52 = bits;
+    endtask
+
 
     task write_TAC(input logic enable, input logic[1:0] clock_select);    
         write_IO(`TAC, {5'b0, enable, clock_select});
-
-
     endtask
 
 
     task do_reset();
         reset <= 1'b1;
         init_ppu_address();
+        dump_NR52(4'b0000);
         stop_inst_hit <= 1'b0;
         cpu_addr <= `ROM_0_START;
         @(posedge clock);
@@ -294,7 +300,7 @@ module MMU_TB();
 
             end
         end
-        else if ($test$plusargs("BASIC_IO")) begin
+        else if ($test$plusargs("BASIC_TIMER")) begin
 
             set_ppu_mode(2'b00);
             do_reset();
@@ -316,43 +322,162 @@ module MMU_TB();
                 $display("changing tac to %d \n", timer_clock_select);
                 
                 for(int timer_modulo = 5; timer_modulo < 30; timer_modulo+=10) begin
+                    @(posedge cpu_clock);
                     write_IO(`TMA, timer_modulo);
+                    @(posedge cpu_clock);
                     $display("changing tma to %d \n", timer_modulo);
-                    clock_cycles(2500);
+                    clock_cycles(3000);
                     $display("finished clockc cylces, moving on\n");
+                    @(posedge cpu_clock);
                 end
 
-                clock_cycles(3);
+                clock_cycles(4);
                 write_IO(`DIV, 16'h1); //this should clear divider
                 clock_cycles(20);
                 do_cpu_read(`TAC);
-                @(posedge cpu_clock);
+                clock_cycles(4);
                 do_cpu_read(`DIV);
-                @(posedge cpu_clock);
+                clock_cycles(4);
                 do_cpu_read(`TIMA);
-                @(posedge cpu_clock);
+                clock_cycles(4);
                 do_cpu_read(`TMA);
-                @(posedge cpu_clock);
+                clock_cycles(4);
                 clock_cycles(5);
-                @(posedge cpu_clock);
+                write_IO(`IF, 8'b0);
+                clock_cycles(15);
 
 
                 do_reset();
             end
+        end
+            else if ($test$plusargs("BASIC_APU")) begin
+                /**AUDIO
+                --> provide NR52 with different values
+                --> all nrxx read/writes
+                **/
+                do_reset();
+                dump_NR52(4'b0000);
+                write_IO(`NR52, 8'b1111_0000);
 
+                write_IO(`NR10, 8'hAA); 
+                write_IO(`NR11, 8'hAB); 
+                write_IO(`NR12, 8'hAC); 
+                write_IO(`NR13, 8'hAD); 
+                write_IO(`NR14, 8'hAE); 
+
+                write_IO(`NR21, 8'hBA); 
+                write_IO(`NR22, 8'hBB); 
+                write_IO(`NR23, 8'hBC); 
+                write_IO(`NR24, 8'hBD); 
+
+                write_IO(`NR30, 8'hCA); 
+                write_IO(`NR31, 8'hCB); 
+                write_IO(`NR32, 8'hCC); 
+                write_IO(`NR33, 8'hCD); 
+                write_IO(`NR34, 8'hCE); 
+
+                write_IO(`NR41, 8'hDA); 
+                write_IO(`NR42, 8'hDB); 
+                write_IO(`NR43, 8'hDC); 
+                write_IO(`NR44, 8'hDD); 
+
+                for(int i = 0; i < 15; i++) begin
+                    write_IO(`WAV_RAM_START + i, 8'hE0 + i);
+                end
+
+                write_IO(`NR50, 8'hFA); 
+                write_IO(`NR51, 8'hFB); 
+                write_IO(`NR52, 8'hFC);
+
+                write_IO(`NR52, 8'd0);
+
+                clock_cycles(30);  
+
+                do_cpu_read(`NR52);
+
+                do_cpu_read(`NR10); 
+                do_cpu_read(`NR11); 
+                do_cpu_read(`NR12); 
+                do_cpu_read(`NR13); 
+                do_cpu_read(`NR14); 
+
+                do_cpu_read(`NR21); 
+                do_cpu_read(`NR22); 
+                do_cpu_read(`NR23); 
+                do_cpu_read(`NR24); 
+
+                do_cpu_read(`NR30); 
+                do_cpu_read(`NR31); 
+                do_cpu_read(`NR32); 
+                do_cpu_read(`NR33); 
+                do_cpu_read(`NR34); 
+
+                do_cpu_read(`NR41); 
+                do_cpu_read(`NR42); 
+                do_cpu_read(`NR43); 
+                do_cpu_read(`NR44); 
+
+                for(int i = 0; i < 15; i++) begin
+                    do_cpu_read(`WAV_RAM_START+i);
+                end
+
+                do_cpu_read(`NR50); 
+                do_cpu_read(`NR51); 
+                do_cpu_read(`NR52);
+            end
+            else if($test$plusargs("BASIC_PPU")) begin
+                /**PPU
+                    --> LCDC
+                    --> check if STAT makes sense
+                    --> all ppu read/writes
+                **/
+
+                do_reset();
+                for(int i = 0; i < 4; i++) begin
+                    set_ppu_mode(i);
+                    write_IO(`LCDC, 8'hAA);
+                    write_IO(`STAT, 8'hAB); //this should do nothing
+                    write_IO(`SCY,  8'hAC); 
+                    write_IO(`SCX,  8'hAD); 
+                    write_IO(`LY,   8'hAE);  
+                    write_IO(`LYC,  8'hAF); 
+                    // write_IO(`DMA, 8'hAB); 
+                    write_IO(`BGP,  8'hBA); 
+                    write_IO(`OBP0, 8'hBB);
+                    write_IO(`OBP1, 8'hBC);
+                    write_IO(`WY,   8'hBD);  
+                    write_IO(`WX,   8'hBE);
+                    clock_cycles(10);  
+
+                    write_IO(`LY,   8'hFE);  
+                    write_IO(`LYC,  8'hFE); 
+
+                    clock_cycles(5);
+                    write_IO(`LYC,  8'hFF); 
+
+                    write_IO(`IF, 8'd0);
+
+                    clock_cycles(30); 
+                    
+                    do_cpu_read(`LCDC);
+                    do_cpu_read(`STAT);
+                    do_cpu_read(`SCY); 
+                    do_cpu_read(`SCX); 
+                    do_cpu_read(`LY);  
+                    do_cpu_read(`LYC); 
+                    // do_cpu_read(`DMA); 
+                    do_cpu_read(`BGP); 
+                    do_cpu_read(`OBP0);
+                    do_cpu_read(`OBP1);
+                    do_cpu_read(`WY);  
+                    do_cpu_read(`WX); 
+
+
+
+                end
             
-            
-            /**AUDIO
-              --> provide NR52 with different values
-              --> all nrxx read/writes
-            **/
 
 
-            /**PPU
-                --> LCDC
-                --> check if STAT makes sense
-                --> all ppu read/writes
-            **/
 
 
             

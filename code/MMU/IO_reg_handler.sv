@@ -297,7 +297,6 @@ module IO_handler(input logic clock,
             JOYPAD_R      <= JOYPAD_R;
             NR52_R        <= NR52_R; //apu register
             APU_R         <= APU_R; //apu regisTERS
-            LCDC_R        <= LCDC_R; //ppu register
             STAT_R        <= STAT_R; //ppu register
             PPU_R         <= PPU_R;  //ppu regisTERS
             DIV_R         <= DIV_R; //timers
@@ -370,23 +369,20 @@ module IO_handler(input logic clock,
                 IF_R <= cpu_IO_in_data;
             end else begin
                 //handle INTERRUPT FLAG (7,6,5 are dont cares):
+                IF_R[3] <= 1'b0; //wserial control (not implented)
+                IF_R[1] <= |(STAT_R[6:3]); 
 
                 if(IF_R[4] == 1'b0) begin
                     IF_R[4] <= joypad_press; 
                 end else begin
                     IF_R[4] <= IF_R[4]; 
                 end
-                
+
                 if(IF_R[2] == 1'b0) begin
                     IF_R[2] <= tima_overflow;
                 end else begin
                     IF_R[2] <= IF_R[2];
                 end
-                
-                IF_R[3] <= 1'b0; //wserial control (not implented)
-                
-                
-                IF_R[1] <= |(STAT_R[6:3]); 
 
                 if(IF_R[0] == 1'b0) begin
                     IF_R[0] <= vblank_posedge;   
@@ -401,8 +397,8 @@ module IO_handler(input logic clock,
                     APU_R.NR1x_R[cpu_addr - `NR10][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
                 end else if(within_range(cpu_addr, `NR21, `NR24)) begin
                     APU_R.NR2x_R[cpu_addr - `NR21][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
-                end else if(within_range(cpu_addr, `NR31, `NR34)) begin
-                    APU_R.NR3x_R[cpu_addr - `NR31][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
+                end else if(within_range(cpu_addr, `NR30, `NR34)) begin
+                    APU_R.NR3x_R[cpu_addr - `NR30][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
                 end else if(within_range(cpu_addr, `NR41, `NR44)) begin
                     APU_R.NR4x_R[cpu_addr - `NR41][7:0] <= cpu_IO_in_data; //TODO: wonder if this is okay 
                 end else if(within_range(cpu_addr, `WAV_RAM_START, `WAV_RAM_END)) begin
@@ -437,8 +433,7 @@ module IO_handler(input logic clock,
             //PPU-related writes
             if((within_range(cpu_addr, `LCDC, `OBP1) && cpu_wren)) begin           
                 if(cpu_addr == `LCDC) begin
-                    LCDC_R <= cpu_IO_in_data;
-                    //NOTE: stat is handled by ppu write
+                    LCDC_R <= cpu_IO_in_data;//NOTE: stat is handled by ppu write
                 end else if(cpu_addr == `SCY) begin
                     PPU_R.SCY_R <= cpu_IO_in_data;
                 end else if(cpu_addr == `SCX) begin
