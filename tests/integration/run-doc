@@ -1,0 +1,4 @@
+./doc-sim $1
+./../../gameboy-doctor/gameboy-doctor /afs/andrew.cmu.edu/usr24/kparry/kparry/Private/Gameboy/tests/integration/output.txt cpu_instrs $1
+# input test number
+# use pwd to find correct path to output
