@@ -10,13 +10,13 @@ module tb;
   int cnts[];
   // solution in the first 3 words
   logic [7:0] prog [`INSTRS:0];
-  int cnt=0;;
+  int cnt=0;
   int progNum;
   logic [15:0] pc, memData,memAdr;
   string testname;
   logic memValid;
   logic [9:0][7:0] soln;
-  logic rst=0, clk=0;
+  logic rst=0, clk=1;
   logic memWen, iflgen, stop;
   logic [15:0] newie, ie, iflg;
   logic [15:0] memWadr;
@@ -121,7 +121,7 @@ module tb;
     cnt++;
     end
     if(cnt>cnts[progNum]) begin $display("finish");$fclose(f); $finish; end
-    if(cnt>4) begin $display("finish early");$fclose(f); $finish; end
+    if(cnt>16444) begin $display("finish early");$fclose(f); $finish; end
     if(gb.stop) begin
       $display("Finshed %s\n", tests[progNum]);
       progNum++;
