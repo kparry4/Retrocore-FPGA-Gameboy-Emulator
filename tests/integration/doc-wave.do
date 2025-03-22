@@ -1,5 +1,6 @@
 add wave -noupdate /tb/rst
 add wave -noupdate /tb/clk
+add wave -noupdate /tb/clk2
 add wave -noupdate /tb/pc
 add wave -noupdate /tb/gb/cpu/regfile/regs
 add wave -noupdate /tb/gb/cpu/ctrl.done

@@ -22,7 +22,7 @@ module tb;
   logic [15:0] memWadr;
   logic [15:0] memWdata, tmp;
   int file;
-  logic clk2; //*** make a second clock
+  logic clk2=0; //*** make a second clock
   logic ppu_mode;
   
   always @(posedge clk2) begin 
@@ -36,8 +36,8 @@ module tb;
   // flopenr #(16) ieflop(clk,rst,(memWadr==16'hffff)&memWen, memWdata, ie);
   gameboy gb (.clk,.clk2, .rst,.ppu_mode(2'b0));
 
-  always #5 clk = ~clk;
-  always #10 clk2 = ~clk2;
+  always #2.5 clk = ~clk;
+  always #5 clk2 = ~clk2;
 
   initial begin
     rst = 1;
