@@ -1,7 +1,7 @@
 module gameboy(
   input logic clk,clk2, //*** make a second clock
   input  logic rst,
-  input  logic ppu_mode
+  input  logic [1:0] ppu_mode
 );
 
   logic [15:0] memData;
@@ -13,7 +13,7 @@ module gameboy(
   logic [15:0] memWadr;
   logic memWen;
   logic [15:0] memAdr;
-  cpu cpu(.clk,
+  cpu cpu(.clk(clk2),
           .rst,
           .memData,
           .memValid,
@@ -34,15 +34,15 @@ module gameboy(
           .ppu_mode(ppu_mode),
           .hblank(ppu_mode==0),
           .vblank(ppu_mode==1),
-          .joypad_select(1),
-          .joypad_start(1),
-          .joypad_dpad_up(0),
-          .joypad_dpad_down(0),
-          .joypad_dpad_left(0),
-          .joypad_dpad_right(0),
-          .joypad_a_button(1),
-          .joypad_b_button(1),
-          .APU_NR52(0),
+          .joypad_select(1'b1),
+          .joypad_start(1'b1),
+          .joypad_dpad_up(1'b0),
+          .joypad_dpad_down(1'b0),
+          .joypad_dpad_left(1'b0),
+          .joypad_dpad_right(1'b0),
+          .joypad_a_button(1'b1),
+          .joypad_b_button(1'b1),
+          .APU_NR52(4'b0),
           .cpu_out_data(memData),
           .cpu_data_valid(memValid));
 

@@ -24,7 +24,7 @@ vlib work
 # start and run simulation
 # remove +acc flag for faster sim during regressions if there is no need to access internal signals
 # $num = the added words after the call
-vlog ../../code/Integration/cpu/*.svh ../../code/Integration/cpu/*.svh doc-tb.sv ../../code/Integration/cpu/*.sv ../../code/Integration/MMU/*.sv ../../code/Integration/MMU/*.svh ../../code/Integration/MMU/BRAMS/*.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/altera_primitives.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/220model.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/sgate.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/altera_mf.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/cyclonev_atoms.v ../../code/*.sv  +define+TEST="${1}"  -suppress 2583,7063,8607,2697 
+vlog ../../code/Integration/cpu/*.svh ../../code/Integration/MMU/MMU.sv ../../code/Integration/cpu/*.svh doc-tb.sv ../../code/Integration/cpu/*.sv ../../code/Integration/MMU/*.sv ../../code/Integration/MMU/*.svh ../../code/Integration/MMU/BRAMS/*.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/altera_primitives.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/220model.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/sgate.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/altera_mf.v /afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/cyclonev_atoms.v ../../code/*.sv  +define+TEST="${1}"  -suppress 2583,7063,8607,2697 
 # vlog ../../code/cpu/*.svh doc-tb.sv +define+TEST="${1}"  -suppress 2583,7063,8607,2697 
 
 # Change TEST_SIZE to only test certain FP width

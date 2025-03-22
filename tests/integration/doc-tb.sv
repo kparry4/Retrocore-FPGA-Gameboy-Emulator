@@ -1,7 +1,7 @@
 `include "../../code/cpu/defs.svh"
 `timescale 1 ps / 1 ps
 `define INSTRS (32'hFFFF)
-`define PATH "cpu_instrs/"
+`define PATH "../cpu-tests/cpu_instrs/"
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 
@@ -22,23 +22,22 @@ module tb;
   logic [15:0] memWadr;
   logic [15:0] memWdata, tmp;
   int file;
-  logic clk,clk2; //*** make a second clock
-  logic rst;
+  logic clk2; //*** make a second clock
   logic ppu_mode;
   
-  always @(posedge clk) begin 
-    pc = memAdr; 
+  always @(posedge clk2) begin 
+    pc = gb.memAdr; 
     tmp = (pc==16'hff44) ? 16'h90 : `PROG(pc);
-    if(memWen) `PROG(memWadr) = memWdata;
+    if(gb.memWen) `PROG(gb.memWadr) = gb.memWdata;
     #1; // little memory delay
-    memData = tmp;
+    // memData = tmp;
   end
-  flopenr #(16) iflgflop(clk,rst,(memWadr==16'hff0f)&memWen, memWdata, iflg);
-  flopenr #(16) ieflop(clk,rst,(memWadr==16'hffff)&memWen, memWdata, ie);
-  gameboy gb (.clk,.clk2, .rst,.ppu_mode);
+  // flopenr #(16) iflgflop(clk,rst,(memWadr==16'hff0f)&gb.memWen, gb.memWdata, iflg);
+  // flopenr #(16) ieflop(clk,rst,(memWadr==16'hffff)&memWen, memWdata, ie);
+  gameboy gb (.clk,.clk2, .rst,.ppu_mode(2'b0));
 
-  always #5 clk2 = ~clk2;
-  always #10 clk = ~clk;
+  always #5 clk = ~clk;
+  always #10 clk2 = ~clk2;
 
   initial begin
     rst = 1;
@@ -108,22 +107,22 @@ module tb;
   end
 
 
-  always @(negedge clk) begin
-    if(cpu.ctrl.done&(cpu.decoder.cb!==1'b1)&(cpu.decoder.mpc!==INTERUPT5)) begin
-      @(posedge clk);
+  always @(negedge clk2) begin
+    if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)&(gb.cpu.decoder.mpc!==INTERUPT5)) begin
+      @(posedge clk2);
       $fwrite(f,"A:%02h F:%02h B:%02h C:%02h D:%02h E:%02h H:%02h L:%02h SP:%04h PC:%04h PCMEM:%02h,%02h,%02h,%02h\n",
-              cpu.regfile.regs[A],cpu.regfile.regs[F],
-              cpu.regfile.regs[B],cpu.regfile.regs[C],
-              cpu.regfile.regs[D],cpu.regfile.regs[E],
-              cpu.regfile.regs[H],cpu.regfile.regs[L],
-              {cpu.regfile.regs[SP],cpu.regfile.regs[SPL]},memAdr,
-              prog[memAdr],prog[memAdr+1],prog[memAdr+2],prog[memAdr+3]
+              gb.cpu.regfile.regs[A],gb.cpu.regfile.regs[F],
+              gb.cpu.regfile.regs[B],gb.cpu.regfile.regs[C],
+              gb.cpu.regfile.regs[D],gb.cpu.regfile.regs[E],
+              gb.cpu.regfile.regs[H],gb.cpu.regfile.regs[L],
+              {gb.cpu.regfile.regs[SP],gb.cpu.regfile.regs[SPL]},gb.memAdr,
+              prog[gb.memAdr],prog[gb.memAdr+1],prog[gb.memAdr+2],prog[gb.memAdr+3]
               );
     cnt++;
     end
     if(cnt>cnts[progNum]) begin $display("finish");$fclose(f); $finish; end
     // if(cnt>1462901) begin $display("finish early");$fclose(f); $finish; end
-    if(stop) begin
+    if(gb.stop) begin
       $display("Finshed %s\n", tests[progNum]);
       progNum++;
       // reset cpu

@@ -126,4 +126,12 @@
     `define PCM12    16'hFF76
     `define PCM34    16'hFF77
 
+    function logic within_range(input logic [15:0] value, input logic [15:0] min, input logic [15:0] max);
+        return (value >= min) && (value <= max);
+    endfunction   
+
+    function logic is_even(input logic [15:0] address);
+        return address[0] == 1'b0;
+    endfunction    
+
 `endif
