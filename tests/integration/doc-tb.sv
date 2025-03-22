@@ -36,15 +36,15 @@ module tb;
   // flopenr #(16) ieflop(clk,rst,(memWadr==16'hffff)&memWen, memWdata, ie);
   gameboy gb (.clk,.clk2, .rst,.ppu_mode(2'b0));
 
-  always #2.5 clk = ~clk;
-  always #5 clk2 = ~clk2;
+  always #5 clk = ~clk;
+  always #10 clk2 = ~clk2;
 
   initial begin
     rst = 1;
     memValid = 0;
-    #9;
+    #18;
     rst = 0;
-    #7;
+    #14;
     memValid = 1;
       // $fwrite(f,"A:%02h F:%02h B:%02h C:%02h D:%02h E:%02h H:%02h L:%02h SP:%04h PC:%04h PCMEM:%02h,%02h,%02h,%02h\n",
       //         cpu.regfile.regs[A],cpu.regfile.regs[F],
@@ -138,7 +138,7 @@ module tb;
       testname = {`PATH, tests[progNum], ".txt"};
       $display("Running %s test ", tests[progNum]);
       $readmemh(testname, prog);
-      #15; rst=0;#7; memValid=1;
+      #30; rst=0;#14; memValid=1;
     end
   end
 
