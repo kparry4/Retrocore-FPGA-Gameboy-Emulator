@@ -9,7 +9,7 @@ module MMU_TB();
     logic cpu_clock;
     logic reset;
 
-    logic [15:0] cpu_addr;
+    logic [15:0] cpu_addr_read, cpu_addr_write;
     logic        cpu_wren;
     logic [15:0] cpu_in_data;
     
@@ -91,13 +91,13 @@ module MMU_TB();
     endtask
 
     task do_cpu_read(input logic[15:0] address);
-        cpu_addr <= address;
+        cpu_addr_read <= address;
         cpu_wren <= 1'b0;
         @(posedge cpu_clock);
     endtask
     
     task do_cpu_write(input logic[15:0] address, input logic[15:0] data);
-        cpu_addr <= address;
+        cpu_addr_write <= address;
         cpu_wren <= 1'b1;
         cpu_in_data <= data;    
         @(posedge cpu_clock);
@@ -160,7 +160,8 @@ module MMU_TB();
         init_ppu_address();
         dump_NR52(4'b0000);
         stop_inst_hit <= 1'b0;
-        cpu_addr <= `ROM_0_START;
+        cpu_addr_read <= `ROM_0_START;
+        cpu_addr_write <= `ROM_0_START;
         @(posedge clock);
         @(posedge clock);
         reset <= 1'b0;

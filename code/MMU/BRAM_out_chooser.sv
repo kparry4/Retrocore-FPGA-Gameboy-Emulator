@@ -9,7 +9,7 @@ module MM_out_chooser(input logic clock,
 
                       input logic [1:0] ppu_mode,
 
-                      input logic[15:0] cpu_addr,
+                      input logic[15:0] cpu_addr_read,
                       input logic[15:0] ppu_addr1,
                       input logic[15:0] ppu_addr2,
 
@@ -58,30 +58,30 @@ module MM_out_chooser(input logic clock,
             end
         end else begin
             //-----FOR HANDLING CPU CHOOSING----
-            if(within_range(cpu_addr, `ROM_0_START, `ROM_1_END)) begin
+            if(within_range(cpu_addr_read, `ROM_0_START, `ROM_1_END)) begin
                 cpu_select <= `ROM_SELECT;
             end
-            else if(within_range(cpu_addr, `VRAM_START, `VRAM_END)) begin
+            else if(within_range(cpu_addr_read, `VRAM_START, `VRAM_END)) begin
                 if(ppu_mode == 2'd3) begin
                     cpu_select <= `INVALID;
                 end else begin
                     cpu_select <= `VRAM_SELECT;
                 end
             end
-            else if(within_range(cpu_addr, `EXRAM_START, `EXRAM_END)) begin
+            else if(within_range(cpu_addr_read, `EXRAM_START, `EXRAM_END)) begin
                 cpu_select <= `EXRAM_SELECT;
             end
-            else if( within_range(cpu_addr, `WRAM_START, `WRAM_END)) begin
+            else if( within_range(cpu_addr_read, `WRAM_START, `WRAM_END)) begin
                 cpu_select <= `WRAM_SELECT;
             end
-            else if(within_range(cpu_addr, `OAM_START, `OAM_END)) begin
+            else if(within_range(cpu_addr_read, `OAM_START, `OAM_END)) begin
                 if(ppu_mode == 2'd2 || ppu_mode == 2'd3) begin
                     cpu_select <= `INVALID;
                 end else begin
                     cpu_select <= `OAM_SELECT;
                 end                
             end
-            else if(within_range(cpu_addr, `HRAM_START, `HRAM_END)) begin
+            else if(within_range(cpu_addr_read, `HRAM_START, `HRAM_END)) begin
                 cpu_select <= `HRAM_SELECT;
             end
             else begin

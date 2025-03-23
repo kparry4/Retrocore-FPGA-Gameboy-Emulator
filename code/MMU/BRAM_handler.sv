@@ -35,18 +35,16 @@ module BRAM_handler(input logic clock,
     //16KB x 2 = 32kB combined rom, 16 bit width --> 16384 entries, so 14 bits addr
     logic [13:0] rom0_addr;
     //8KB inside dual vram, 16 bit width --> 4096 entries, so 12 bits addr
-    logic [11:0] vram_addr1;
-    logic [11:0] vram_addr2;    
+    logic [11:0] vram_addr_rw,  vram_addr_r;    
     //8KB inside dual vram, 16 bit width --> 4096 entries, so 12 bits addr      
     //8KB inside ex vram, 16 bit width --> 4096 entries, so 12 bits addr
-    logic [11:0] exram_addr; 
+    logic [11:0] exram_addr_r, exram_addr_w; 
     //4KB x 2 = 8KB inside work vram, 16 bit width --> 4096 entries, so 12 bits addr
-    logic [11:0] wram_addr;      
+    logic [11:0] wram_addr_r,  wram_addr_w;      
 
     //160 kB inside work vram, 16 bit width --> 80 entries (makes sense, given 40 sprites)
-    logic [6:0] oam_addr1;  
-    logic [6:0] oam_addr2;  
-    logic [3:0] hram_addr; //if this overflows I'll kill myself
+    logic [6:0] oam_addr_rw,    oam_addr_r;  
+    logic [3:0] hram_addr_r,   hram_addr_w; //if this overflows I'll kill myself
 
     //--- WRITE ENABLES FOR RAM UNITS ------
     logic vram_wren, exram_wren, wram_wren, oam_wren, hram_wren;
@@ -54,17 +52,15 @@ module BRAM_handler(input logic clock,
 
     //--- OUTPUTS FOR MEM UNITS ------
     logic [15:0] rom0_out_data;
-    logic [15:0] vram_out_data1;
-    logic [15:0] vram_out_data2;
+    logic [15:0] vram_out_data_rw,  vram_out_data_r;
     logic [15:0] exram_out_data;
     logic [15:0] wram_out_data;
-    logic [15:0] oam_out_data1;
-    logic [15:0] oam_out_data2;
+    logic [15:0] oam_out_data_rw,   oam_out_data_r;
     logic [15:0] hram_out_data;
 
     //--- INPUTS FOR MEM UNITS---
     //note that all other units EXCEPT OAM are tied to cpu_data
-    logic [15:0] oam_in_data1;
+    logic [15:0] oam_data_in;
 
     //--- DMA related signals (addrs) ---
     logic [15:0] dma_src_addr, dma_dest_addr;
@@ -76,17 +72,17 @@ module BRAM_handler(input logic clock,
 
     //--- MISC signals ------
 
-    assign oam_in_data1 = (doing_dma) ? dma_in_data : cpu_in_data;
+    assign oam_data_in = (doing_dma) ? dma_in_data : cpu_in_data;
 
 
     always_comb begin
         case(cpu_memory_selector)
         `ROM_SELECT:   cpu_out_data = rom0_out_data;
-        `VRAM_SELECT:  cpu_out_data = vram_out_data1;
+        `VRAM_SELECT:  cpu_out_data = vram_out_data_rw;
         `EXRAM_SELECT: cpu_out_data = exram_out_data;
         `WRAM_SELECT:  cpu_out_data = wram_out_data;
         `HRAM_SELECT:  cpu_out_data = hram_out_data;
-        `OAM_SELECT:   cpu_out_data = oam_out_data1; 
+        `OAM_SELECT:   cpu_out_data = oam_out_data_rw; 
         `INVALID:      cpu_out_data = 8'hFF;
         default:      cpu_out_data = 8'hxx;
         endcase
@@ -95,12 +91,12 @@ module BRAM_handler(input logic clock,
     always_comb begin
         case(ppu_memory_selector)
         `VRAM_SELECT: begin 
-            ppu_out_data1 = vram_out_data1;
-            ppu_out_data2 = vram_out_data2;
+            ppu_out_data1 = vram_out_data_rw;
+            ppu_out_data2 = vram_out_data_r;
         end
         `OAM_SELECT: begin
-            ppu_out_data1 = oam_out_data1;
-            ppu_out_data2 = oam_out_data2;
+            ppu_out_data1 = oam_out_data_rw;
+            ppu_out_data2 = oam_out_data_r;
         end
         `INVALID: begin 
             ppu_out_data1 = 8'hFF;
@@ -117,12 +113,12 @@ module BRAM_handler(input logic clock,
     always_comb begin
         case(dma_memory_selector)
         `ROM_SELECT:   dma_in_data = rom0_out_data;
-        `VRAM_SELECT:  dma_in_data = vram_out_data1;
+        `VRAM_SELECT:  dma_in_data = vram_out_data_rw;
         `EXRAM_SELECT: dma_in_data = exram_out_data;
         `WRAM_SELECT:  dma_in_data = wram_out_data;
         `HRAM_SELECT:  dma_in_data = hram_out_data;
         `INVALID:      dma_in_data = 8'hFF;
-        default:      dma_in_data = 8'hxx;
+        default:       dma_in_data = 8'hxx;
         endcase
     end
         
@@ -158,27 +154,25 @@ module BRAM_handler(input logic clock,
                                              .dma_src_addr, .dma_dest_addr,
                                              .oam_wren, .vram_wren,
                                              .rom0_addr,
-                                             .vram_addr1, .vram_addr2,
-                                             .exram_addr,
-                                             .wram_addr,
-                                             .oam_addr1,.oam_addr2,
-                                             .hram_addr);
+                                             .vram_addr_rw, .vram_addr_r,
+                                             .exram_addr_w,
+                                             .wram_addr_w,
+                                             .oam_addr_rw,  .oam_addr_r,
+                                             .hram_addr_w);
 
     //-----for memory units WITHOUT contention
     assign exram_wren = cpu_wren && within_range(cpu_addr_write, `EXRAM_START, `EXRAM_END);
     assign wram_wren = cpu_wren && within_range(cpu_addr_write, `WRAM_START, `WRAM_END);
     assign hram_wren = cpu_wren && within_range(cpu_addr_write, `HRAM_START, `HRAM_END);
 
+    assign exram_addr_r = cpu_addr_read;
+    assign wram_addr_r = cpu_addr_read;
+    assign hram_addr_r = cpu_addr_read;
+
+
     assign cpu_data_valid = (cpu_memory_selector != `INVALID);
     assign ppu_data_valid = (ppu_memory_selector != `INVALID && ppu_memory_selector != `UNKNOWN);
 
-
-    always_ff @(posedge clock) begin
-        if(doing_dma) begin
-
-        end else begin
-        end
-    end
 
 
     //////////////////////////////////////////////////
@@ -190,41 +184,42 @@ module BRAM_handler(input logic clock,
                    .address(rom0_addr), 
                    .q      (rom0_out_data)); 
     //---VRAM BANKS------
-    VRAM_DUALBANK vram0 (.clock    (clock), 
-                         .address_a(vram_addr1),     .address_b(vram_addr2), 
-                         .q_a      (vram_out_data1), .q_b      (vram_out_data2), 
-                         .wren_a   (vram_wren),      .wren_b   (1'b0), 
-                         .data_a   (cpu_in_data),       .data_b   (16'hDEAD));
+    DUAL_8KB vram0 (.clock    (clock), 
+                    .address_a(vram_addr_rw),     .address_b(vram_addr_r), 
+                    .q_a      (vram_out_data_rw), .q_b      (vram_out_data_r), 
+                    .wren_a   (vram_wren),        .wren_b   (1'b0), 
+                    .data_a   (cpu_in_data),      .data_b   (16'hXXXX));
     //---EXTERNAL RAM ------
-    EXRAM_BANK exram0 (.clock (clock), 
-                      .address(exram_addr), 
-                      .q      (exram_out_data), 
-                      .wren   (exram_wren), 
-                      .data   (cpu_in_data));     
+    DUAL_8KB exram0 (.clock (clock), 
+                     .address_a(exram_addr_w),     .address_b(exram_addr_r), 
+                     .q_a      (),                 .q_b      (exram_out_data),
+                     .wren_a   (exram_wren),       .wren_b   (1'b0), //read ONLY port
+                     .data_a   (cpu_in_data),      .data_b   (1'b0));   
     //---WORK RAM ------ (note that I am combining two banks here, 2nd one is switchable in CGB)                       
-    WRAM_BANK wram0 (.clock   (clock), 
-                      .address(wram_addr), 
-                      .q      (wram_out_data), 
-                      .wren   (wram_wren), 
-                      .data   (cpu_in_data));
+    DUAL_8KB wram0 (.clock    (clock), 
+                    .address_a(wram_addr_w),     .address_b(wram_addr_r),  
+                    .q_a      (),                .q_b      (wram_out_data), 
+                    .wren_a   (wram_wren),       .wren_b   (1'b0), //read ONLY port
+                    .data_a   (cpu_in_data),     .data_b   (1'b0));
+
     //---OAM TABLE ------                                                              
     OAM_DUALBANK oam (.clock    (clock), 
-                      .address_a(oam_addr1),     .address_b(oam_addr2), 
-                      .q_a      (oam_out_data1), .q_b      (oam_out_data2), 
-                      .wren_a   (oam_wren),      .wren_b   (1'b0), 
-                      .data_a   (oam_in_data1),   .data_b   (16'hDEAD));
+                      .address_a(oam_addr_rw),     .address_b(oam_addr_r), 
+                      .q_a      (oam_out_data_rw), .q_b      (oam_out_data_r), 
+                      .wren_a   (oam_wren),        .wren_b   (1'b0), 
+                      .data_a   (oam_data_in),     .data_b   (16'hXXXX));
 
     //--- HRAM  ------  this feels too small to make a memory unit.                      
     logic[0:15][15:0] HRAM;
     logic[15:0] unbuffered_hram_out;
-    assign unbuffered_hram_out = HRAM[hram_addr];
+    assign unbuffered_hram_out = HRAM[hram_addr_r];
     always_ff @(posedge clock) begin
         hram_out_data <= unbuffered_hram_out;
         if(reset) begin
             HRAM <= '0;
         end else begin
             if(hram_wren) begin
-                HRAM[hram_addr] <= cpu_in_data;
+                HRAM[hram_addr_w] <= cpu_in_data;
             end else begin
                 HRAM <= HRAM;
             end
