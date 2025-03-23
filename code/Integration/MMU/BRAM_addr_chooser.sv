@@ -1,12 +1,7 @@
 //`default_nettype none
-`include "RegisterPkg.pkg"
+`include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
-
-
-function logic[15:0] convert_to_BRAM_addr(input logic[15:0] cpu_addr, input logic[15:0] memory_start_region);
-    return (cpu_addr >> 1) - memory_start_region;
-endfunction
 
 
 module MM_addr_contention_handler  (input logic clock,
@@ -15,7 +10,7 @@ module MM_addr_contention_handler  (input logic clock,
                                     input logic dma_oam_wren,
                                     
                                     input logic cpu_wren,
-                                    //input logic [15:0] cpu_addr_read,
+                                    input logic [15:0] cpu_addr_read,
                                     input logic [15:0] cpu_addr_write,
 
                                     input logic [1:0] ppu_mode,
@@ -81,7 +76,7 @@ module MM_addr_contention_handler  (input logic clock,
             end else begin
 
                 //if NO dma, address is offset from CPU's input addr
-                rom0_addr  = convert_to_BRAM_addr(cpu_addr_write, `ROM_0_START);
+                rom0_addr  = convert_to_BRAM_addr(cpu_addr_read, `ROM_0_START);
                 exram_addr_w = convert_to_BRAM_addr(cpu_addr_write, `EXRAM_START);        
                 wram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `WRAM_START);                 
                 hram_addr_w  = cpu_addr_write - `HRAM_START;  //hram is LUTS, not bram 

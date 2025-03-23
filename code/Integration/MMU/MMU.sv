@@ -1,17 +1,9 @@
-`default_nettype none
-`include "RegisterPkg.pkg"
+// `default_nettype none
+`include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
 
 
-
-function logic within_range(input logic [15:0] value, input logic [15:0] min, input logic [15:0] max);
-    return (value >= min) && (value <= max);
-endfunction   
-
-function logic is_even(input logic [15:0] address);
-    return address[0] == 1'b0;
-endfunction    
 
 
 module MMU (input logic CLK_4MHZ, // 5 Mhz?

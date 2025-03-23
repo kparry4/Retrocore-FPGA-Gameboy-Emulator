@@ -133,5 +133,9 @@
     function logic is_even(input logic [15:0] address);
         return address[0] == 1'b0;
     endfunction    
+    
+    function logic[15:0] convert_to_BRAM_addr(input logic[15:0] cpu_addr, input logic[15:0] memory_start_region);
+        return (cpu_addr >> 1) - memory_start_region;
+    endfunction
 
 `endif

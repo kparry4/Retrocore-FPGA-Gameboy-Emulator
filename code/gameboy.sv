@@ -31,6 +31,8 @@ module gameboy(
           .cpu_wren(memWen),
           .cpu_in_data(memWdata),
           .stop_inst_hit(stop),
+          .ppu_addr1(),
+          .ppu_addr2(),
           .ppu_mode(ppu_mode),
           .hblank(ppu_mode==0),
           .vblank(ppu_mode==1),
@@ -44,6 +46,11 @@ module gameboy(
           .joypad_b_button(1'b1),
           .APU_NR52(4'b0),
           .cpu_out_data(memData),
-          .cpu_data_valid(memValid));
+          .cpu_data_valid(memValid),
+          .ppu_out_data1(),
+          .ppu_out_data2(),
+          .ppu_data_valid(),
+          .restart_after_stop()
+          );
 
 endmodule

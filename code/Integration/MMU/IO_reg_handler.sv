@@ -1,5 +1,5 @@
-`default_nettype none
-`include "RegisterPkg.pkg"
+// `default_nettype none
+`include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
  
