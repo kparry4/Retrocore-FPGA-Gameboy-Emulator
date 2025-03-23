@@ -1,17 +1,24 @@
-//`default_nettype none
-`include "RegisterPkg.svh"
+`default_nettype none
+`include "RegisterPkg.pkg"
 `include "addresses.svh"
 `include "select.svh"
 
 
 
+function logic within_range(input logic [15:0] value, input logic [15:0] min, input logic [15:0] max);
+    return (value >= min) && (value <= max);
+endfunction   
+
+function logic is_even(input logic [15:0] address);
+    return address[0] == 1'b0;
+endfunction    
+
 
 module MMU (input logic CLK_4MHZ, // 5 Mhz?
             input logic rst,
 
-
-            input logic [15:0] cpu_addr,
-            input logic [15:0] cpu_waddr,
+            input logic [15:0] cpu_addr_read,
+            input logic [15:0] cpu_addr_write,
             input logic        cpu_wren,
             input logic [15:0] cpu_in_data,
             input logic        stop_inst_hit,
@@ -93,6 +100,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
     logic start_dma;
     logic halted;
+    logic doing_dma;
 
     logic[15:0] memory_out_cpu_data;
     logic[15:0] IO_out_cpu_data;
@@ -104,11 +112,11 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     ///////////////////////////////////////////  
 
     always_comb begin
-        if(within_range(cpu_addr, `IO_START, `IO_END)) begin
+        if(within_range(cpu_addr_read, `IO_START, `IO_END) && ~doing_dma) begin
             /* even case: {8'd0, IO_data}
                odd case: {IO_data, 8'd0}  */    
             cpu_data_valid = cpu_IO_data_valid;        
-            if(is_even(cpu_addr)) begin
+            if(is_even(cpu_addr_read)) begin
                 cpu_out_data = {8'd0, IO_out_cpu_data};
             end else begin
                 cpu_out_data = {IO_out_cpu_data, 8'd0};
@@ -123,7 +131,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     IO_handler io_registers  (.clock(CLK_4MHZ),
                               .reset(rst),
                               .vblank,
-                              .cpu_addr,
+                              .cpu_addr_read,
+                              .cpu_addr_write,
                               .cpu_wren,
                               .cpu_in_data,
                               .joypad_select,
@@ -162,7 +171,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     //TODO: sanity check hwo dma data is passed, do i need antoher register
     BRAM_handler memory_units (.clock(CLK_4MHZ), 
                               .reset(rst), 
-                              .cpu_addr,
+                              .cpu_addr_read,
+                              .cpu_addr_write,
                               .cpu_wren,
                               .cpu_in_data,
                               .ppu_addr1,
@@ -170,6 +180,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .ppu_mode,
                               .DMA_R(DMA_R),
                               .start_dma,
+                              .doing_dma,
                               .cpu_out_data(memory_out_cpu_data),
                               .ppu_out_data1,
                               .ppu_out_data2,

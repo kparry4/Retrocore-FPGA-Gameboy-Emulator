@@ -1,5 +1,5 @@
-//`default_nettype none
-`include "RegisterPkg.svh"
+`default_nettype none
+`include "RegisterPkg.pkg"
 `include "addresses.svh"
 `include "select.svh"
 module DMA_controller(input logic clock,
@@ -9,6 +9,7 @@ module DMA_controller(input logic clock,
                       input logic start_dma,
                       
                       output logic doing_dma,
+                      output logic dma_oam_wren,
                       
                       output logic [15:0] dma_src_addr,
                       output logic [15:0] dma_dest_addr);
@@ -17,7 +18,7 @@ module DMA_controller(input logic clock,
     localparam DMA_CYCLE_COUNT = 640 * 2; //160 M cycles
     localparam FINAL_OAM_ADDR = 16'hFE9F;
     
-    logic [9:0] cycle_count; 
+    logic [11:0] cycle_count; 
     logic cycle_count_inc_en;
     logic dma_addr_inc_en;
 
@@ -54,7 +55,7 @@ module DMA_controller(input logic clock,
                                    .clock(clock), 
                                    .reset(reset));                                      
 
-    Counter #(10) cycle_cnter   (.D    (), 
+    Counter #(12) cycle_cnter   (.D    (), 
                                  .Q    (cycle_count), 
                                  .load (),
                                  .en   (cycle_count_inc_en),
@@ -87,6 +88,7 @@ module DMA_controller(input logic clock,
             cycle_cnt_clear = 1'b1;
             
             doing_dma = 1'b0;
+            dma_oam_wren = 1'b0;
         end
         READING: begin
             nextState = (cycle_count == DMA_CYCLE_COUNT - 1) ? IDLE : WRITING;
@@ -105,7 +107,8 @@ module DMA_controller(input logic clock,
             cycle_cnt_clear = 1'b0;
             
             //output dma signal
-            doing_dma = 1'b1;                       
+            doing_dma = 1'b1;   
+            dma_oam_wren = 1'b0;                    
         end
         WRITING: begin
             if(dma_dest_addr == FINAL_OAM_ADDR) begin
@@ -127,7 +130,8 @@ module DMA_controller(input logic clock,
             cycle_cnt_clear = 1'b0;
             
             //output dma signal
-            doing_dma = 1'b1;             
+            doing_dma = 1'b1;   
+            dma_oam_wren = 1'b1;          
         end
         FINISHED: begin
             if(cycle_count == DMA_CYCLE_COUNT - 1) begin
@@ -150,7 +154,8 @@ module DMA_controller(input logic clock,
             cycle_cnt_clear = 1'b0;
             
             //output dma signal
-            doing_dma = 1'b1;              
+            doing_dma = 1'b1;    
+            dma_oam_wren = 1'b0;          
         end
         endcase
     end

@@ -1,5 +1,5 @@
 //`default_nettype none
-`include "RegisterPkg.svh"
+`include "RegisterPkg.pkg"
 `include "addresses.svh"
 `include "select.svh"
 
@@ -12,9 +12,11 @@ endfunction
 module MM_addr_contention_handler  (input logic clock,
                                     input logic reset,
                                     input logic doing_dma,
+                                    input logic dma_oam_wren,
                                     
                                     input logic cpu_wren,
-                                    input logic [15:0] cpu_addr,
+                                    //input logic [15:0] cpu_addr_read,
+                                    input logic [15:0] cpu_addr_write,
 
                                     input logic [1:0] ppu_mode,
                                     input logic [15:0] ppu_addr1,
@@ -26,15 +28,14 @@ module MM_addr_contention_handler  (input logic clock,
                                     output logic oam_wren,
                                     output logic vram_wren,
                                     
-                                    
                                     output logic [13:0] rom0_addr,
-                                    output logic [11:0] vram_addr1,
-                                    output logic [11:0] vram_addr2,
-                                    output logic [11:0] exram_addr,
-                                    output logic [11:0] wram_addr,
-                                    output logic [6:0] oam_addr1,
-                                    output logic [6:0] oam_addr2,
-                                    output logic [3:0] hram_addr
+                                    output logic [11:0] vram_addr_rw,
+                                    output logic [11:0] vram_addr_r,
+                                    output logic [11:0] exram_addr_w,
+                                    output logic [11:0] wram_addr_w,
+                                    output logic [6:0] oam_addr_rw,
+                                    output logic [6:0] oam_addr_r,
+                                    output logic [3:0] hram_addr_w
 );
 
 
@@ -59,31 +60,31 @@ module MM_addr_contention_handler  (input logic clock,
         if(doing_dma) begin
                 
                 //DMA does OAM write (using 1 port for simplicity)
-                oam_wren = 1'b1;
+                oam_wren = dma_oam_wren;
 
                 //NO writes to vram ever occur in DMA
                 vram_wren = 1'b0;
 
                 //allow dma to SOURCE from any part of memory
                 rom0_addr  = convert_to_BRAM_addr(dma_src_addr, `ROM_0_START);
-                vram_addr1 = convert_to_BRAM_addr(dma_src_addr, `VRAM_START);
-                vram_addr2 = 16'hDEAD;                
-                exram_addr = convert_to_BRAM_addr(dma_src_addr, `EXRAM_START);        
-                wram_addr  = convert_to_BRAM_addr(dma_src_addr, `WRAM_START); 
+                vram_addr_rw = convert_to_BRAM_addr(dma_src_addr, `VRAM_START);
+                vram_addr_r = 16'hXXXX;                
+                exram_addr_w = convert_to_BRAM_addr(dma_src_addr, `EXRAM_START);        
+                wram_addr_w  = convert_to_BRAM_addr(dma_src_addr, `WRAM_START); 
 
                 //alow dma to COPY to oam table 
-                oam_addr1 = convert_to_BRAM_addr(dma_dest_addr, `OAM_START);; //allow dma 
-                oam_addr2 = 16'hDEAD;
+                oam_addr_rw = convert_to_BRAM_addr(dma_dest_addr, `OAM_START);; //allow dma 
+                oam_addr_r = 16'hXXXX;
 
-                hram_addr = dma_src_addr - `HRAM_START; //hram is LUTS, not bram          
+                hram_addr_w = dma_src_addr - `HRAM_START; //hram is LUTS, not bram          
 
             end else begin
 
                 //if NO dma, address is offset from CPU's input addr
-                rom0_addr  = convert_to_BRAM_addr(cpu_addr, `ROM_0_START);
-                exram_addr = convert_to_BRAM_addr(cpu_addr, `EXRAM_START);        
-                wram_addr  = convert_to_BRAM_addr(cpu_addr, `WRAM_START);                 
-                hram_addr  = cpu_addr - `HRAM_START;  //hram is LUTS, not bram 
+                rom0_addr  = convert_to_BRAM_addr(cpu_addr_write, `ROM_0_START);
+                exram_addr_w = convert_to_BRAM_addr(cpu_addr_write, `EXRAM_START);        
+                wram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `WRAM_START);                 
+                hram_addr_w  = cpu_addr_write - `HRAM_START;  //hram is LUTS, not bram 
 
                 
                 if(ppu_mode == 0 || ppu_mode == 1 || ppu_mode == 2) begin
@@ -91,29 +92,29 @@ module MM_addr_contention_handler  (input logic clock,
 
                     if(ppu_mode == 2) begin
                         //OAM search is occurring, block CPU writes
-                        oam_addr1 = convert_to_BRAM_addr(ppu_addr1, `OAM_START);
-                        oam_addr2 = convert_to_BRAM_addr(ppu_addr2, `OAM_START);
+                        oam_addr_rw = convert_to_BRAM_addr(ppu_addr1, `OAM_START);
+                        oam_addr_r = convert_to_BRAM_addr(ppu_addr2, `OAM_START);
                         oam_wren  = 1'b0;
                         
                     end else begin
-                        oam_addr1 = convert_to_BRAM_addr(cpu_addr, `OAM_START);
-                        oam_addr2 = 16'hDEAD;   
+                        oam_addr_rw = convert_to_BRAM_addr(cpu_addr_write, `OAM_START);
+                        oam_addr_r = 16'hDEAD;   
                         //cpu can write 
-                        oam_wren  = cpu_wren && within_range(cpu_addr, `OAM_START, `OAM_END);                    
+                        oam_wren  = cpu_wren && within_range(cpu_addr_write, `OAM_START, `OAM_END);                    
                     end
 
-                    vram_addr1 = convert_to_BRAM_addr(cpu_addr, `VRAM_START);
-                    vram_addr2 = 16'hDEAD;  
+                    vram_addr_rw = convert_to_BRAM_addr(cpu_addr_write, `VRAM_START);
+                    vram_addr_r = 16'hDEAD;  
                     //cpu can write
-                    vram_wren  = cpu_wren && within_range(cpu_addr, `VRAM_START, `VRAM_END);  
+                    vram_wren  = cpu_wren && within_range(cpu_addr_write, `VRAM_START, `VRAM_END);  
 
                 end else begin
                         //in DRAWING MODE
-                        vram_addr1 = convert_to_BRAM_addr(ppu_addr1, `VRAM_START);
-                        vram_addr2 = convert_to_BRAM_addr(ppu_addr2, `VRAM_START);                                
+                        vram_addr_rw = convert_to_BRAM_addr(ppu_addr1, `VRAM_START);
+                        vram_addr_r = convert_to_BRAM_addr(ppu_addr2, `VRAM_START);                                
 
-                        oam_addr1  = convert_to_BRAM_addr(ppu_addr1, `OAM_START);
-                        oam_addr2  = convert_to_BRAM_addr(ppu_addr2, `OAM_START);  
+                        oam_addr_rw  = convert_to_BRAM_addr(ppu_addr1, `OAM_START);
+                        oam_addr_r  = convert_to_BRAM_addr(ppu_addr2, `OAM_START);  
 
                         //no writes from anybody allowed
                         oam_wren  = 1'b0;
