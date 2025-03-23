@@ -50,19 +50,19 @@ module MMU_TB();
 
     logic[7:0] joystick_control;
 
-    assign joypad_select     = joystick_control[0];
-    assign joypad_start      = joystick_control[1];
-    assign joypad_dpad_up    = joystick_control[2];
+    assign joypad_select     = joystick_control[7];
+    assign joypad_start      = joystick_control[6];
+    assign joypad_b_button   = joystick_control[5];    
+    assign joypad_a_button   = joystick_control[4];
     assign joypad_dpad_down  = joystick_control[3];
-    assign joypad_dpad_left  = joystick_control[4];  
-    assign joypad_dpad_right = joystick_control[5];
-    assign joypad_a_button   = joystick_control[6];
-    assign joypad_b_button   = joystick_control[7];    
+    assign joypad_dpad_up    = joystick_control[2];
+    assign joypad_dpad_left  = joystick_control[1];  
+    assign joypad_dpad_right = joystick_control[0];
 
     assign hblank = (ppu_mode == 2'b00);
     assign vblank = (ppu_mode == 2'b01);
 
-    assign joystick_control = 8'd0;
+    assign joystick_control = 8'b1001_0011;
 
 
 
@@ -442,12 +442,13 @@ module MMU_TB();
                     write_IO(`LY,   8'hAE);  
                     write_IO(`LYC,  8'hAF); 
                     // write_IO(`DMA, 8'hAB); 
+                    write_IO(`WY,   8'hBD);  
+                    write_IO(`WX,   8'hBE);
                     write_IO(`BGP,  8'hBA); 
                     write_IO(`OBP0, 8'hBB);
                     write_IO(`OBP1, 8'hBC);
-                    write_IO(`WY,   8'hBD);  
-                    write_IO(`WX,   8'hBE);
-                    clock_cycles(10);  
+                    clock_cycles(10); 
+                    @(posedge cpu_clock); 
 
                     write_IO(`LY,   8'hFE);  
                     write_IO(`LYC,  8'hFE); 
@@ -475,11 +476,73 @@ module MMU_TB();
 
 
                 end
-            
+        end
+        else if($test$plusargs("BASIC_DMA")) begin
+               /*DMA (later)*/
+            do_reset();
+  
+                
+            //-----------VRAM-------------
+            for(int i = 0; i < 10; i++) begin
+                do_cpu_write(`VRAM_START + i, 16'hDEAD + i);
+                do_cpu_read(`VRAM_START + i);
+            end  
+            for(int i = 0; i < 10; i++) begin
+                do_cpu_write(`VRAM_END - i, 16'hBEEF + i);
+                do_cpu_read(`VRAM_END - i);
+            end   
+                
+            //-----------EXRAM-------------
+            for(int i = 0; i < 10; i++) begin
+                do_cpu_write(`EXRAM_START + i, 16'hAAAA + i);
+                do_cpu_read(`EXRAM_START + i);
+            end  
+            for(int i = 0; i < 10; i++) begin
+                do_cpu_write(`EXRAM_END - i, 16'hBBBB + i);
+                do_cpu_read(`EXRAM_END - i);
+            end   
+                
+
+            //-----------WRAM-------------
+            for(int i = 0; i < 10; i++) begin
+                do_cpu_write(`WRAM_START + i, 16'hCCCC + i);
+                do_cpu_read(`WRAM_START + i);
+            end  
+            for(int i = 0; i < 10; i++) begin
+                do_cpu_write(`WRAM_END - i, 16'hDDDD + i);
+                do_cpu_read(`WRAM_END - i);
+            end          
+
+            //-----------HRAM-------------
+                    for(int i = 0; i < 16; i++) begin
+                        do_cpu_write(`HRAM_START + i, 16'hFEFE + i);
+                        do_cpu_read(`HRAM_START + i);
+                    end  
+
+
+            do_cpu_write(`JOYPAD, 8'b11_01_1111);
+            do_cpu_read(`JOYPAD);
+            @(posedge cpu_clock);
+            @(posedge cpu_clock);
+            do_cpu_write(`JOYPAD, 8'b11_10_1111);
+            do_cpu_read(`JOYPAD);      
+            @(posedge cpu_clock);
+            @(posedge cpu_clock);
+                              
 
 
 
+           for(int pmode = 0; pmode < 2; pmode++) begin
 
+                set_ppu_mode(pmode);         
+                write_IO(`DMA, `ROM_0_START);
+                clock_cycles(2000);
+                @(posedge cpu_clock);
+                //-----------OAM-------------
+                for(int i = 0; i < 159; i++) begin
+                    do_cpu_read(`OAM_START + i);
+                end  
+            end
             
             
             /**JOYPAD
@@ -495,7 +558,6 @@ module MMU_TB();
             /**SERIAL transfer 
                 --> should do nothing**/
 
-            /*DMA (later)*/
 
             $finish;
 

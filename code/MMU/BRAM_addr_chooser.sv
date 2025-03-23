@@ -1,4 +1,4 @@
-`default_nettype none
+//`default_nettype none
 `include "RegisterPkg.pkg"
 `include "addresses.svh"
 `include "select.svh"
@@ -12,9 +12,11 @@ endfunction
 module MM_addr_contention_handler  (input logic clock,
                                     input logic reset,
                                     input logic doing_dma,
+                                    input logic dma_oam_wren,
                                     
                                     input logic cpu_wren,
-                                    input logic [15:0] cpu_addr,
+                                    //input logic [15:0] cpu_addr_read,
+                                    input logic [15:0] cpu_addr_write,
 
                                     input logic [1:0] ppu_mode,
                                     input logic [15:0] ppu_addr1,
@@ -59,7 +61,7 @@ module MM_addr_contention_handler  (input logic clock,
         if(doing_dma) begin
                 
                 //DMA does OAM write (using 1 port for simplicity)
-                oam_wren = 1'b1;
+                oam_wren = dma_oam_wren;
 
                 //NO writes to vram ever occur in DMA
                 vram_wren = 1'b0;
@@ -80,10 +82,10 @@ module MM_addr_contention_handler  (input logic clock,
             end else begin
 
                 //if NO dma, address is offset from CPU's input addr
-                rom0_addr  = convert_to_BRAM_addr(cpu_addr, `ROM_0_START);
-                exram_addr = convert_to_BRAM_addr(cpu_addr, `EXRAM_START);        
-                wram_addr  = convert_to_BRAM_addr(cpu_addr, `WRAM_START);                 
-                hram_addr  = cpu_addr - `HRAM_START;  //hram is LUTS, not bram 
+                rom0_addr  = convert_to_BRAM_addr(cpu_addr_write, `ROM_0_START);
+                exram_addr = convert_to_BRAM_addr(cpu_addr_write, `EXRAM_START);        
+                wram_addr  = convert_to_BRAM_addr(cpu_addr_write, `WRAM_START);                 
+                hram_addr  = cpu_addr_write - `HRAM_START;  //hram is LUTS, not bram 
 
                 
                 if(ppu_mode == 0 || ppu_mode == 1 || ppu_mode == 2) begin
@@ -96,16 +98,16 @@ module MM_addr_contention_handler  (input logic clock,
                         oam_wren  = 1'b0;
                         
                     end else begin
-                        oam_addr1 = convert_to_BRAM_addr(cpu_addr, `OAM_START);
+                        oam_addr1 = convert_to_BRAM_addr(cpu_addr_write, `OAM_START);
                         oam_addr2 = 16'hDEAD;   
                         //cpu can write 
-                        oam_wren  = cpu_wren && within_range(cpu_addr, `OAM_START, `OAM_END);                    
+                        oam_wren  = cpu_wren && within_range(cpu_addr_write, `OAM_START, `OAM_END);                    
                     end
 
-                    vram_addr1 = convert_to_BRAM_addr(cpu_addr, `VRAM_START);
+                    vram_addr1 = convert_to_BRAM_addr(cpu_addr_write, `VRAM_START);
                     vram_addr2 = 16'hDEAD;  
                     //cpu can write
-                    vram_wren  = cpu_wren && within_range(cpu_addr, `VRAM_START, `VRAM_END);  
+                    vram_wren  = cpu_wren && within_range(cpu_addr_write, `VRAM_START, `VRAM_END);  
 
                 end else begin
                         //in DRAWING MODE

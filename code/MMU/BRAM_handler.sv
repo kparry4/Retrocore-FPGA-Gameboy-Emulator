@@ -8,7 +8,8 @@
 module BRAM_handler(input logic clock,
                   input logic reset,
 
-                  input logic [15:0] cpu_addr,
+                  input logic [15:0] cpu_addr_read,
+                  input logic [15:0] cpu_addr_write,
                   input logic        cpu_wren,
                   input logic [15:0]  cpu_in_data,
 
@@ -18,6 +19,8 @@ module BRAM_handler(input logic clock,
 
                   input logic  [7:0] DMA_R,
                   input logic        start_dma,
+
+                  output logic       doing_dma,
 
                   output logic [15:0] cpu_out_data,
 
@@ -47,6 +50,7 @@ module BRAM_handler(input logic clock,
 
     //--- WRITE ENABLES FOR RAM UNITS ------
     logic vram_wren, exram_wren, wram_wren, oam_wren, hram_wren;
+    logic dma_oam_wren;
 
     //--- OUTPUTS FOR MEM UNITS ------
     logic [15:0] rom0_out_data;
@@ -71,7 +75,6 @@ module BRAM_handler(input logic clock,
     logic[5:0] cpu_memory_selector, ppu_memory_selector, dma_memory_selector;
 
     //--- MISC signals ------
-    logic doing_dma;
 
     assign oam_in_data1 = (doing_dma) ? dma_in_data : cpu_in_data;
 
@@ -130,6 +133,7 @@ module BRAM_handler(input logic clock,
                             .DMA_R, 
                             .start_dma,
                             .doing_dma,
+                            .dma_oam_wren,
                             .dma_src_addr,
                             .dma_dest_addr);
 
@@ -137,7 +141,7 @@ module BRAM_handler(input logic clock,
                                       .reset,     
                                       .doing_dma,
                                       .ppu_mode,
-                                      .cpu_addr, .ppu_addr1, .ppu_addr2,
+                                      .cpu_addr_read, .ppu_addr1, .ppu_addr2,
                                       .cpu_memory_selector,
                                       .ppu_memory_selector,
 
@@ -148,7 +152,8 @@ module BRAM_handler(input logic clock,
     MM_addr_contention_handler addr_handler (.clock,
                                              .reset,
                                              .doing_dma,
-                                             .cpu_wren, .cpu_addr,    
+                                             .dma_oam_wren,
+                                             .cpu_wren, .cpu_addr_write,    
                                              .ppu_mode, .ppu_addr1, .ppu_addr2,
                                              .dma_src_addr, .dma_dest_addr,
                                              .oam_wren, .vram_wren,
@@ -160,11 +165,11 @@ module BRAM_handler(input logic clock,
                                              .hram_addr);
 
     //-----for memory units WITHOUT contention
-    assign exram_wren = cpu_wren && within_range(cpu_addr, `EXRAM_START, `EXRAM_END);
-    assign wram_wren = cpu_wren && within_range(cpu_addr, `WRAM_START, `WRAM_END);
-    assign hram_wren = cpu_wren && within_range(cpu_addr, `HRAM_START, `HRAM_END);
+    assign exram_wren = cpu_wren && within_range(cpu_addr_write, `EXRAM_START, `EXRAM_END);
+    assign wram_wren = cpu_wren && within_range(cpu_addr_write, `WRAM_START, `WRAM_END);
+    assign hram_wren = cpu_wren && within_range(cpu_addr_write, `HRAM_START, `HRAM_END);
 
-    assign cpu_data_valid = (cpu_memory_selector != `INVALID && cpu_memory_selector != `UNKNOWN && ~within_range(cpu_addr, `IO_START, `IO_END));
+    assign cpu_data_valid = (cpu_memory_selector != `INVALID);
     assign ppu_data_valid = (ppu_memory_selector != `INVALID && ppu_memory_selector != `UNKNOWN);
 
 

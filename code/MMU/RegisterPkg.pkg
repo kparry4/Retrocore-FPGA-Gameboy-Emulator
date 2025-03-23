@@ -8,11 +8,11 @@
             logic[7:0] NR51_R; //Sound panning (FF25)
             logic[7:0] NR50_R; //Master Volume, Vin panning(FF24)
 
-            logic [0:5][7:0] NR1x_R; //TODO: this might be cursed
-            logic [0:4][7:0] NR2x_R; //TODO: this might be cursed
-            logic [0:4][7:0] NR3x_R; //TODO: this might be cursed
+            logic [0:4][7:0]  NR1x_R; //TODO: this might be cursed
+            logic [0:3][7:0]  NR2x_R; //TODO: this might be cursed
+            logic [0:4][7:0]  NR3x_R; //TODO: this might be cursed
             logic [0:15][7:0] WAV_RAM_R;     
-            logic [0:5][7:0] NR4x_R; //TODO: this might be cursed
+            logic [0:3][7:0]  NR4x_R; //TODO: this might be cursed
         } APU_DATA;
 
         typedef struct packed {
