@@ -8,6 +8,7 @@ add wave -noupdate /tb/gb/cpu/decoder/mpc_enum
 add wave -group {GB} -noupdate /tb/gb/*
 add wave -group {Testbench} -noupdate /tb/*
 add wave -group {CPU} -noupdate /tb/gb/cpu/*
+add wave -group {MMU} -noupdate /tb/gb/mmu/*
 add wave -group {ALU} -noupdate /tb/gb/cpu/alu/*
 add wave -group {Decode} -noupdate /tb/gb/cpu/decoder/*
 add wave -group {RegFile} -noupdate /tb/gb/cpu/regfile/*
