@@ -136,7 +136,7 @@
     endfunction    
     
     function logic[15:0] convert_to_BRAM_addr(input logic[15:0] cpu_addr, input logic[15:0] memory_start_region);
-        return (cpu_addr >> 1) - memory_start_region;
+        return (cpu_addr - memory_start_region) >> 1;
     endfunction
 
 `endif

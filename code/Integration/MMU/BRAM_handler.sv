@@ -6,6 +6,7 @@
 
 
 module BRAM_handler(input logic clock,
+                  input logic cpu_clock,
                   input logic reset,
 
                   input logic [15:0] cpu_addr_read,
@@ -213,7 +214,7 @@ module BRAM_handler(input logic clock,
     logic[0:15][15:0] HRAM;
     logic[15:0] unbuffered_hram_out;
     assign unbuffered_hram_out = HRAM[hram_addr_r];
-    always_ff @(posedge clock) begin
+    always_ff @(posedge cpu_clock) begin
         hram_out_data <= unbuffered_hram_out;
         if(reset) begin
             HRAM <= '0;

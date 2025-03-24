@@ -5,7 +5,8 @@
 `include "select.svh"
  
 
-module IO_handler(input logic clock, 
+module IO_handler(input logic clock,
+                  input logic cpu_clock, 
                   input logic reset,
 
                   input logic vblank,
@@ -262,7 +263,7 @@ module IO_handler(input logic clock,
         endcase
     end
 
-    always_ff@(posedge clock) begin
+    always_ff@(posedge cpu_clock) begin
         cpu_out_data <= out_data; //delay by a cycle to be consistent with BRAM behavior
         if(reset) begin
             halted             <= 1'b0;

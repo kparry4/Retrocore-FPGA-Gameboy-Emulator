@@ -61,7 +61,7 @@ module MM_addr_contention_handler  (input logic clock,
                 vram_wren = 1'b0;
 
                 //allow dma to SOURCE from any part of memory
-                rom0_addr  = convert_to_BRAM_addr(dma_src_addr, `ROM_0_START);
+                rom0_addr  =   convert_to_BRAM_addr(dma_src_addr, `ROM_0_START);
                 vram_addr_rw = convert_to_BRAM_addr(dma_src_addr, `VRAM_START);
                 vram_addr_r = 16'hXXXX;                
                 exram_addr_w = convert_to_BRAM_addr(dma_src_addr, `EXRAM_START);        
@@ -71,15 +71,15 @@ module MM_addr_contention_handler  (input logic clock,
                 oam_addr_rw = convert_to_BRAM_addr(dma_dest_addr, `OAM_START);; //allow dma 
                 oam_addr_r = 16'hXXXX;
 
-                hram_addr_w = dma_src_addr - `HRAM_START; //hram is LUTS, not bram          
+                hram_addr_w = convert_to_BRAM_addr(dma_src_addr, `HRAM_START); //hram is LUTS, not bram          
 
             end else begin
 
                 //if NO dma, address is offset from CPU's input addr
-                rom0_addr  = convert_to_BRAM_addr(cpu_addr_read, `ROM_0_START);
+                rom0_addr    = convert_to_BRAM_addr(cpu_addr_read,  `ROM_0_START);
                 exram_addr_w = convert_to_BRAM_addr(cpu_addr_write, `EXRAM_START);        
                 wram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `WRAM_START);                 
-                hram_addr_w  = cpu_addr_write - `HRAM_START;  //hram is LUTS, not bram 
+                hram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `HRAM_START);  //hram is LUTS, not bram 
 
                 
                 if(ppu_mode == 0 || ppu_mode == 1 || ppu_mode == 2) begin
