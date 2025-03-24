@@ -36,13 +36,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
             input logic  [3:0]  APU_NR52,
 
-            //OUTPUT PPU REGISTERS
-            output logic[7:0] LCDC_R,
-            output logic[7:0] STAT_R, //mixed r/w register
-            output PPU_DATA PPU_R,
 
-
-            //OUTPUT CPU bi;;sjot
             output logic [15:0] cpu_out_data,
             output logic        cpu_data_valid,
 
@@ -71,9 +65,9 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
   
 
     //---PPU Registers
-    //logic[7:0] LCDC_R;
-    //logic[7:0] STAT_R; //mixed r/w register
-    //PPU_DATA PPU_R;
+    logic[7:0] LCDC_R;
+    logic[7:0] STAT_R; //mixed r/w register
+    PPU_DATA PPU_R;
 
     //---DMA Register 
     logic[7:0] DMA_R;
@@ -134,7 +128,6 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
 
     IO_handler io_registers  (.clock(CLK_4MHZ),
-			      .cpu_clock,
                               .reset(rst),
                               .vblank,
                               // .cpu_addr_read,

@@ -11,6 +11,6 @@ NEW_FILE_NAME="$1"
 NEW_PATH="../../code/Integration/MMU/mif_files/$NEW_FILE_NAME.mif"
 
 # Use sed to replace the init_file path
-sed -i "s#\(altsyncram_component\.init_file = \).*#\1\"$NEW_PATH\";#" "$ROM_PATH"
+sed -i "s#\(altsyncram_component\.init_file = \).*#\1\"$NEW_PATH\",#" "$ROM_PATH"
 
 echo "Updated altsyncram_component.init_file in rom bank at path $ROM_PATH to be $NEW_PATH"

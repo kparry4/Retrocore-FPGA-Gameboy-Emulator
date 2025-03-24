@@ -1,8 +1,11 @@
 `define DOC
+`include "Integration/MMU/RegisterPkg.svh"
 module gameboy(
   input logic clk,clk2, //*** make a second clock
   input  logic rst,
-  input  logic [1:0] ppu_mode
+  input  logic [1:0] ppu_mode,
+  output logic [1:0] frame_pixel,
+  output logic frame_pixel_valid
 );
 
   logic [15:0] memData;
@@ -14,6 +17,20 @@ module gameboy(
   logic [15:0] memWadr;
   logic memWen;
   logic [15:0] memAdr;
+
+
+
+  //PPU bullshit
+  logic[7:0] LCDC_R;
+  logic[7:0] STAT_R; //mixed r/w register
+  PPU_DATA PPU_R;
+
+  logic [15:0] port0_addr, port1_addr;
+  logic [15:0] port0_data, port1_data;
+  
+
+
+
   cpu cpu(.clk(clk2),
           .rst,
           .memData,
@@ -33,8 +50,8 @@ module gameboy(
           .cpu_wren(memWen),
           .cpu_in_data(memWdata),
           .stop_inst_hit(stop),
-          .ppu_addr1(),
-          .ppu_addr2(),
+          .ppu_addr1(port0_addr),
+          .ppu_addr2(port1_addr),
           .ppu_mode(ppu_mode),
           .hblank(ppu_mode==0),
           .vblank(ppu_mode==1),
@@ -47,11 +64,38 @@ module gameboy(
           .joypad_a_button(1'b1),
           .joypad_b_button(1'b1),
           .APU_NR52(4'b0),
+          .LCDC_R,
+          .STAT_R,
+          .PPU_R,
           .cpu_out_data(memData),
           .cpu_data_valid(memValid),
-          .ppu_out_data1(),
-          .ppu_out_data2(),
-          .ppu_data_valid(),
+          .ppu_out_data1(port0_data),
+          .ppu_out_data2(port1_data),
+          .ppu_data_valid(), //no longer used
           .restart_after_stop()
           );
+           
+          PPU_Wrapper ppu(.clk(clk2),
+                          .reset(rst),
+                          .LCDC(LCDC_R),
+                          .STAT_in(STAT_R),
+                          .LY(PPU_R.LY_R),
+                          .LYC(PPU_R.LYC_R),
+                          .SCX(PPU_R.SCX_R),
+                          .SCY(PPU_R.SCY_R),
+                          .WX(PPU_R.WX_R),
+                          .WY(PPU_R.WY_R),
+                          .BGP(PPU_R.BGP_R),
+                          .OBP0(PPU_R.OBP0_R),
+                          .OBP1(PPU_R.OBP1_R),
+                          .mode(ppu_mode), 
+                          .port0_addr,
+                          .port0_read_en(), //unneedd output
+                          .port0_data,
+                          .port1_addr,
+                          .port1_read_en(), //unneeded output
+                          .port1_data,
+                          .frame_pixel,
+                          .frame_pixel_valid
+                          );
 endmodule
