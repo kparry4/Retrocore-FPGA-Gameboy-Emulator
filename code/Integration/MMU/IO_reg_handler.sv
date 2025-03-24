@@ -1,4 +1,5 @@
 // `default_nettype none
+`define DOC
 `include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
@@ -193,7 +194,11 @@ module IO_handler(input logic clock,
                               cpu_data_valid = 1'b1; 
                          end
         `LY:             begin 
+                              `ifdef DOC
+                                out_data = 16'h90; //***KEP
+                              `else
                               out_data        = PPU_R.LY_R;
+                              `endif
                               cpu_data_valid = 1'b1; 
                          end
         `LYC:            begin 

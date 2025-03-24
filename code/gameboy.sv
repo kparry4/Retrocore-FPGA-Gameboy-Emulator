@@ -1,3 +1,4 @@
+`define DOC
 module gameboy(
   input logic clk,clk2, //*** make a second clock
   input  logic rst,
@@ -53,5 +54,4 @@ module gameboy(
           .ppu_data_valid(),
           .restart_after_stop()
           );
-
 endmodule

@@ -104,17 +104,18 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     //      MEMORY DECLARATIONS
     ///////////////////////////////////////////  
 
-    logic prev_in_range;
+    logic [15:0] prev_cpu_addr_read; //***KEP
     always_ff @(posedge cpu_clock) begin
-      prev_in_range <= within_range(cpu_addr_read, `IO_START, `IO_END);
+      prev_cpu_addr_read <= cpu_addr_read;//***KEP
     end
 
     always_comb begin
-        if(prev_in_range && ~doing_dma) begin
+        if(within_range(prev_cpu_addr_read, `IO_START, `IO_END) && ~doing_dma) begin//***KEP
             /* even case: {8'd0, IO_data}
                odd case: {IO_data, 8'd0}  */    
-            cpu_data_valid = cpu_IO_data_valid;        
-            if(is_even(cpu_addr_read)) begin
+            // cpu_data_valid = cpu_IO_data_valid;        
+            cpu_data_valid = 1'b1; // ***KEP
+            if(is_even(prev_cpu_addr_read)) begin//***KEP
                 cpu_out_data = {8'd0, IO_out_cpu_data};
             end else begin
                 cpu_out_data = {IO_out_cpu_data, 8'd0};
@@ -129,7 +130,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     IO_handler io_registers  (.clock(CLK_4MHZ),
                               .reset(rst),
                               .vblank,
-                              .cpu_addr_read,
+                              // .cpu_addr_read,
+                              .cpu_addr_read(prev_cpu_addr_read), //***KEP I BROKE SOME TIMING SEE 01 cnt=16510 look for xxxx in load instr
                               .cpu_addr_write,
                               .cpu_wren,
                               .cpu_in_data,

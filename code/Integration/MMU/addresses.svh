@@ -14,7 +14,8 @@
     `define EXRAM_END   16'hBFFF
 
     `define WRAM_START 16'hC000
-    `define WRAM_END   16'hCFFF
+    // `define WRAM_END   16'hCFFF
+    `define WRAM_END   16'hDFFF //***KEP
 
     `define OAM_START  16'hFE00
     `define OAM_END    16'hFE9F
