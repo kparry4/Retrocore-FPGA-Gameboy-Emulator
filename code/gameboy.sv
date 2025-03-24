@@ -25,6 +25,7 @@ module gameboy(
           .memAdr);
 
   MMU mmu(.CLK_4MHZ(clk),
+          .cpu_clock(clk2),
           .rst,
           .cpu_addr_read(memAdr),
           .cpu_addr_write(memWadr),

@@ -7,6 +7,7 @@
 
 
 module MMU (input logic CLK_4MHZ, // 5 Mhz?
+            input logic cpu_clock,
             input logic rst,
 
             input logic [15:0] cpu_addr_read,
@@ -103,8 +104,13 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     //      MEMORY DECLARATIONS
     ///////////////////////////////////////////  
 
+    logic prev_in_range;
+    always_ff @(posedge cpu_clock) begin
+      prev_in_range <= within_range(cpu_addr_read, `IO_START, `IO_END);
+    end
+
     always_comb begin
-        if(within_range(cpu_addr_read, `IO_START, `IO_END) && ~doing_dma) begin
+        if(prev_in_range && ~doing_dma) begin
             /* even case: {8'd0, IO_data}
                odd case: {IO_data, 8'd0}  */    
             cpu_data_valid = cpu_IO_data_valid;        
