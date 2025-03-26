@@ -1,11 +1,12 @@
-`default_nettype none
-`include "RegisterPkg.pkg"
+// `default_nettype none
+`include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
 
 
 
 module BRAM_handler(input logic clock,
+                  input logic cpu_clock,
                   input logic reset,
 
                   input logic [15:0] cpu_addr_read,
@@ -124,7 +125,7 @@ module BRAM_handler(input logic clock,
         
 
 
-    DMA_controller dma_guy (.clock,
+    DMA_controller dma_guy (.clock(cpu_clock),
                             .reset,
                             .DMA_R, 
                             .start_dma,
@@ -149,7 +150,7 @@ module BRAM_handler(input logic clock,
                                              .reset,
                                              .doing_dma,
                                              .dma_oam_wren,
-                                             .cpu_wren, .cpu_addr_write,    
+                                             .cpu_wren, .cpu_addr_write, .cpu_addr_read,    
                                              .ppu_mode, .ppu_addr1, .ppu_addr2,
                                              .dma_src_addr, .dma_dest_addr,
                                              .oam_wren, .vram_wren,
@@ -165,9 +166,9 @@ module BRAM_handler(input logic clock,
     assign wram_wren = cpu_wren && within_range(cpu_addr_write, `WRAM_START, `WRAM_END);
     assign hram_wren = cpu_wren && within_range(cpu_addr_write, `HRAM_START, `HRAM_END);
 
-    assign exram_addr_r = cpu_addr_read;
-    assign wram_addr_r = cpu_addr_read;
-    assign hram_addr_r = cpu_addr_read;
+    assign exram_addr_r = convert_to_BRAM_addr(cpu_addr_read, `EXRAM_START);
+    assign wram_addr_r = convert_to_BRAM_addr(cpu_addr_read, `WRAM_START);
+    assign hram_addr_r = convert_to_BRAM_addr(cpu_addr_read, `HRAM_START);
 
 
     assign cpu_data_valid = (cpu_memory_selector != `INVALID);
@@ -194,13 +195,13 @@ module BRAM_handler(input logic clock,
                      .address_a(exram_addr_w),     .address_b(exram_addr_r), 
                      .q_a      (),                 .q_b      (exram_out_data),
                      .wren_a   (exram_wren),       .wren_b   (1'b0), //read ONLY port
-                     .data_a   (cpu_in_data),      .data_b   (1'b0));   
+                     .data_a   (cpu_in_data),      .data_b   (16'hXXXX));   
     //---WORK RAM ------ (note that I am combining two banks here, 2nd one is switchable in CGB)                       
     DUAL_8KB wram0 (.clock    (clock), 
                     .address_a(wram_addr_w),     .address_b(wram_addr_r),  
                     .q_a      (),                .q_b      (wram_out_data), 
                     .wren_a   (wram_wren),       .wren_b   (1'b0), //read ONLY port
-                    .data_a   (cpu_in_data),     .data_b   (1'b0));
+                    .data_a   (cpu_in_data),     .data_b   (16'hXXXX));
 
     //---OAM TABLE ------                                                              
     OAM_DUALBANK oam (.clock    (clock), 
@@ -213,7 +214,7 @@ module BRAM_handler(input logic clock,
     logic[0:15][15:0] HRAM;
     logic[15:0] unbuffered_hram_out;
     assign unbuffered_hram_out = HRAM[hram_addr_r];
-    always_ff @(posedge clock) begin
+    always_ff @(posedge cpu_clock) begin
         hram_out_data <= unbuffered_hram_out;
         if(reset) begin
             HRAM <= '0;

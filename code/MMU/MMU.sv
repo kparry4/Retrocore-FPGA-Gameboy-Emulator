@@ -1,20 +1,13 @@
-`default_nettype none
-`include "RegisterPkg.pkg"
+// `default_nettype none
+`include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
 
 
 
-function logic within_range(input logic [15:0] value, input logic [15:0] min, input logic [15:0] max);
-    return (value >= min) && (value <= max);
-endfunction   
-
-function logic is_even(input logic [15:0] address);
-    return address[0] == 1'b0;
-endfunction    
-
 
 module MMU (input logic CLK_4MHZ, // 5 Mhz?
+            input logic cpu_clock,
             input logic rst,
 
             input logic [15:0] cpu_addr_read,
@@ -43,7 +36,13 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
             input logic  [3:0]  APU_NR52,
 
+            //OUTPUT PPU REGISTERS
+            output logic[7:0] LCDC_R,
+            output logic[7:0] STAT_R, //mixed r/w register
+            output PPU_DATA PPU_R,
 
+
+            //OUTPUT CPU bi;;sjot
             output logic [15:0] cpu_out_data,
             output logic        cpu_data_valid,
 
@@ -72,9 +71,9 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
   
 
     //---PPU Registers
-    logic[7:0] LCDC_R;
-    logic[7:0] STAT_R; //mixed r/w register
-    PPU_DATA PPU_R;
+    //logic[7:0] LCDC_R;
+    //logic[7:0] STAT_R; //mixed r/w register
+    //PPU_DATA PPU_R;
 
     //---DMA Register 
     logic[7:0] DMA_R;
@@ -111,12 +110,18 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     //      MEMORY DECLARATIONS
     ///////////////////////////////////////////  
 
+    logic [15:0] prev_cpu_addr_read; //***KEP
+    always_ff @(posedge cpu_clock) begin
+      prev_cpu_addr_read <= cpu_addr_read;//***KEP
+    end
+
     always_comb begin
-        if(within_range(cpu_addr_read, `IO_START, `IO_END) && ~doing_dma) begin
+        if(within_range(prev_cpu_addr_read, `IO_START, `IO_END) && ~doing_dma) begin//***KEP
             /* even case: {8'd0, IO_data}
                odd case: {IO_data, 8'd0}  */    
-            cpu_data_valid = cpu_IO_data_valid;        
-            if(is_even(cpu_addr_read)) begin
+            // cpu_data_valid = cpu_IO_data_valid;        
+            cpu_data_valid = 1'b1; // ***KEP
+            if(is_even(prev_cpu_addr_read)) begin//***KEP
                 cpu_out_data = {8'd0, IO_out_cpu_data};
             end else begin
                 cpu_out_data = {IO_out_cpu_data, 8'd0};
@@ -129,9 +134,11 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
 
     IO_handler io_registers  (.clock(CLK_4MHZ),
+			      .cpu_clock,
                               .reset(rst),
                               .vblank,
-                              .cpu_addr_read,
+                              // .cpu_addr_read,
+                              .cpu_addr_read, //***KEP I BROKE SOME TIMING SEE 01 cnt=16510 look for xxxx in load instr
                               .cpu_addr_write,
                               .cpu_wren,
                               .cpu_in_data,
@@ -170,6 +177,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     
     //TODO: sanity check hwo dma data is passed, do i need antoher register
     BRAM_handler memory_units (.clock(CLK_4MHZ), 
+                              .cpu_clock,
                               .reset(rst), 
                               .cpu_addr_read,
                               .cpu_addr_write,

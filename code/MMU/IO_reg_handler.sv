@@ -1,10 +1,12 @@
-`default_nettype none
-`include "RegisterPkg.pkg"
+// `default_nettype none
+`define DOC
+`include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
  
 
-module IO_handler(input logic clock, 
+module IO_handler(input logic clock,
+                  input logic cpu_clock, 
                   input logic reset,
 
                   input logic vblank,
@@ -193,7 +195,11 @@ module IO_handler(input logic clock,
                               cpu_data_valid = 1'b1; 
                          end
         `LY:             begin 
+                              `ifdef DOC
+                                out_data = 16'h90; //***KEP
+                              `else
                               out_data        = PPU_R.LY_R;
+                              `endif
                               cpu_data_valid = 1'b1; 
                          end
         `LYC:            begin 
@@ -257,7 +263,7 @@ module IO_handler(input logic clock,
         endcase
     end
 
-    always_ff@(posedge clock) begin
+    always_ff@(posedge cpu_clock) begin
         cpu_out_data <= out_data; //delay by a cycle to be consistent with BRAM behavior
         if(reset) begin
             halted             <= 1'b0;

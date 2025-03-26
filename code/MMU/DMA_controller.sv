@@ -1,5 +1,5 @@
-`default_nettype none
-`include "RegisterPkg.pkg"
+// `default_nettype none
+`include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
 module DMA_controller(input logic clock,
@@ -15,7 +15,7 @@ module DMA_controller(input logic clock,
                       output logic [15:0] dma_dest_addr);
 
     enum logic[2:0] {IDLE, READING, WRITING, FINISHED} state, nextState;
-    localparam DMA_CYCLE_COUNT = 640 * 2; //160 M cycles
+    localparam DMA_CYCLE_COUNT = 640; //160 M cycles
     localparam FINAL_OAM_ADDR = 16'hFE9F;
     
     logic [11:0] cycle_count; 

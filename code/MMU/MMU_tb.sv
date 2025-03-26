@@ -1,5 +1,5 @@
 `default_nettype none
-`include "RegisterPkg.pkg"
+`include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
 
@@ -17,6 +17,9 @@ module MMU_TB();
     logic [15:0]  ppu_addr2;
 
     logic [1:0]   ppu_mode;
+    PPU_DATA PPU_R;
+    logic [7:0] LCDC_R;		
+    logic [7:0] STAT_R;		
 
     logic [3:0]  APU_NR52;
 
@@ -32,6 +35,7 @@ module MMU_TB();
     logic         joypad_a_button;
     logic         joypad_b_button;  
 
+	
 
     logic [15:0] cpu_out_data;
     logic        cpu_data_valid;
@@ -162,8 +166,9 @@ module MMU_TB();
         stop_inst_hit <= 1'b0;
         cpu_addr_read <= `ROM_0_START;
         cpu_addr_write <= `ROM_0_START;
+	set_ppu_mode(2'd0);
         @(posedge clock);
-        @(posedge clock);
+	@(posedge cpu_clock);
         reset <= 1'b0;
         @(posedge clock);
         @(posedge clock);
@@ -185,16 +190,20 @@ module MMU_TB();
         forever #5 clock = ~clock; 
     end
 
+	initial begin
+		cpu_clock = 1'b0; #5
+		forever #10 cpu_clock = ~cpu_clock;
+	end
     logic odd;
 
-    always_ff @(posedge clock) begin
-        if(reset) begin
-            cpu_clock <= 1'b0;
-        end else begin
-            cpu_clock <= ~cpu_clock;
-        end
-    end
-
+     //always_ff @(posedge clock) begin
+         //if(reset) begin
+             //cpu_clock <= 1'b0;
+         //end else begin
+             //cpu_clock <= ~cpu_clock;
+         //end
+     //end
+ //
 
     initial begin
         if ($test$plusargs("BASIC_BRAM")) begin
@@ -484,41 +493,41 @@ module MMU_TB();
   
                 
             //-----------VRAM-------------
-            for(int i = 0; i < 10; i++) begin
+            for(int i = 0; i < 170; i++) begin
                 do_cpu_write(`VRAM_START + i, 16'hDEAD + i);
                 do_cpu_read(`VRAM_START + i);
             end  
-            for(int i = 0; i < 10; i++) begin
+            for(int i = 0; i < 170; i++) begin
                 do_cpu_write(`VRAM_END - i, 16'hBEEF + i);
                 do_cpu_read(`VRAM_END - i);
             end   
                 
             //-----------EXRAM-------------
-            for(int i = 0; i < 10; i++) begin
+            for(int i = 0; i < 170; i++) begin
                 do_cpu_write(`EXRAM_START + i, 16'hAAAA + i);
                 do_cpu_read(`EXRAM_START + i);
             end  
-            for(int i = 0; i < 10; i++) begin
+            for(int i = 0; i < 170; i++) begin
                 do_cpu_write(`EXRAM_END - i, 16'hBBBB + i);
                 do_cpu_read(`EXRAM_END - i);
             end   
                 
 
             //-----------WRAM-------------
-            for(int i = 0; i < 10; i++) begin
+            for(int i = 0; i < 170; i++) begin
                 do_cpu_write(`WRAM_START + i, 16'hCCCC + i);
                 do_cpu_read(`WRAM_START + i);
             end  
-            for(int i = 0; i < 10; i++) begin
+            for(int i = 0; i < 170; i++) begin
                 do_cpu_write(`WRAM_END - i, 16'hDDDD + i);
                 do_cpu_read(`WRAM_END - i);
             end          
 
             //-----------HRAM-------------
-                    for(int i = 0; i < 16; i++) begin
-                        do_cpu_write(`HRAM_START + i, 16'hFEFE + i);
-                        do_cpu_read(`HRAM_START + i);
-                    end  
+	    for(int i = 0; i < 50; i++) begin
+				do_cpu_write(`HRAM_START + i, 16'hFEFE + i);
+				do_cpu_read(`HRAM_START + i);
+		end  
 
 
             do_cpu_write(`JOYPAD, 8'b11_01_1111);
@@ -535,13 +544,19 @@ module MMU_TB();
 
            for(int pmode = 0; pmode < 2; pmode++) begin
 
-                set_ppu_mode(pmode);         
-                write_IO(`DMA, `ROM_0_START);
-                clock_cycles(2000);
-                @(posedge cpu_clock);
+                set_ppu_mode(pmode);        
+			 	@(posedge cpu_clock);
+				@(posedge cpu_clock); 
+                write_IO(`DMA, 8'h80);
+				@(posedge cpu_clock);
+  				for(int j = 0; j < 800; j++) begin
+					@(posedge cpu_clock);
+				end
+				@(posedge cpu_clock);
                 //-----------OAM-------------
                 for(int i = 0; i < 159; i++) begin
                     do_cpu_read(`OAM_START + i);
+					@(posedge cpu_clock);	
                 end  
             end
             

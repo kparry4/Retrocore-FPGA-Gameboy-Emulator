@@ -14,7 +14,8 @@
     `define EXRAM_END   16'hBFFF
 
     `define WRAM_START 16'hC000
-    `define WRAM_END   16'hCFFF
+    // `define WRAM_END   16'hCFFF
+    `define WRAM_END   16'hDFFF //***KEP
 
     `define OAM_START  16'hFE00
     `define OAM_END    16'hFE9F
@@ -125,5 +126,17 @@
     `define SVBK     16'hFF70
     `define PCM12    16'hFF76
     `define PCM34    16'hFF77
+
+    function logic within_range(input logic [15:0] value, input logic [15:0] min, input logic [15:0] max);
+        return (value >= min) && (value <= max);
+    endfunction   
+
+    function logic is_even(input logic [15:0] address);
+        return address[0] == 1'b0;
+    endfunction    
+    
+    function logic[15:0] convert_to_BRAM_addr(input logic[15:0] cpu_addr, input logic[15:0] memory_start_region);
+        return (cpu_addr - memory_start_region) >> 1;
+    endfunction
 
 `endif
