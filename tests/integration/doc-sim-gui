@@ -1,2 +1,14 @@
+
+INPUT="$1"
+
+if [ ${#INPUT} -eq 1 ]; then
+  MIF_NAME="0"$INPUT""
+else
+  MIF_NAME="$INPUT"
+fi
+
+echo "MIF name is "$MIF_NAME""
+
+bash replace_mif.bash "$MIF_NAME"
 vsim -do "do doc-sim.do $1"
 ./clean

@@ -3,19 +3,19 @@
 module gameboy(
   input logic clk,clk2, //*** make a second clock
   input  logic rst,
-  input  logic [1:0] ppu_mode,
   output logic [1:0] frame_pixel,
   output logic frame_pixel_valid
 );
 
   logic [15:0] memData;
   logic memValid;
-  logic [15:0] ie;
-  logic [15:0] iflg;
+  logic [7:0] ie;
+  logic [7:0] iflg;
   logic stop;
   logic [15:0] memWdata;
   logic [15:0] memWadr;
   logic memWen;
+  logic [1:0] ppu_mode;
   logic [15:0] memAdr;
 
 
@@ -55,18 +55,20 @@ module gameboy(
           .ppu_mode(ppu_mode),
           .hblank(ppu_mode==0),
           .vblank(ppu_mode==1),
-          .joypad_select(1'b1),
-          .joypad_start(1'b1),
+          .joypad_select(1'b0),
+          .joypad_start(1'b0),
           .joypad_dpad_up(1'b0),
           .joypad_dpad_down(1'b0),
           .joypad_dpad_left(1'b0),
           .joypad_dpad_right(1'b0),
-          .joypad_a_button(1'b1),
-          .joypad_b_button(1'b1),
+          .joypad_a_button(1'b0),
+          .joypad_b_button(1'b0),
           .APU_NR52(4'b0),
           .LCDC_R,
           .STAT_R,
           .PPU_R,
+          .IF_R(iflg),
+          .IE_R(ie),
           .cpu_out_data(memData),
           .cpu_data_valid(memValid),
           .ppu_out_data1(port0_data),

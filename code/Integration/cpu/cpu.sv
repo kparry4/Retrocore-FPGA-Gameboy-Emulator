@@ -5,8 +5,8 @@ module cpu (
   input  logic rst,
   input  logic [15:0] memData,
   input logic memValid,
-  input  logic [15:0] ie,
-  input  logic [15:0] iflg,
+  input  logic [7:0] ie,
+  input  logic [7:0] iflg,
   output logic stop,
   output logic [15:0] memWdata,
   output logic [15:0] memWadr,
@@ -48,7 +48,7 @@ module cpu (
                   .jmp,
                   .clk);
 
-  always_comb casez(ie[12:8]&iflg[12:8])
+  always_comb casez(ie[4:0]&iflg[4:0])
     5'b10000: intAdr = 8'h60;
     5'b?1000: intAdr = 8'h58;
     5'b??100: intAdr = 8'h50;
@@ -148,12 +148,12 @@ module cpu (
                   iduIn+((ctrl.iduSel==IDU_PCE) ? {{8{src1[7]}},src1} : 1);
 
   // new flag register write data
-  always_comb casez(ie[12:8]&iflg[12:8])
-    5'b10000: newiflg = {iflg[15:13],1'b0,iflg[11:0]};
-    5'b?1000: newiflg = {iflg[15:12],1'b0,iflg[10:0]};
-    5'b??100: newiflg = {iflg[15:11],1'b0,iflg[9:0]};
-    5'b???10: newiflg = {iflg[15:10],1'b0,iflg[8:0]};
-    5'b????1: newiflg = {iflg[15:9],1'b0,iflg[7:0]};
+  always_comb casez(ie[4:0]&iflg[4:0])
+    5'b10000: newiflg = {13'b0,iflg[3:0]};
+    5'b?1000: newiflg = {8'b0,iflg[4],1'b0,iflg[2:0]};
+    5'b??100: newiflg = {8'b0,iflg[4:3],1'b0,iflg[1:0]};
+    5'b???10: newiflg = {8'b0,iflg[4:2],1'b0,iflg[0]};
+    5'b????1: newiflg = {8'b0,iflg[4:1],1'b0};
     default: newiflg = 'x;
   endcase
   // memory write data calculation

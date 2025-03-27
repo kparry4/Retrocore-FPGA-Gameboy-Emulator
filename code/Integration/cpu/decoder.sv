@@ -3,7 +3,7 @@
 module decoder (
   input logic rst, clk,
   input  logic [7:0] instr,
-  input  logic [15:0] ie, iflg,
+  input  logic [7:0] ie, iflg,
   input  logic memValid,
   input  logic jmp,
   output logic stop,
@@ -18,7 +18,7 @@ module decoder (
   logic cb,cbpre, done, ime,imeen,newime;
   logic mpcen, nmpcen, interupt;
 
-  assign interupt = |(iflg[12:8]&ie[12:8])&ime;
+  assign interupt = |(iflg[4:0]&ie[4:0])&ime;
 
   assign mpc_enum = mpc_t'(mpc);
   assign nextInstr = ctrl.useOp ? nextOp : instr;

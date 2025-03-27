@@ -21,9 +21,20 @@ module tb;
   logic [15:0] newie, ie, iflg;
   logic [15:0] memWadr;
   logic [15:0] memWdata, tmp;
-  int file;
   logic clk2=0; //*** make a second clock
   logic ppu_mode;
+  
+  localparam WIDTH  = 160;
+  localparam HEIGHT = 144;
+  logic [1:0]   frame_pixel;
+  logic         frame_pixel_valid;
+  
+  // 2D frame buffer for storing 12-bit VGA colors.
+  reg [1:0] frame_buffer [0:HEIGHT-1][0:WIDTH-1];
+  
+  // Declare pixel_count and loop variables.
+  integer pixel_count;
+  integer r, c, red, green, blue, file;
   
   always @(posedge clk2) begin 
     pc = gb.memAdr; 
@@ -34,7 +45,7 @@ module tb;
   end
   // flopenr #(16) iflgflop(clk,rst,(memWadr==16'hff0f)&gb.memWen, gb.memWdata, iflg);
   // flopenr #(16) ieflop(clk,rst,(memWadr==16'hffff)&memWen, memWdata, ie);
-  gameboy gb (.clk,.clk2, .rst,.ppu_mode(2'b0));
+  gameboy gb (.clk,.clk2, .rst, .frame_pixel, .frame_pixel_valid);
 
   always #5 clk = ~clk;
   always #10 clk2 = ~clk2;
@@ -106,6 +117,20 @@ module tb;
     progNum = 0;
   end
 
+  // Capture pixels and update pixel_count in one always_ff block.
+  always_ff @(posedge clk2 or posedge rst) begin
+    if (rst|(pixel_count >= WIDTH * HEIGHT)) begin
+      pixel_count <= 0;
+    end else if (frame_pixel_valid) begin
+      integer row, col;
+      row = pixel_count / WIDTH;
+      col = pixel_count % WIDTH;
+      if (row < HEIGHT) begin
+        frame_buffer[row][col] <= frame_pixel;
+        pixel_count <= pixel_count + 1;
+      end
+    end
+  end
 
   always @(negedge clk2) begin
     if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)&(gb.cpu.decoder.mpc!==INTERUPT5)) begin
@@ -120,8 +145,36 @@ module tb;
               );
     cnt++;
     end
-    if(cnt>cnts[progNum]) begin $display("finish");$fclose(f); $finish; end
-    //if(cnt>31464) begin $display("finish early");$fclose(f); $finish; end
+    if(cnt>cnts[progNum]) begin 
+      $display("finish");
+      // output ppu data
+      // wait(pixel_count >= WIDTH * HEIGHT);
+      #100;
+      file = $fopen("frame.ppm", "w");
+      if (file == 0) begin
+        $display("ERROR: Could not open frame.ppm for writing.");
+        $finish;
+      end
+      $fwrite(file, "P3\n%0d %0d\n255\n", WIDTH, HEIGHT);
+      for (r = 0; r < HEIGHT; r = r + 1) begin
+        for (c = 0; c < WIDTH; c = c + 1) begin
+          case (frame_buffer[r][c]) 
+              2'b11: {red, green, blue} = {0,0,0};
+              2'b10: {red, green, blue} = {160,160,160};
+              2'b01: {red, green, blue} = {211,211,211};
+              2'b00: {red, green, blue} = {255,255,255};
+          endcase 
+          $fwrite(file, "%0d %0d %0d ", red, green, blue);
+        end
+        $fwrite(file, "\n");
+      end
+      $fclose(file);
+      $display("Frame written to frame.ppm");
+
+
+      $fclose(f); $finish; 
+      end
+    // if(cnt > 5) begin $display("finish early");$fclose(f); $finish; end
     if(gb.stop) begin
       $display("Finshed %s\n", tests[progNum]);
       progNum++;
@@ -130,6 +183,8 @@ module tb;
       for(int i=0; i<`INSTRS+1; i++) prog[i] = '0;
       // check if finished tests
       if(tests[progNum] === "end") begin
+        
+        // finish
         $display("FINISHED\n");
         $fclose(f);
         $finish;

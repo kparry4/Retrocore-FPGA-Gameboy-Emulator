@@ -43,6 +43,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
 
             //OUTPUT CPU bi;;sjot
+            output logic [7:0] IF_R, //interrupt flag
+            output logic [7:0] IE_R, //interrupt enable
             output logic [15:0] cpu_out_data,
             output logic        cpu_data_valid,
 
@@ -86,8 +88,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     logic[7:0] TAC_R; // (FF07)
     
     //---INTERRUPT Registers  
-    logic [7:0] IF_R; //interrupt flag
-    logic [7:0] IE_R; //interrupt enable
+    //logic [7:0] IF_R; //interrupt flag
+    //logic [7:0] IE_R; //interrupt enable
 
     //---BOOT ROM Enable/Disable Register  
     logic [7:0] BOOT_ROM_EN_R;

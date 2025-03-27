@@ -1,5 +1,5 @@
 // `default_nettype none
-`define DOC
+// `define DOC
 `include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
