@@ -276,7 +276,7 @@ module IO_handler(input logic clock,
             APU_R      <= '0;
             
             //PPU REGISTERS
-            LCDC_R       <= 8'h91;
+            LCDC_R       <= 8'h81;
             STAT_R       <= 8'h85; //1 in MSB for dmg mode
             //PPU_R      <= '0;
             PPU_R.SCY_R  <= 8'h00;

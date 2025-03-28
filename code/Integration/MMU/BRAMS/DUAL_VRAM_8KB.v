@@ -113,7 +113,7 @@ module DUAL_VRAM_8KB (
 		altsyncram_component.outdata_reg_a = "CLOCK0",
 		altsyncram_component.outdata_reg_b = "CLOCK0",
 		//altsyncram_component.power_up_uninitialized = "FALSE",
- 		altsyncram_component.init_file = "../../code/Integration/MMU/mif_files/scripts/sprites.mif",
+ 		altsyncram_component.init_file = "../../code/Integration/MMU/mif_files/scripts/nintendo.mif",
 		altsyncram_component.read_during_write_mode_mixed_ports = "OLD_DATA",
 		altsyncram_component.read_during_write_mode_port_a = "NEW_DATA_NO_NBE_READ",
 		altsyncram_component.read_during_write_mode_port_b = "NEW_DATA_NO_NBE_READ",
