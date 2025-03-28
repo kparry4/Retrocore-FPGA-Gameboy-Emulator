@@ -556,7 +556,7 @@ module Render_BG (
         port0_read_en = 1'b1;
       end
       default: begin
-        port0_addr    = 16'd0;
+        port0_addr    = 16'h9800;//***
         port0_read_en = 1'b0;
       end
     endcase
@@ -893,7 +893,7 @@ module Render_Sprites (
   
   // Memory interface for sprite tile data.
   assign port_addr = (state == SCAN_CHECK && candidate_valid) ?
-         (16'h8000 + (sprites[candidate_index].tile_index * 16) + row_offset) : 16'd0;
+         (16'h8000 + (sprites[candidate_index].tile_index * 16) + row_offset) : 16'h8000;
   assign port_read_en = (state == SCAN_CHECK && candidate_valid);
   
   always_ff @(posedge clk) begin
