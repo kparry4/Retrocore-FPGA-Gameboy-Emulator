@@ -156,19 +156,19 @@ module BRAM_handler(input logic clock,
                                              .oam_wren, .vram_wren,
                                              .rom0_addr,
                                              .vram_addr_rw, .vram_addr_r,
-                                             .exram_addr_w,
-                                             .wram_addr_w,
+                                             .exram_addr_r,
+                                             .wram_addr_r,
                                              .oam_addr_rw,  .oam_addr_r,
-                                             .hram_addr_w);
+                                             .hram_addr_r);
 
     //-----for memory units WITHOUT contention
     assign exram_wren = cpu_wren && within_range(cpu_addr_write, `EXRAM_START, `EXRAM_END);
     assign wram_wren = cpu_wren && within_range(cpu_addr_write, `WRAM_START, `WRAM_END);
     assign hram_wren = cpu_wren && within_range(cpu_addr_write, `HRAM_START, `HRAM_END);
 
-    assign exram_addr_r = convert_to_BRAM_addr(cpu_addr_read, `EXRAM_START);
-    assign wram_addr_r = convert_to_BRAM_addr(cpu_addr_read, `WRAM_START);
-    assign hram_addr_r = convert_to_BRAM_addr(cpu_addr_read, `HRAM_START);
+    assign exram_addr_w = convert_to_BRAM_addr(cpu_addr_write, `EXRAM_START);
+    assign wram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `WRAM_START);
+    assign hram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `HRAM_START);
 
 
     assign cpu_data_valid = (cpu_memory_selector != `INVALID);

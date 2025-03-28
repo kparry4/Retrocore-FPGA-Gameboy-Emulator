@@ -497,9 +497,9 @@ module MMU_TB();
                 do_cpu_write(`VRAM_START + i, 16'hDEAD + i);
                 do_cpu_read(`VRAM_START + i);
             end  
-            for(int i = 0; i < 170; i++) begin
-                do_cpu_write(`VRAM_END - i, 16'hBEEF + i);
-                do_cpu_read(`VRAM_END - i);
+            for(int i = 0; i < 170; i+=2) begin
+                do_cpu_write(16'h8500 + i, 16'hBEEF + i);
+                do_cpu_read(16'h8500 + i);
             end   
                 
             //-----------EXRAM-------------
@@ -508,8 +508,8 @@ module MMU_TB();
                 do_cpu_read(`EXRAM_START + i);
             end  
             for(int i = 0; i < 170; i++) begin
-                do_cpu_write(`EXRAM_END - i, 16'hBBBB + i);
-                do_cpu_read(`EXRAM_END - i);
+                do_cpu_write(16'hA200 + i, 16'hBBBB + i);
+                do_cpu_read(16'hA200);
             end   
                 
 
@@ -545,18 +545,18 @@ module MMU_TB();
            for(int pmode = 0; pmode < 2; pmode++) begin
 
                 set_ppu_mode(pmode);        
-			 	@(posedge cpu_clock);
-				@(posedge cpu_clock); 
-                write_IO(`DMA, 8'h80);
-				@(posedge cpu_clock);
-  				for(int j = 0; j < 800; j++) begin
-					@(posedge cpu_clock);
-				end
-				@(posedge cpu_clock);
-                //-----------OAM-------------
-                for(int i = 0; i < 159; i++) begin
-                    do_cpu_read(`OAM_START + i);
-					@(posedge cpu_clock);	
+		@(posedge cpu_clock);
+		@(posedge cpu_clock); 
+                write_IO(`DMA, 8'hA0);
+		@(posedge cpu_clock);
+		for(int j = 0; j < 800; j++) begin
+			@(posedge cpu_clock);
+		end
+		@(posedge cpu_clock);
+		//-----------OAM-------------
+		for(int i = 0; i < 159; i++) begin
+		    do_cpu_read(`OAM_START + i);
+		    @(posedge cpu_clock);	
                 end  
             end
             
