@@ -57,7 +57,7 @@ module cpu (
     default: intAdr = 'x;
   endcase
   // pc register
-  flopenr #(16,16'h00) pcflop(clk, rst, ctrl.pcen, npc, pc);
+  flopenr #(16,16'h100) pcflop(clk, rst, ctrl.pcen, npc, pc);
   // select next pc
   always_comb case(ctrl.pcSel)
     PC_1: npc = pc+1;

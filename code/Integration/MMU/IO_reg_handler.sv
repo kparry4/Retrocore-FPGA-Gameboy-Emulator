@@ -269,19 +269,35 @@ module IO_handler(input logic clock,
             tima_ticks          <= '0;
             divider_ticks      <= '0;
 
-            JOYPAD_R   <= '0;
+            JOYPAD_R   <= 8'hcf;
             NR52_R     <= '0;
+
+            //TODO: audio registers are hardcoded to zero for NOW
             APU_R      <= '0;
-            LCDC_R     <= '0;
-            STAT_R     <= 8'h80; //1 in MSB for dmg mode
-            PPU_R      <= '0;
-            DIV_R      <= '0;
+            
+            //PPU REGISTERS
+            LCDC_R       <= 8'h91;
+            STAT_R       <= 8'h85; //1 in MSB for dmg mode
+            //PPU_R      <= '0;
+            PPU_R.SCY_R  <= 8'h00;
+            PPU_R.SCX_R  <= 8'h00;
+            PPU_R.LY_R   <= 8'h00;
+            PPU_R.LYC_R  <= 8'h00;
+            PPU_R.BGP_R  <= 8'hfc;
+            PPU_R.OBP0_R <= 8'h00;
+            PPU_R.OBP1_R <= 8'h00;
+            PPU_R.WY_R   <= 8'h00;
+            PPU_R.WX_R   <= 8'h00;
+            
+            
+
+            DIV_R      <= 8'hab;
             TIMA_R     <= '0;
             TMA_R      <= '0;
-            TAC_R      <= '0;
-            IF_R       <= '0;
+            TAC_R      <= 8'hf8;
+            IF_R       <= 8'he1;
             IE_R       <= '0;
-            DMA_R      <= '0;
+            DMA_R      <= 8'hff;
             BOOT_ROM_EN_R <= 1'b1;
 
         end else if(stop_inst_hit || halted) begin
