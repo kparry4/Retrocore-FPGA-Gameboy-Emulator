@@ -530,11 +530,13 @@ module MMU_TB();
 		end  
 
 
-            do_cpu_write(`JOYPAD, 8'b11_01_1111);
+            write_IO(`JOYPAD, 8'b11_01_1111);
+	    @(posedge cpu_clock);
             do_cpu_read(`JOYPAD);
             @(posedge cpu_clock);
             @(posedge cpu_clock);
-            do_cpu_write(`JOYPAD, 8'b11_10_1111);
+            write_IO(`JOYPAD, 8'b11_10_1111);
+	    @(posedge cpu_clock);
             do_cpu_read(`JOYPAD);      
             @(posedge cpu_clock);
             @(posedge cpu_clock);

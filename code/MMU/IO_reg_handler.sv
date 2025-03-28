@@ -257,7 +257,7 @@ module IO_handler(input logic clock,
 
     always_comb begin
         casex(JOYPAD_R[5:4])
-        2'bx0: JOYPAD_OUTPUT = {joypad_select, joypad_start, joypad_b_button, joypad_a_button};
+        2'bx0: JOYPAD_OUTPUT = {joypad_start, joypad_select, joypad_b_button, joypad_a_button};
         2'b0x: JOYPAD_OUTPUT = {joypad_dpad_down, joypad_dpad_up, joypad_dpad_left, joypad_dpad_right};
         default: JOYPAD_OUTPUT = '0; //unreachable?
         endcase
@@ -323,8 +323,11 @@ module IO_handler(input logic clock,
             //HANDLE joypad:
             if(cpu_addr_write == `JOYPAD && cpu_wren) begin
                 //7,6,5 are empty
-                JOYPAD_R[5:4] <= cpu_IO_in_data[1:0]; //double check this
-            end
+                //JOYPAD_R[5:4] <= cpu_IO_in_data[1:0]; //double check this
+		JOYPAD_R <= cpu_IO_in_data;
+            end else begin
+		JOYPAD_R <= JOYPAD_R;
+	    end
 
             //HANDLE DIV: Divider
             if(cpu_addr_write == `DIV && cpu_wren) begin
