@@ -174,7 +174,31 @@ module tb;
 
       $fclose(f); $finish; 
       end
-    // if(cnt > 5) begin $display("finish early");$fclose(f); $finish; end
+
+
+
+
+
+
+
+
+
+
+
+
+    if(cnt > 151359) begin $display("finish early");$fclose(f); $finish; end
+
+
+
+
+
+
+
+
+
+
+
+
     if(gb.stop) begin
       $display("Finshed %s\n", tests[progNum]);
       progNum++;

@@ -195,11 +195,7 @@ module IO_handler(input logic clock,
                               cpu_data_valid = 1'b1; 
                          end
         `LY:             begin 
-                              `ifdef DOC
-                                out_data = 16'h90; //***KEP
-                              `else
                               out_data        = PPU_R.LY_R;
-                              `endif
                               cpu_data_valid = 1'b1; 
                          end
         `LYC:            begin 
@@ -257,11 +253,12 @@ module IO_handler(input logic clock,
 
     always_comb begin
         casex(JOYPAD_R[5:4])
-        2'bx0: JOYPAD_OUTPUT = {joypad_select, joypad_start, joypad_b_button, joypad_a_button};
+        2'bx0: JOYPAD_OUTPUT = {joypad_start, joypad_select, joypad_b_button, joypad_a_button};
         2'b0x: JOYPAD_OUTPUT = {joypad_dpad_down, joypad_dpad_up, joypad_dpad_left, joypad_dpad_right};
         default: JOYPAD_OUTPUT = '0; //unreachable?
         endcase
     end
+
 
     always_ff@(posedge cpu_clock) begin
         cpu_out_data <= out_data; //delay by a cycle to be consistent with BRAM behavior
@@ -323,8 +320,11 @@ module IO_handler(input logic clock,
             //HANDLE joypad:
             if(cpu_addr_write == `JOYPAD && cpu_wren) begin
                 //7,6,5 are empty
-                JOYPAD_R[5:4] <= cpu_IO_in_data[1:0]; //double check this
-            end
+                //JOYPAD_R[5:4] <= cpu_IO_in_data[1:0]; //double check this
+		            JOYPAD_R <= cpu_IO_in_data;
+            end else begin
+		            JOYPAD_R <= JOYPAD_R;
+  	        end
 
             //HANDLE DIV: Divider
             if(cpu_addr_write == `DIV && cpu_wren) begin
@@ -467,6 +467,9 @@ module IO_handler(input logic clock,
                 LCDC_R <= LCDC_R;
                 PPU_R <= PPU_R;
             end
+                      `ifdef DOC
+            PPU_R.LY_R <= 16'h90;//***KEP
+                      `endif
 
             STAT_R[1:0] <= ppu_mode;
             STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R); 

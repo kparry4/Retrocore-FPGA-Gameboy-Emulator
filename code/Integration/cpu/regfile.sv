@@ -27,7 +27,7 @@ module regfile (
        regs[H] = 8'h01;
        regs[L] = 8'h4d;
       `else
-      regs = 0;
+      regs = '0;
       `endif
       {regs[SP], regs[SPL]} = 16'hfffe;
     end
