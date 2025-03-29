@@ -270,18 +270,21 @@ module IO_handler(input logic clock,
             divider_ticks      <= '0;
 
             JOYPAD_R   <= 8'hcf;
-            NR52_R     <= '0;
+            // NR52_R     <= '0;
+            NR52_R     <= 8'hf1;
 
             //TODO: audio registers are hardcoded to zero for NOW
             APU_R      <= '0;
             
             //PPU REGISTERS
-            LCDC_R       <= 8'hd3;
+            // LCDC_R       <= 8'hd3;
+            LCDC_R       <= 8'h91;
             STAT_R       <= 8'h85; //1 in MSB for dmg mode
             //PPU_R      <= '0;
             PPU_R.SCY_R  <= 8'h00;
             PPU_R.SCX_R  <= 8'h00;
-            PPU_R.LY_R   <= 8'h00;
+            PPU_R.LY_R   <= 8'h90;
+            // PPU_R.LY_R   <= 8'h00; // old
             PPU_R.LYC_R  <= 8'h00;
             PPU_R.BGP_R  <= 8'he4;
             PPU_R.OBP0_R <= 8'h00;
