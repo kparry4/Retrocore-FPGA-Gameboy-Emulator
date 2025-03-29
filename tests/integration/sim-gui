@@ -1,0 +1,10 @@
+
+INPUT="$1"
+
+MIF_NAME="$INPUT"
+
+echo "MIF name is "$MIF_NAME""
+
+bash replace_mif.bash "$MIF_NAME"
+vsim -do "do sim.do $1"
+./clean
