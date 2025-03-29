@@ -283,7 +283,7 @@ module IO_handler(input logic clock,
             PPU_R.SCX_R  <= 8'h00;
             PPU_R.LY_R   <= 8'h00;
             PPU_R.LYC_R  <= 8'h00;
-            PPU_R.BGP_R  <= 8'hfc;
+            PPU_R.BGP_R  <= 8'he4;
             PPU_R.OBP0_R <= 8'h00;
             PPU_R.OBP1_R <= 8'h00;
             PPU_R.WY_R   <= 8'h00;

@@ -68,28 +68,34 @@ def main():
             #mif_file.write("ADDRESS_RADIX=HEX;\n")
             #mif_file.write("DATA_RADIX=HEX;\n")
             #mif_file.write("\nCONTENT BEGIN\n\n")
+            #print("length of bin file", binary_file)
             mif_file.write(header_template)
 
             address = 0
             while True:
                 byte0 = binary_file.read(1)
                 byte1 = binary_file.read(1)
+                print("addr byte 0, byte 1", f"{address:04X}", byte0, byte1)
                 if not byte0:
+                    print(f"b0: address is stopping at {address:04X}")
                     break
                 if not byte1:
+                    print(f"b1: address is stopping at {address:04X}")
                     byte1 = b'\x00'
+              
                 data = (byte1[0] << 8) | byte0[0]
                 mif_file.write(f"{address:04X} : {data:04x};\n")
                 address+=1
 
-            while(args.oam and address<80):
-                mif_file.write(f"{address:04X} : {0:04x};\n")
-                address+=1
-            while(args.vram and address<8192):
-                mif_file.write(f"{address:04X} : {0:04x};\n")
-                address+=1
+            #while(args.oam and address<80):
+            #    mif_file.write(f"{address:04X} : {data:04x};\n")
+            #    address+=1
+            #while(args.vram and address<8192):
+            #    mif_file.write(f"{address:04X} : {data:04x};\n")
+            #    address+=1
 
             mif_file.write("END; \n")
+            print(f"wrote up to {address:04X}", f"aka {address}")
     except FileNotFoundError:
         print(f"Error: File not found: {args.binpath}")
     except Exception as e:
