@@ -43,10 +43,7 @@ module tb;
 
   assign pc = gb.memAdr&{16{predone}};
   always @(posedge clk2) begin
-=======
-
-  always @(posedge clk2) begin
-    pc = gb.memAdr;
+    // pc = gb.memAdr;
     tmp = (pc==16'hff44) ? 16'h90 : `PROG(pc);
     if(gb.memWen) `PROG(gb.memWadr) = gb.memWdata;
     predone = gb.cpu.decoder.ctrl.done;
