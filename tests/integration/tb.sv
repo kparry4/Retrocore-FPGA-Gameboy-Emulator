@@ -24,7 +24,7 @@ module tb;
   logic [15:0] memWdata, tmp;
   logic clk2=0; //*** make a second clock
   logic ppu_mode;
-  
+
   localparam WIDTH  = 160;
   localparam HEIGHT = 144;
   logic [1:0]   frame_pixel;
@@ -32,16 +32,21 @@ module tb;
 
   logic [7:0]   LY;
   logic predone;
-  
+
+
   // 2D frame buffer for storing 12-bit VGA colors.
   reg [1:0] frame_buffer [0:HEIGHT-1][0:WIDTH-1];
-  
+
   // Declare pixel_count and loop variables.
   integer pixel_count;
   integer r, c, red, green, blue, file;
-  
-  assign pc = gb.memAdr&{16{predone}}; 
-  always @(posedge clk2) begin 
+
+  assign pc = gb.memAdr&{16{predone}};
+  always @(posedge clk2) begin
+=======
+
+  always @(posedge clk2) begin
+    pc = gb.memAdr;
     tmp = (pc==16'hff44) ? 16'h90 : `PROG(pc);
     if(gb.memWen) `PROG(gb.memWadr) = gb.memWdata;
     predone = gb.cpu.decoder.ctrl.done;
@@ -54,7 +59,7 @@ module tb;
   always #10 clk2 = ~clk2;
 
   initial begin
-  	for (integer line = 0; line < 154; line = line + 1) begin 
+  	for (integer line = 0; line < 154; line = line + 1) begin
 		LY = line;
         	repeat (456) @(posedge clk2);
   	end
@@ -108,7 +113,7 @@ module tb;
     if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)) begin
       cnt++;
     end
-    if(cnt>`CNTSTOP || pc == `PCSTOP) begin 
+    if(cnt>`CNTSTOP || pc == `PCSTOP) begin
       $display("finish");
       // output ppu data
       // wait(pixel_count >= WIDTH * HEIGHT);
@@ -121,12 +126,12 @@ module tb;
       $fwrite(file, "P3\n%0d %0d\n255\n", WIDTH, HEIGHT);
       for (r = 0; r < HEIGHT; r = r + 1) begin
         for (c = 0; c < WIDTH; c = c + 1) begin
-          case (frame_buffer[r][c]) 
+          case (frame_buffer[r][c])
               2'b11: {red, green, blue} = {0,0,0};
               2'b10: {red, green, blue} = {160,160,160};
               2'b01: {red, green, blue} = {211,211,211};
               2'b00: {red, green, blue} = {255,255,255};
-          endcase 
+          endcase
           $fwrite(file, "%0d %0d %0d ", red, green, blue);
         end
         $fwrite(file, "\n");
@@ -144,4 +149,4 @@ module tb;
   end
 
 endmodule
- 
+
