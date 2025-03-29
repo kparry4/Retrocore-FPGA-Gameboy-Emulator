@@ -39,7 +39,7 @@ module decoder (
   // select the proper next microcode addr
   always_comb begin
     cb=0;
-    if(memValid&mpcen) begin
+    if(mpcen) begin
       // if finished an instr then get new mpc
       if(done) begin
         if((instr == 8'hCB) & ~cbpre) cb=1;
