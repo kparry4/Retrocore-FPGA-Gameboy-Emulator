@@ -30,6 +30,7 @@ module IO_handler(input logic clock,
 
                   input logic [3:0] APU_NR52_bits,
                   input logic [1:0] ppu_mode,
+                  input logic [7:0] ppu_LY,
 
                   input logic stop_inst_hit,
 
@@ -489,6 +490,7 @@ module IO_handler(input logic clock,
                       `ifdef DOC
             PPU_R.LY_R <= 16'h90;//***KEP
                       `endif
+            PPU_R.LY_R <= ppu_LY; // ***
 
             STAT_R[1:0] <= ppu_mode;
             STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R); 

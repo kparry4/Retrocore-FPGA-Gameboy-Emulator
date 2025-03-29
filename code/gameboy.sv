@@ -16,6 +16,7 @@ module gameboy(
   logic [15:0] memWdata;
   logic [15:0] memWadr;
   logic memWen;
+  logic [7:0] ppu_LY;
   logic [1:0] ppu_mode;
   logic [15:0] memAdr;
 
@@ -54,6 +55,7 @@ module gameboy(
           .ppu_addr1(port0_addr),
           .ppu_addr2(port1_addr),
           .ppu_mode(ppu_mode),
+          .ppu_LY,
           .hblank(ppu_mode==0),
           .vblank(ppu_mode==1),
           .joypad_select(1'b0),
@@ -82,7 +84,7 @@ module gameboy(
                           .reset(rst),
                           .LCDC(8'hd3),
                           .STAT_in(STAT_R),
-                          .LY(LY),
+                          .LY(ppu_LY),
                           .LYC(PPU_R.LYC_R),
                           .SCX(PPU_R.SCX_R),
                           .SCY(PPU_R.SCY_R),
