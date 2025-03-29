@@ -29,7 +29,7 @@ module gameboy(
 
   logic [15:0] port0_addr, port1_addr;
   logic [15:0] port0_data, port1_data;
-  
+
 
 
 
@@ -79,10 +79,10 @@ module gameboy(
           .ppu_data_valid(), //no longer used
           .restart_after_stop()
           );
-           
+
           PPU_Wrapper ppu(.clk(clk2),
                           .reset(rst),
-                          .LCDC(8'hd3),
+                          .LCDC(LCDC_R),
                           .STAT_in(STAT_R),
                           .LY(ppu_LY),
                           .LYC(PPU_R.LYC_R),
@@ -91,9 +91,9 @@ module gameboy(
                           .WX(PPU_R.WX_R),
                           .WY(PPU_R.WY_R),
                           .BGP(PPU_R.BGP_R),
-                          .OBP0(8'he4),
-                          .OBP1(8'he4),
-                          .mode(ppu_mode), 
+                          .OBP0(PPU_R.OBP0_R),
+                          .OBP1(PPU_R.OBP1_R),
+                          .mode(ppu_mode),
                           .port0_addr,
                           .port0_read_en(), //unneedd output
                           .port0_data,
