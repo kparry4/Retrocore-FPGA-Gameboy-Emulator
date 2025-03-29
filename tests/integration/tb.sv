@@ -4,7 +4,7 @@
 `define PATH "games/"
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
-`define PCSTOP 16'h21e
+`define PCSTOP 16'h2f2
 `define CNTSTOP 1000000
 
 module tb;
@@ -31,6 +31,7 @@ module tb;
   logic         frame_pixel_valid;
 
   logic [7:0]   LY;
+  logic predone;
   
   // 2D frame buffer for storing 12-bit VGA colors.
   reg [1:0] frame_buffer [0:HEIGHT-1][0:WIDTH-1];
@@ -39,10 +40,11 @@ module tb;
   integer pixel_count;
   integer r, c, red, green, blue, file;
   
+  assign pc = gb.memAdr&{16{predone}}; 
   always @(posedge clk2) begin 
-    pc = gb.memAdr; 
     tmp = (pc==16'hff44) ? 16'h90 : `PROG(pc);
     if(gb.memWen) `PROG(gb.memWadr) = gb.memWdata;
+    predone = gb.cpu.decoder.ctrl.done;
     #1; // little memory delay
     // memData = tmp;
   end
