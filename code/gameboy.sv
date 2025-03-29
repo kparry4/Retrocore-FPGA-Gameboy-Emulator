@@ -3,6 +3,7 @@
 module gameboy(
   input logic clk,clk2, //*** make a second clock
   input  logic rst,
+  input logic [7:0] LY,
   output logic [1:0] frame_pixel,
   output logic frame_pixel_valid
 );
@@ -79,17 +80,17 @@ module gameboy(
            
           PPU_Wrapper ppu(.clk(clk2),
                           .reset(rst),
-                          .LCDC(LCDC_R),
+                          .LCDC(8'hd3),
                           .STAT_in(STAT_R),
-                          .LY(PPU_R.LY_R),
+                          .LY(LY),
                           .LYC(PPU_R.LYC_R),
                           .SCX(PPU_R.SCX_R),
                           .SCY(PPU_R.SCY_R),
                           .WX(PPU_R.WX_R),
                           .WY(PPU_R.WY_R),
                           .BGP(PPU_R.BGP_R),
-                          .OBP0(PPU_R.OBP0_R),
-                          .OBP1(PPU_R.OBP1_R),
+                          .OBP0(8'he4),
+                          .OBP1(8'he4),
                           .mode(ppu_mode), 
                           .port0_addr,
                           .port0_read_en(), //unneedd output

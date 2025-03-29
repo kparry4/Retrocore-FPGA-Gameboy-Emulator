@@ -437,6 +437,7 @@ module Render_BG (
   // Overall horizontal pixel counter and pixel index within a tile (0–7)
   logic [7:0] pixel_total;
   logic [2:0] pixel_index;
+  logic [4:0] tile_x, tile_y;
 
   // Register for the tile index read from the tile map.
   logic [7:0] tile_map_index_reg;
@@ -479,7 +480,7 @@ module Render_BG (
   // Tile Map Coordinate Calculation
   //==================================================================
   // Calculate tile coordinates (tile_x, tile_y) with wrap-around.
-  logic [4:0] tile_x, tile_y;
+  
   always_comb begin
     if (!use_window) begin
       tile_x = ((scx_latched + pixel_total) >> 3) & 5'b11111;
@@ -514,7 +515,7 @@ module Render_BG (
   logic [3:0] tile_row_offset;
   assign tile_row_offset = (effective_line[2:0] * 2);
   logic signed [7:0] tile_number;
-  assign tile_map_index_reg = port0_data[7:0];
+  assign tile_map_index_reg = (tile_x[0]) ? port0_data[15:8] : port0_data[7:0];
   assign tile_number = tile_map_index_reg;
   logic [15:0] tile_data_addr;
 
@@ -1362,7 +1363,7 @@ module PPU_Wrapper (
   );
   
   // Frame pixel outputs.
-  assign frame_pixel_valid = pixel_out_valid;
+  assign frame_pixel_valid = pixel_out_valid && (mode != 2'b1);
   assign frame_pixel       = mixed_pixel;
   
 endmodule
