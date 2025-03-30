@@ -64,7 +64,7 @@ module PPU_Mode_controller (
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
       dot        <= 9'd0;
-      line       <= 8'd0;
+      line       <= 8'd90;
       fifo_clear <= 1'b1;
       full_frame_done <= 1'b0;
     end else begin
