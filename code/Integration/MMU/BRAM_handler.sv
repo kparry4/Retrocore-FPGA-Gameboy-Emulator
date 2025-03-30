@@ -228,7 +228,7 @@ module BRAM_handler(input logic clock,
             end
         end
     end
-endmodule: BRAM_handler;
+endmodule: BRAM_handler
 
 
 

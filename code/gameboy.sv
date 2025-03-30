@@ -27,6 +27,8 @@ module gameboy(
   logic[7:0] STAT_R; //mixed r/w register
   PPU_DATA PPU_R;
 
+  logic interupt;
+
   logic [15:0] port0_addr, port1_addr;
   logic [15:0] port0_data, port1_data;
 
@@ -39,6 +41,7 @@ module gameboy(
           .memValid,
           .ie,.iflg,
           .stop,
+          .interupt,
           .memWdata,
           .memWadr,
           .memWen,
@@ -56,6 +59,7 @@ module gameboy(
           .ppu_addr2(port1_addr),
           .ppu_mode(ppu_mode),
           .ppu_LY,
+          .interupt,
           .hblank(ppu_mode==0),
           .vblank(ppu_mode==1),
           .joypad_select(1'b0),

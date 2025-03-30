@@ -6,6 +6,7 @@ module decoder (
   input  logic [7:0] ie, iflg,
   input  logic memValid,
   input  logic jmp,
+  output logic interupt_mmu,
   output logic stop,
   output logic [7:0] pre,
   output ctrl_t ctrl
@@ -183,6 +184,7 @@ module decoder (
       3'b110: pre = 8'h30;
       3'b111: pre = 8'h38;
     endcase
+    interupt_mmu = 0;
     nmpcen = 1;
     stop = 0;
     ctrl.pcSel = PC_1;
@@ -2281,10 +2283,12 @@ module decoder (
       // disable interupts and jump
       INTERUPT:  begin
         // subtract from pc
+        interupt_mmu = 1;
         ctrl.pcSel = PC_M1;
       end
       INTERUPT2:  begin
         // subtract sp
+        interupt_mmu = 1;
         ctrl.rd = SP;
         ctrl.rs1 = SP;
         ctrl.iduSel = IDU_RS;
@@ -2298,6 +2302,7 @@ module decoder (
       end
       INTERUPT3:  begin
         // write msbs of pc to memory
+        interupt_mmu = 1;
         ctrl.rs1 = SP;
         ctrl.wadrSel = WADR_RS;
         ctrl.wdatSel = WDAT_PC;
@@ -2316,6 +2321,7 @@ module decoder (
       end
       INTERUPT4: begin
         // write lsbs to memory
+        interupt_mmu = 1;
         ctrl.rs1 = SP;
         ctrl.wadrSel = WADR_RS;
         ctrl.wdatSel = WDAT_PCL;
@@ -2327,6 +2333,7 @@ module decoder (
         // jump to prefix-n
         // set pc and stop interupts
         // update interupt flags
+        interupt_mmu = 1;
         imeen = 1;
         newime = 0;
         ctrl.wadrSel = WADR_FLG;

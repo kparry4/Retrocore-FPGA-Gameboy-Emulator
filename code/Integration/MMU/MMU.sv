@@ -23,6 +23,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
             input logic [7:0]   ppu_LY,
             input logic         hblank,
             input logic         vblank,
+            input logic         interupt,
 
             input logic         joypad_select,
             input logic         joypad_start,
@@ -155,6 +156,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .joypad_b_button,
                               .APU_NR52_bits(APU_NR52),
                               .ppu_mode,
+                              .interupt,
                               .ppu_LY,
                               .stop_inst_hit,
                               .cpu_out_data(IO_out_cpu_data),

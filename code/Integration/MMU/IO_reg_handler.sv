@@ -31,6 +31,7 @@ module IO_handler(input logic clock,
                   input logic [3:0] APU_NR52_bits,
                   input logic [1:0] ppu_mode,
                   input logic [7:0] ppu_LY,
+                  input logic       interupt,
 
                   input logic stop_inst_hit,
 
@@ -396,28 +397,32 @@ module IO_handler(input logic clock,
             if(cpu_addr_write == `IF && cpu_wren) begin
                 IF_R <= cpu_IO_in_data;
             end else begin
-                //handle INTERRUPT FLAG (7,6,5 are dont cares):
-                IF_R[3] <= 1'b0; //wserial control (not implented)
-                IF_R[1] <= |(STAT_R[6:3]); 
+                if(~interupt) begin
+                  //handle INTERRUPT FLAG (7,6,5 are dont cares):
+                  IF_R[3] <= 1'b0; //wserial control (not implented)
+                  IF_R[1] <= |(STAT_R[6:3]); 
 
-                if(IF_R[4] == 1'b0) begin
-                    IF_R[4] <= joypad_press; 
-                end else begin
-                    IF_R[4] <= IF_R[4]; 
-                end
+                  if(IF_R[4] == 1'b0) begin
+                      IF_R[4] <= joypad_press; 
+                  end else begin
+                      IF_R[4] <= IF_R[4]; 
+                  end
 
-                if(IF_R[2] == 1'b0) begin
-                    IF_R[2] <= tima_overflow;
-                end else begin
-                    IF_R[2] <= IF_R[2];
-                end
+                  if(IF_R[2] == 1'b0) begin
+                      IF_R[2] <= tima_overflow;
+                  end else begin
+                      IF_R[2] <= IF_R[2];
+                  end
 
-                if(IF_R[0] == 1'b0) begin
-                    IF_R[0] <= vblank_posedge;   
+                  if(IF_R[0] == 1'b0) begin
+                      IF_R[0] <= vblank_posedge;   
+                  end else begin
+                      IF_R[0] <= IF_R[0];   
+                  end
                 end else begin
-                    IF_R[0] <= IF_R[0];   
+                  IF_R <= IF_R;
                 end
-            end      
+            end 
 
             //APU-related writes
             if(within_range(cpu_addr_write, `NR10, `WAV_RAM_END) && cpu_wren) begin
