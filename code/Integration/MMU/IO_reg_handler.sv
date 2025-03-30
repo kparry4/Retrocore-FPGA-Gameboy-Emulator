@@ -487,10 +487,10 @@ module IO_handler(input logic clock,
                 LCDC_R <= LCDC_R;
                 PPU_R <= PPU_R;
             end
+            PPU_R.LY_R <= ppu_LY; // ***
                       `ifdef DOC
             PPU_R.LY_R <= 16'h90;//***KEP
                       `endif
-            PPU_R.LY_R <= ppu_LY; // ***
 
             STAT_R[1:0] <= ppu_mode;
             STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R); 
