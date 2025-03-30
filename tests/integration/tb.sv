@@ -4,8 +4,8 @@
 `define PATH "games/"
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
-`define PCSTOP 16'h2f2
-`define CNTSTOP 1000000
+`define PCSTOP 16'hx//2f2
+`define CNTSTOP 241012
 
 module tb;
   string tests[];
@@ -78,6 +78,8 @@ module tb;
       tests = {tests, "tetris"};
     end if(`TEST == "dmg-acid-test") begin
       tests = {tests, "dmg-acid-test"};
+    end if(`TEST == "06") begin
+      tests = {tests, "06"};
     end if(tests[0] == "") begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;

@@ -82,6 +82,7 @@ module gameboy(
 
           PPU_Wrapper ppu(.clk(clk2),
                           .reset(rst),
+                          // .LCDC(8'hd3),
                           .LCDC(LCDC_R),
                           .STAT_in(STAT_R),
                           .LY(ppu_LY),
@@ -91,6 +92,8 @@ module gameboy(
                           .WX(PPU_R.WX_R),
                           .WY(PPU_R.WY_R),
                           .BGP(PPU_R.BGP_R),
+                          // .OBP0(8'he4),
+                          // .OBP1(8'he4),
                           .OBP0(PPU_R.OBP0_R),
                           .OBP1(PPU_R.OBP1_R),
                           .mode(ppu_mode),
