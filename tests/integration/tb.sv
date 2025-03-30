@@ -5,7 +5,7 @@
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 `define PCSTOP 16'hx
-`define CNTSTOP 100000
+`define CNTSTOP 140000
 
 module tb;
   string tests[];
@@ -97,7 +97,7 @@ module tb;
       integer row, col;
   // Capture pixels and update pixel_count in one always_ff block.
   always_ff @(posedge clk2 or posedge rst) begin : fb
-    if(rst) for(int i=0; i<HEIGHT; i++) for(int j=0; j<WIDTH; j++) frame_buffer[i][j] = '0;
+    if(rst || !gb.ppu.LCDC[7]) for(int i=0; i<HEIGHT; i++) for(int j=0; j<WIDTH; j++) frame_buffer[i][j] = '0;
     if (rst|(pixel_count >= WIDTH * HEIGHT)) begin
       pixel_count <= 0;
     end else if (frame_pixel_valid) begin
