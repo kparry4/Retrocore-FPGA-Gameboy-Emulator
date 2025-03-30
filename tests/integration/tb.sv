@@ -4,8 +4,8 @@
 `define PATH "games/"
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
-`define PCSTOP 16'hx//2f2
-`define CNTSTOP 241012
+`define PCSTOP 16'hx
+`define CNTSTOP 100000
 
 module tb;
   string tests[];

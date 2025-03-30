@@ -26,14 +26,14 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
             input logic         joypad_select,
             input logic         joypad_start,
-            
+
             input logic         joypad_dpad_up,
             input logic         joypad_dpad_down,
-            input logic         joypad_dpad_left,  
+            input logic         joypad_dpad_left,
             input logic         joypad_dpad_right,
 
             input logic         joypad_a_button,
-            input logic         joypad_b_button,  
+            input logic         joypad_b_button,
 
             input logic  [3:0]  APU_NR52,
 
@@ -53,46 +53,46 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
             output logic [15:0] ppu_out_data2,
 
             output logic        ppu_data_valid,
-            
+
             output logic        restart_after_stop);
-    
+
     localparam integer NUM_ROM_BANKS = 2;
 
     //////////////////////////////////////////////////
     //------------  IO REGISTERS  --------------------
     //////////////////////////////////////////////////
 
-    //---JOYPAD Register 
+    //---JOYPAD Register
     logic [7:0] JOYPAD_R;
     logic [7:0] JOYPAD_OUTPUT;
-    
+
 
     //---APU Registers
     logic[7:0] NR52_R; //mixed r/w register
     APU_DATA APU_R;
 
-  
+
 
     //---PPU Registers
     //logic[7:0] LCDC_R;
     //logic[7:0] STAT_R; //mixed r/w register
     //PPU_DATA PPU_R;
 
-    //---DMA Register 
+    //---DMA Register
     logic[7:0] DMA_R;
 
-    
-    //---TIMER and CONTROL Registers  
+
+    //---TIMER and CONTROL Registers
     logic[7:0] DIV_R; // (FF04)
     logic[7:0] TIMA_R;  // (FF05)
     logic[7:0] TMA_R;  // (FF06)
     logic[7:0] TAC_R; // (FF07)
-    
-    //---INTERRUPT Registers  
+
+    //---INTERRUPT Registers
     //logic [7:0] IF_R; //interrupt flag
     //logic [7:0] IE_R; //interrupt enable
 
-    //---BOOT ROM Enable/Disable Register  
+    //---BOOT ROM Enable/Disable Register
     logic [7:0] BOOT_ROM_EN_R;
 
 
@@ -111,7 +111,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
     ///////////////////////////////////////////
     //      MEMORY DECLARATIONS
-    ///////////////////////////////////////////  
+    ///////////////////////////////////////////
 
     logic [15:0] prev_cpu_addr_read; //***KEP
     always_ff @(posedge cpu_clock) begin
@@ -121,8 +121,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     always_comb begin
         if(within_range(prev_cpu_addr_read, `IO_START, `IO_END) && ~doing_dma) begin//***KEP
             /* even case: {8'd0, IO_data}
-               odd case: {IO_data, 8'd0}  */    
-            // cpu_data_valid = cpu_IO_data_valid;        
+               odd case: {IO_data, 8'd0}  */
+            // cpu_data_valid = cpu_IO_data_valid;
             cpu_data_valid = 1'b1; // ***KEP
             if(is_even(prev_cpu_addr_read)) begin//***KEP
                 cpu_out_data = {8'd0, IO_out_cpu_data};
@@ -133,7 +133,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
             cpu_out_data = memory_out_cpu_data;
             cpu_data_valid = cpu_memory_data_valid;
         end
-    end  
+    end
 
 
     IO_handler io_registers  (.clock(CLK_4MHZ),
@@ -149,11 +149,11 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .joypad_start,
                               .joypad_dpad_up,
                               .joypad_dpad_down,
-                              .joypad_dpad_left,  
+                              .joypad_dpad_left,
                               .joypad_dpad_right,
                               .joypad_a_button,
-                              .joypad_b_button, 
-                              .APU_NR52_bits(APU_NR52), 
+                              .joypad_b_button,
+                              .APU_NR52_bits(APU_NR52),
                               .ppu_mode,
                               .ppu_LY,
                               .stop_inst_hit,
@@ -178,19 +178,20 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .BOOT_ROM_EN_R,
                               .start_dma);
 
-    
+
     //TODO: sanity check hwo dma data is passed, do i need antoher register
-    BRAM_handler memory_units (.clock(CLK_4MHZ), 
+    BRAM_handler memory_units (.clock(CLK_4MHZ),
                               .cpu_clock,
-                              .reset(rst), 
+                              .reset(rst),
                               .cpu_addr_read,
                               .cpu_addr_write,
                               .cpu_wren,
                               .cpu_in_data,
                               .ppu_addr1,
-                              .ppu_addr2, 
+                              .ppu_addr2,
                               .ppu_mode,
-                              .DMA_R(DMA_R),
+                              .DMA_R,
+                              .LCDC_R,
                               .start_dma,
                               .doing_dma,
                               .cpu_out_data(memory_out_cpu_data),
