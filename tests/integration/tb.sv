@@ -36,14 +36,15 @@ module tb;
 
   // 2D frame buffer for storing 12-bit VGA colors.
   reg [1:0] frame_buffer [0:HEIGHT-1][0:WIDTH-1];
+  integer f;
 
   // Declare pixel_count and loop variables.
   integer pixel_count;
   integer r, c, red, green, blue, file;
 
-  assign pc = gb.memAdr&{16{predone}};
+  // assign pc = gb.memAdr&{16{predone}};
   always @(posedge clk2) begin
-    // pc = gb.memAdr;
+    pc = gb.memAdr;
     tmp = (pc==16'hff44) ? 16'h90 : `PROG(pc);
     if(gb.memWen) `PROG(gb.memWadr) = gb.memWdata;
     predone = gb.cpu.decoder.ctrl.done;
@@ -71,6 +72,7 @@ module tb;
     memValid = 1;
   end
   initial begin
+    f = $fopen("output.txt", "w");
     for(int i=0; i<`INSTRS+1; i++) prog[i] = '0;
     $display("Test mode: %s\n",`TEST);
 
@@ -79,7 +81,7 @@ module tb;
     end if(`TEST == "dmg-acid-test") begin
       tests = {tests, "dmg-acid-test"};
     end if(`TEST == "06") begin
-      tests = {tests, "06"};
+      tests = {tests, "06-ldr,r"}; //241012
     end if(tests[0] == "") begin
       $display("ERROR: %s doesn't exist", `TEST);
       $finish;
@@ -109,6 +111,17 @@ module tb;
   end
 
   always @(negedge clk2) begin
+    if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)&(gb.cpu.decoder.mpc!==INTERUPT5)) begin
+      @(posedge clk2);
+      $fwrite(f,"A:%02h F:%02h B:%02h C:%02h D:%02h E:%02h H:%02h L:%02h SP:%04h PC:%04h PCMEM:%02h,%02h,%02h,%02h\n",
+              gb.cpu.regfile.regs[A],gb.cpu.regfile.regs[F],
+              gb.cpu.regfile.regs[B],gb.cpu.regfile.regs[C],
+              gb.cpu.regfile.regs[D],gb.cpu.regfile.regs[E],
+              gb.cpu.regfile.regs[H],gb.cpu.regfile.regs[L],
+              {gb.cpu.regfile.regs[SP],gb.cpu.regfile.regs[SPL]},gb.memAdr,
+              prog[gb.memAdr],prog[gb.memAdr+1],prog[gb.memAdr+2],prog[gb.memAdr+3]
+              );
+    end
     if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)) begin
       cnt++;
     end
@@ -136,6 +149,7 @@ module tb;
         $fwrite(file, "\n");
       end
       $fclose(file);
+      $fclose(f);
       $display("Frame written to frame.ppm");
       $finish;
 
