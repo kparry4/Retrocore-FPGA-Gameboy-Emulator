@@ -19,13 +19,14 @@
 #
 # Quartus Prime
 # Version 23.1std.1 Build 993 05/14/2024 SC Standard Edition
-# Date created = 10:34:51  February 24, 2025
+# Date created = 16:30:50  March 30, 2025
 #
 # -------------------------------------------------------------------------- #
 
 QUARTUS_VERSION = "23.1"
-DATE = "10:34:51  February 24, 2025"
+DATE = "16:30:50  March 30, 2025"
 
 # Revisions
 
-PROJECT_REVISION = "quartusGameboy"
+PROJECT_REVISION = "gameboy"
+PROJECT_REVISION = "chipInterface"
