@@ -13,8 +13,8 @@ module MM_addr_contention_handler  (input logic clock,
                                     input logic [15:0] cpu_addr_read,
                                     input logic [15:0] cpu_addr_write,
 
-                                    input logic [1:0]  ppu_mode,
-                                    input logic [7:0]  LCDC_R,
+                                    input logic [1:0] ppu_mode,
+                                    input logic [7:0] LCDC_R,
                                     input logic [15:0] ppu_addr1,
                                     input logic [15:0] ppu_addr2,
 
@@ -86,8 +86,8 @@ module MM_addr_contention_handler  (input logic clock,
                 if(ppu_mode == 0 || ppu_mode == 1 || ppu_mode == 2) begin
                     //HBLANK or VBLANK or OAM_SEARCH
 
-                    if(ppu_mode == 2 && LCDC_R[7] == 1'b1) begin
-                        //OAM search is occurring, block CPU writes
+                    if(ppu_mode == 2 && LCDC_R[7]) begin
+                        //OAM search is occurring AND LCDC IS ON, block CPU writes
                         oam_addr_rw = convert_to_BRAM_addr(ppu_addr1, `OAM_START);
                         oam_addr_r =  convert_to_BRAM_addr(ppu_addr2, `OAM_START);
                         oam_wren  = 1'b0;

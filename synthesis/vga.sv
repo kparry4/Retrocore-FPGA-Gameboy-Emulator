@@ -91,21 +91,6 @@ endmodule: offset_check
 
 // Counter with two direction of counting
 // clear > load > enable > counting
-/*module Counter
-#(parameter WIDTH = 8)
-(input logic en, clear, load, up, clock,
-input logic [WIDTH-1:0] D,
-output logic [WIDTH-1:0] Q);
-
-always_ff @(posedge clock)
-if (clear) Q <= 0;
-else if (load) Q <= D;
-else if (en) begin
-if (up) Q <= Q + 1;
-else Q <= Q - 1;
-end
-
-endmodule: Counter*/
 
 module MagComp
 #(parameter WIDTH = 8)

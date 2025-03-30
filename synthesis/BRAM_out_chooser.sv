@@ -3,11 +3,12 @@
 `include "addresses.svh"
 `include "select.svh"
 
-module MM_out_chooser(input logic clock, 
+module MM_out_chooser(input logic clock,
                       input logic reset,
                       input logic doing_dma,
 
                       input logic [1:0] ppu_mode,
+                      input logic LCDC_R,
 
                       input logic[15:0] cpu_addr_read,
                       input logic[15:0] ppu_addr1,
@@ -15,12 +16,13 @@ module MM_out_chooser(input logic clock,
 
                       input logic[15:0] dma_src_addr,
 
+
                       output logic[5:0] dma_memory_selector,
                       output logic[5:0] cpu_memory_selector,
                       output logic[5:0] ppu_memory_selector);
 
     logic [5:0] cpu_select, ppu_select, dma_select;
-    
+
     always_ff@(posedge clock) begin
         //NOTE: Brams take 2 cycles to output the correct data...
         cpu_memory_selector <= cpu_select;
@@ -75,11 +77,12 @@ module MM_out_chooser(input logic clock,
                 cpu_select <= `WRAM_SELECT;
             end
             else if(within_range(cpu_addr_read, `OAM_START, `OAM_END)) begin
-                if(ppu_mode == 2'd2 || ppu_mode == 2'd3) begin
-                    cpu_select <= `INVALID;
-                end else begin
-                    cpu_select <= `OAM_SELECT;
-                end                
+                cpu_select <= `OAM_SELECT;
+               // if(ppu_mode == 2'd2 || ppu_mode == 2'd3) begin
+               //     cpu_select <= `INVALID;
+               // end else begin
+               //     cpu_select <= `OAM_SELECT;
+               // end
             end
             else if(within_range(cpu_addr_read, `HRAM_START, `HRAM_END)) begin
                 cpu_select <= `HRAM_SELECT;
@@ -107,7 +110,7 @@ module MM_out_chooser(input logic clock,
             else begin
                 //default case
                 ppu_select <= `UNKNOWN;
-            end    
+            end
 
         end
     end

@@ -20,8 +20,10 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
             input logic [15:0]  ppu_addr2,
 
             input logic [1:0]   ppu_mode,
+            input logic [7:0]   ppu_LY,
             input logic         hblank,
             input logic         vblank,
+            input logic         interupt,
 
             input logic         joypad_select,
             input logic         joypad_start,
@@ -35,7 +37,6 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
             input logic         joypad_b_button,
 
             input logic  [3:0]  APU_NR52,
-            input logic  [7:0]  LY_R,
 
             //OUTPUT PPU REGISTERS
             output logic[7:0] LCDC_R,
@@ -74,8 +75,9 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
 
     //---PPU Registers
-    //(declared above)
-
+    //logic[7:0] LCDC_R;
+    //logic[7:0] STAT_R; //mixed r/w register
+    //PPU_DATA PPU_R;
 
     //---DMA Register
     logic[7:0] DMA_R;
@@ -153,8 +155,9 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .joypad_a_button,
                               .joypad_b_button,
                               .APU_NR52_bits(APU_NR52),
-                              .LY_R,
                               .ppu_mode,
+                              .interupt,
+                              .ppu_LY,
                               .stop_inst_hit,
                               .cpu_out_data(IO_out_cpu_data),
                               .cpu_data_valid(cpu_IO_data_valid),
@@ -189,7 +192,8 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
                               .ppu_addr1,
                               .ppu_addr2,
                               .ppu_mode,
-                              .DMA_R(DMA_R),
+                              .DMA_R,
+                              .LCDC_R,
                               .start_dma,
                               .doing_dma,
                               .cpu_out_data(memory_out_cpu_data),

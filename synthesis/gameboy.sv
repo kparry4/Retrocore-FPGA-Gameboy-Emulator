@@ -1,5 +1,4 @@
 `define DOC
-`include "RegisterPkg.svh"
 module gameboy(
   input logic clk,clk2, //*** make a second clock
   input  logic rst,
@@ -16,6 +15,7 @@ module gameboy(
   logic [15:0] memWdata;
   logic [15:0] memWadr;
   logic memWen;
+  logic [7:0] ppu_LY;
   logic [1:0] ppu_mode;
   logic [15:0] memAdr;
 
@@ -25,6 +25,8 @@ module gameboy(
   logic[7:0] LCDC_R;
   logic[7:0] STAT_R; //mixed r/w register
   PPU_DATA PPU_R;
+
+  logic interupt;
 
   logic [15:0] port0_addr, port1_addr;
   logic [15:0] port0_data, port1_data;
@@ -38,6 +40,7 @@ module gameboy(
           .memValid,
           .ie,.iflg,
           .stop,
+          .interupt,
           .memWdata,
           .memWadr,
           .memWen,
@@ -54,6 +57,8 @@ module gameboy(
           .ppu_addr1(port0_addr),
           .ppu_addr2(port1_addr),
           .ppu_mode(ppu_mode),
+          .ppu_LY,
+          .interupt,
           .hblank(ppu_mode==0),
           .vblank(ppu_mode==1),
           .joypad_select(1'b0),
@@ -65,7 +70,6 @@ module gameboy(
           .joypad_a_button(1'b0),
           .joypad_b_button(1'b0),
           .APU_NR52(4'b0),
-          .LY_R(8'h01),
           .LCDC_R,
           .STAT_R,
           .PPU_R,
@@ -81,17 +85,20 @@ module gameboy(
 
           PPU_Wrapper ppu(.clk(clk2),
                           .reset(rst),
-                          .LCDC(8'hd3),
+                          // .LCDC(8'hd3),
+                          .LCDC(LCDC_R),
                           .STAT_in(STAT_R),
-                          .LY(LY),
+                          .LY(ppu_LY),
                           .LYC(PPU_R.LYC_R),
                           .SCX(PPU_R.SCX_R),
                           .SCY(PPU_R.SCY_R),
                           .WX(PPU_R.WX_R),
                           .WY(PPU_R.WY_R),
                           .BGP(PPU_R.BGP_R),
-                          .OBP0(8'he4),
-                          .OBP1(8'he4),
+                          // .OBP0(8'he4),
+                          // .OBP1(8'he4),
+                          .OBP0(PPU_R.OBP0_R),
+                          .OBP1(PPU_R.OBP1_R),
                           .mode(ppu_mode),
                           .port0_addr,
                           .port0_read_en(), //unneedd output

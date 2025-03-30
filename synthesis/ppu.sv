@@ -1,6 +1,5 @@
-`timescale 1ns/1ps
-`default_nettype none
-
+//`timescale 1ns/1ps
+//`default_nettype none
 //==================================================================
 // Data Structures
 //==================================================================
@@ -35,11 +34,13 @@ typedef struct packed {
 module PPU_Mode_controller (
   input  logic         clk,
   input  logic         reset,
+  input  logic         LCDC,
   input  logic         scanline_processed,
   output logic [8:0]   dot,
   output logic [7:0]   line,
   output logic [1:0]   mode,
-  output logic         fifo_clear
+  output logic         fifo_clear,
+  output logic         full_frame_done
 );
   // Update mode register on each clock.
   always_ff @(posedge clk or posedge reset) begin
@@ -61,56 +62,30 @@ module PPU_Mode_controller (
 
   // Dot and line counters are updated on the clock.
   always_ff @(posedge clk or posedge reset) begin
-    if(reset) begin
+    if (reset) begin
       dot        <= 9'd0;
-      line       <= 8'd0;
+      line       <= 8'd90;
       fifo_clear <= 1'b1;
+      full_frame_done <= 1'b0;
     end else begin
       fifo_clear <= (dot < 9'd80);
-      if(dot < 9'd455)
+      if(dot < 9'd455) begin 
         dot <= dot + 9'd1;
+        full_frame_done <= 1'b0;
+      end 
       else begin
         dot <= 9'd0;
-        if(line < 8'd153)
+        if(line < 8'd153) begin
           line <= line + 8'd1;
-        else
+          full_frame_done <= 1'b0;
+        end else begin
           line <= 8'd0;
+          full_frame_done <= 1'b1;
+        end
       end
     end
   end
-endmodule
 
-
-//==================================================================
-// Module: STAT_handler
-// Description: Updates the STAT register and issues STAT interrupts.
-// Inputs:
-//   clk, reset, mode - current PPU mode.
-//   LY  - current scanline; LYC - compare value; LCDC - control reg.
-// Outputs:
-//   STAT           - STAT register value.
-//   stat_interrupt - STAT interrupt flag.
-//==================================================================
-module STAT_handler (
-  input  logic        clk,
-  input  logic        reset,
-  input  logic [1:0]  mode,
-  input  logic [7:0]  LY,
-  input  logic [7:0]  LYC,
-  input  logic [7:0]  LCDC,
-  output logic [7:0]  STAT,
-  output logic        stat_interrupt
-);
-  always_ff @(posedge clk or posedge reset) begin
-    if(reset) begin
-      STAT           <= 8'd0;
-      stat_interrupt <= 1'b0;
-    end else begin
-      STAT[1:0] <= mode;
-      STAT[2]   <= (LY == LYC);
-      stat_interrupt <= ((mode==0)||(mode==1)||(mode==2)||(LY==LYC)) ? 1'b1 : 1'b0;
-    end
-  end
 endmodule
 
 //==================================================================
@@ -438,6 +413,7 @@ module Render_BG (
   // Overall horizontal pixel counter and pixel index within a tile (0–7)
   logic [7:0] pixel_total;
   logic [2:0] pixel_index;
+  logic [4:0] tile_x, tile_y;
 
   // Register for the tile index read from the tile map.
   logic [7:0] tile_map_index_reg;
@@ -480,7 +456,7 @@ module Render_BG (
   // Tile Map Coordinate Calculation
   //==================================================================
   // Calculate tile coordinates (tile_x, tile_y) with wrap-around.
-  logic [4:0] tile_x, tile_y;
+  
   always_comb begin
     if (!use_window) begin
       tile_x = ((scx_latched + pixel_total) >> 3) & 5'b11111;
@@ -515,7 +491,7 @@ module Render_BG (
   logic [3:0] tile_row_offset;
   assign tile_row_offset = (effective_line[2:0] * 2);
   logic signed [7:0] tile_number;
-  assign tile_map_index_reg = port0_data[7:0];
+  assign tile_map_index_reg = (tile_x[0]) ? port0_data[15:8] : port0_data[7:0];
   assign tile_number = tile_map_index_reg;
   logic [15:0] tile_data_addr;
 
@@ -557,7 +533,7 @@ module Render_BG (
         port0_read_en = 1'b1;
       end
       default: begin
-        port0_addr    = 16'd0;
+        port0_addr    = 16'h9800;//***
         port0_read_en = 1'b0;
       end
     endcase
@@ -786,7 +762,8 @@ module Render_Sprites (
     candidate_index = 4'd0;
     best_x = 8'hFF;
     for (i = 0; i < 10; i = i + 1) begin
-      if ((i < sprite_count) && (x_coord < sprites[i].x) && (x_coord >= (sprites[i].x - 8))) begin
+      if ((i < sprite_count) && (sprites[i].x != 8'd0) && (sprites[i].x < 8'd168) 
+          && (x_coord < sprites[i].x) && (x_coord >= (sprites[i].x - 8))) begin
         if (!candidate_valid) begin
           candidate_valid = 1'b1;
           candidate_index = i[3:0];
@@ -893,8 +870,17 @@ module Render_Sprites (
   end
   
   // Memory interface for sprite tile data.
+  logic [7:0] effective_tile_index;
+  always_comb begin
+    if (LCDC[2])    // If using 8x16 sprites, force the LSB to 0.
+      effective_tile_index = sprites[candidate_index].tile_index & 8'hFE;
+    else
+      effective_tile_index = sprites[candidate_index].tile_index;
+  end
+  
   assign port_addr = (state == SCAN_CHECK && candidate_valid) ?
-         (16'h8000 + (sprites[candidate_index].tile_index * 16) + row_offset) : 16'd0;
+         (16'h8000 + (effective_tile_index * 16) + row_offset) : 16'h8000;
+
   assign port_read_en = (state == SCAN_CHECK && candidate_valid);
   
   always_ff @(posedge clk) begin
@@ -1221,7 +1207,6 @@ module PPU_Wrapper (
   input  logic         reset,
   input  logic [7:0]   LCDC,
   input  logic [7:0]   STAT_in,
-  input  logic [7:0]   LY,
   input  logic [7:0]   LYC,
   input  logic [7:0]   SCX,
   input  logic [7:0]   SCY,
@@ -1231,6 +1216,8 @@ module PPU_Wrapper (
   input  logic [7:0]   OBP0,
   input  logic [7:0]   OBP1,
   output logic [1:0]   mode, 
+
+  output logic [7:0]   LY,
   // Memory ports (used either for OAM or for VRAM depending on mode)
   output logic [15:0]  port0_addr,
   output logic         port0_read_en,
@@ -1246,8 +1233,6 @@ module PPU_Wrapper (
   logic [8:0] dot;
   logic [7:0] line;
   logic       fifo_clear;
-  logic [7:0] STAT_out;
-  logic       stat_interrupt;
   logic       oam_search_done;
   logic [3:0] oam_sprite_count;
   logic       tile_pix_out_valid;
@@ -1260,6 +1245,7 @@ module PPU_Wrapper (
   logic        bg_read_en_sig, sprite_read_en_sig;
   logic        bg_out_valid, sprite_out_valid, pixel_out_valid;
   logic        fetch_pixel;
+  logic        full_frame_done;
 
   // OAM search and sprite selection.
   sprite_t selected_sprites [0:9];
@@ -1273,30 +1259,20 @@ module PPU_Wrapper (
   // Mode controller instantiation.
   PPU_Mode_controller mode_ctrl (
     .clk(clk),
-    .reset(reset),
+    .reset(reset || (!LCDC[7])),
+    .LCDC(LCDC),
     .scanline_processed(tile_pix_out_valid),
     .dot(dot),
-    .line(line),
+    .line(LY),
     .mode(mode),
-    .fifo_clear(fifo_clear)
-  );
-  
-  // STAT handler instantiation.
-  STAT_handler stat_hdl (
-    .clk(clk),
-    .reset(reset),
-    .mode(mode),
-    .LY(LY),
-    .LYC(LYC),
-    .LCDC(LCDC),
-    .STAT(STAT_out),
-    .stat_interrupt(stat_interrupt)
+    .fifo_clear(fifo_clear), 
+    .full_frame_done(full_frame_done)
   );
   
   // OAM search instantiation.
   OAM_Search oam_search (
     .clk(clk),
-    .reset(reset),
+    .reset(reset || (!LCDC[7])),
     .start((dot == 9'd0) ? 1'b1 : 1'b0),
     .current_line(LY),
     .LCDC(LCDC),
@@ -1312,7 +1288,7 @@ module PPU_Wrapper (
   // Pixel generation instantiation.
   Pixel_Gen Pixel_Gen_inst (
     .clk(clk),
-    .reset(reset),
+    .reset(reset || (!LCDC[7])),
     .start((dot == 9'd80) ? 1'b1 : 1'b0),
     .fifo_clear(fifo_clear),
     .LCDC(LCDC),
@@ -1352,7 +1328,7 @@ module PPU_Wrapper (
   // Pixel mixer instantiation.
   Pixel_Mixer pixel_mixer_inst (
     .clk(clk),
-    .reset(reset),
+    .reset(reset || (!LCDC[7])),
     .bg_pixel_ready(bg_out_valid),
     .sprite_pixel_ready(sprite_out_valid),
     .bg_pixel_in(bg_fifo_data),
@@ -1363,7 +1339,7 @@ module PPU_Wrapper (
   );
   
   // Frame pixel outputs.
-  assign frame_pixel_valid = pixel_out_valid;
+  assign frame_pixel_valid = pixel_out_valid && (mode != 2'b1);
   assign frame_pixel       = mixed_pixel;
   
 endmodule

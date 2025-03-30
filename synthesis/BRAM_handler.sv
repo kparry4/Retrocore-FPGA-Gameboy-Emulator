@@ -19,6 +19,7 @@ module BRAM_handler(input logic clock,
                   input logic  [1:0] ppu_mode,
 
                   input logic  [7:0] DMA_R,
+                  input logic  [7:0] LCDC_R,
                   input logic        start_dma,
 
                   output logic       doing_dma,
@@ -43,7 +44,7 @@ module BRAM_handler(input logic clock,
     //4KB x 2 = 8KB inside work vram, 16 bit width --> 4096 entries, so 12 bits addr
     logic [11:0] wram_addr_r,  wram_addr_w;
 
-    //160 Bytes  inside OAM, 16 bit width --> 80 entries (makes sense, given 40 sprites)
+    //160 kB inside work vram, 16 bit width --> 80 entries (makes sense, given 40 sprites)
     logic [6:0] oam_addr_rw,    oam_addr_r;
     logic [3:0] hram_addr_r,   hram_addr_w; //if this overflows I'll kill myself
 
@@ -151,6 +152,7 @@ module BRAM_handler(input logic clock,
                                              .doing_dma,
                                              .dma_oam_wren,
                                              .cpu_wren, .cpu_addr_write, .cpu_addr_read,
+                                             .LCDC_R,
                                              .ppu_mode, .ppu_addr1, .ppu_addr2,
                                              .dma_src_addr, .dma_dest_addr,
                                              .oam_wren, .vram_wren,
