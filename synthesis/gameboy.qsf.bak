@@ -1,0 +1,88 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 2024  Intel Corporation. All rights reserved.
+# Your use of Intel Corporation's design tools, logic functions 
+# and other software and tools, and any partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Intel Program License 
+# Subscription Agreement, the Intel Quartus Prime License Agreement,
+# the Intel FPGA IP License Agreement, or other applicable license
+# agreement, including, without limitation, that your use is for
+# the sole purpose of programming logic devices manufactured by
+# Intel and sold by Intel or its authorized distributors.  Please
+# refer to the applicable agreement for further details, at
+# https://fpgasoftware.intel.com/eula.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 23.1std.1 Build 993 05/14/2024 SC Standard Edition
+# Date created = 16:30:50  March 30, 2025
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		gameboy_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Intel recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus Prime software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Cyclone IV E"
+set_global_assignment -name DEVICE EP4CE115F29C7
+set_global_assignment -name TOP_LEVEL_ENTITY chipInterface
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 23.1STD.1
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "16:30:50  MARCH 30, 2025"
+set_global_assignment -name LAST_QUARTUS_VERSION "23.1std.1 Standard Edition"
+set_global_assignment -name SYSTEMVERILOG_FILE chipInterface.sv
+set_global_assignment -name SYSTEMVERILOG_FILE SevenSegmentDisplayWithHex.sv
+set_global_assignment -name VERILOG_FILE BRAMS/WRAM_BANK.v
+set_global_assignment -name VERILOG_FILE BRAMS/ROM_BANK.v
+set_global_assignment -name VERILOG_FILE BRAMS/OAM_DUALBANK.v
+set_global_assignment -name VERILOG_FILE BRAMS/EXRAM_BANK.v
+set_global_assignment -name VERILOG_FILE BRAMS/DUAL_VRAM_8KB.v
+set_global_assignment -name VERILOG_FILE BRAMS/DUAL_8KB.v
+set_global_assignment -name SOURCE_FILE select.svh
+set_global_assignment -name SOURCE_FILE RegisterPkg.svh
+set_global_assignment -name SOURCE_FILE gameboy2.qsf
+set_global_assignment -name SRAM_OBJECT_FILE gameboy.sof
+set_global_assignment -name SOURCE_FILE gameboy.sld
+set_global_assignment -name SOURCE_FILE gameboy.qsf
+set_global_assignment -name SOURCE_FILE gameboy.qpf
+set_global_assignment -name SOURCE_FILE gameboy.jdi
+set_global_assignment -name CDF_FILE gameboy.cdf
+set_global_assignment -name MIF_FILE "dmg-acid-test.mif"
+set_global_assignment -name SOURCE_FILE defs.svh
+set_global_assignment -name SOURCE_FILE copy_sv_files.bash
+set_global_assignment -name SOURCE_FILE chipInterface.qws
+set_global_assignment -name SOURCE_FILE chipInterface.qsf
+set_global_assignment -name TEXT_FILE c5_pin_model_dump.txt
+set_global_assignment -name SOURCE_FILE addresses.svh
+set_global_assignment -name SDC_FILE gameboy.sdc
+set_global_assignment -name SYSTEMVERILOG_FILE gameboy.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ppu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE IO_reg_handler.sv
+set_global_assignment -name SYSTEMVERILOG_FILE MMU.sv
+set_global_assignment -name SYSTEMVERILOG_FILE DMA_controller.sv
+set_global_assignment -name SYSTEMVERILOG_FILE BRAM_out_chooser.sv
+set_global_assignment -name SYSTEMVERILOG_FILE BRAM_handler.sv
+set_global_assignment -name SYSTEMVERILOG_FILE BRAM_addr_chooser.sv
+set_global_assignment -name SYSTEMVERILOG_FILE regfile.sv
+set_global_assignment -name SYSTEMVERILOG_FILE basic.sv
+set_global_assignment -name SYSTEMVERILOG_FILE vga.sv
+set_global_assignment -name SYSTEMVERILOG_FILE decoder.sv
+set_global_assignment -name SYSTEMVERILOG_FILE cpu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE alu.sv
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top

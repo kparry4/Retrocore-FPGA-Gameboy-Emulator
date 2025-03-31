@@ -73,42 +73,12 @@ module chipInterface(
     assign VGA_SYNC_N = 1'b0;
     assign VGA_CLK = ~CLOCK3_50;
 
-    assign VGA_R = vga_color[23:16];
-    assign VGA_G = vga_color[15:8];
-    assign VGA_B = vga_color[7:0];
+    assign VGA_R = 8'h00;
+    assign VGA_G = 8'hFF;
+    assign VGA_B = 8'h00;
 
     logic [23:0] vga_color;
-    //assign vga_color = {VGA_R, VGA_G, VGA_B};
-	 
-	 always_comb begin
-	 if(~GPIO[0]) begin
-		vga_color = {8'hEC, 8'hCB, 8'hD9};
-	 end
-	 else if(~GPIO[1]) begin
-		vga_color = {8'hE1, 8'hEF, 8'hF6};
-	 end 
-	 else if(~GPIO[2]) begin
-	 		vga_color = {8'h97, 8'hD2, 8'hFB};
-	 end
-	 else if(~GPIO[3]) begin
-	 		vga_color = {8'h83, 8'hBC, 8'hFF};
-	 end
-	 else if(~GPIO[4]) begin
-	 		vga_color = {8'h80, 8'hFF, 8'hE8};
-	 end
-	 else if(~GPIO[5]) begin
-	 		vga_color = {8'hFF, 8'hC8, 8'hFB};
-	 end
-	 else if(~GPIO[6]) begin
-	 		vga_color = {8'hFF, 8'h92, 8'hC2};
-	 end
-	 else if(~GPIO[7]) begin
-		vga_color = {8'h88, 8'h84, 8'hFF};
-	 end
-	 else begin
-		vga_color = {8'hFF, 8'hEE, 8'hF2};
-	 end
-	 end
+    assign vga_color = {VGA_R, VGA_G, VGA_B};
 
 
     gameboy dut (.clk (CLOCK_50),
