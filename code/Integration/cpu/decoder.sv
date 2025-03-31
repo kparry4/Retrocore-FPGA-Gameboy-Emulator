@@ -187,6 +187,9 @@ module decoder (
     interupt_mmu = 0;
     nmpcen = 1;
     stop = 0;
+    ctrl.b = 0;
+    newime = 0;
+    imeen = 0;
     ctrl.pcSel = PC_1;
     ctrl.cc = cc_t'(op[4:3]);
     ctrl.adrSel = ADR_PC;

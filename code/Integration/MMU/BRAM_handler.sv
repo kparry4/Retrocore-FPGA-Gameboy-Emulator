@@ -173,7 +173,7 @@ module BRAM_handler(input logic clock,
     assign hram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `HRAM_START);
 
 
-    assign cpu_data_valid = (cpu_memory_selector != `INVALID);
+    assign cpu_data_valid = 1'b1;//(cpu_memory_selector != `INVALID);
     assign ppu_data_valid = (ppu_memory_selector != `INVALID && ppu_memory_selector != `UNKNOWN);
 
 

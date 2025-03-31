@@ -35,8 +35,14 @@ module MM_out_chooser(input logic clock,
             ppu_select <= `INVALID;
             dma_select <= `INVALID;
         end else if(doing_dma) begin
-            cpu_select <= `INVALID;
-            ppu_select <= `INVALID;
+			//its'a'me dma
+            if(within_range(cpu_addr_read, `HRAM_START, `HRAM_END)) begin
+                cpu_select <= `HRAM_SELECT;
+			end else begin
+	            cpu_select <= `INVALID;	
+			end
+            
+			ppu_select <= `INVALID;
 
             //-----FOR HANDLING DMA CHOOSING----
             if(within_range(dma_src_addr, `ROM_0_START, `ROM_1_END)) begin

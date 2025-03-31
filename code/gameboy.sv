@@ -34,6 +34,7 @@ module gameboy(
 
 
 
+  flopenr #(1) validflop(clk2,rst,memAdr===16'h100,1'b1,memValid);
 
   cpu cpu(.clk(clk2),
           .rst,
@@ -77,7 +78,7 @@ module gameboy(
           .IF_R(iflg),
           .IE_R(ie),
           .cpu_out_data(memData),
-          .cpu_data_valid(memValid),
+          // .cpu_data_valid(memValid),
           .ppu_out_data1(port0_data),
           .ppu_out_data2(port1_data),
           .ppu_data_valid(), //no longer used

@@ -72,7 +72,7 @@ module MM_addr_contention_handler  (input logic clock,
                 oam_addr_rw = convert_to_BRAM_addr(dma_dest_addr, `OAM_START);; //allow dma
                 oam_addr_r = 16'hXXXX;
 
-                hram_addr_r = convert_to_BRAM_addr(dma_src_addr, `HRAM_START); //hram is LUTS, not bram
+                hram_addr_r = convert_to_BRAM_addr(cpu_addr_read, `HRAM_START); //hram is LUTS, not bram
 
             end else begin
 
