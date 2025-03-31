@@ -16,6 +16,7 @@ add wave -group {CPU} -noupdate /tb/gb/cpu/*
 add wave -group {MMU} -noupdate /tb/gb/mmu/*
 add wave -group {MEM} -noupdate /tb/gb/mmu/memory_units/*
 add wave -group {BRAM_OUT_MUX} -noupdate /tb/gb/mmu/memory_units/memory_out_muxer/*
+add wave -group {DMAGUY} -noupdate /tb/gb/mmu/memory_units/dma_guy/*
 add wave -group {OAM} -noupdate /tb/gb/mmu/memory_units/oam/*
 add wave -group {IOREG} -noupdate /tb/gb/mmu/io_registers/*
 add wave -group {IOREG} -noupdate /tb/gb/mmu/io_registers/*

@@ -5,7 +5,7 @@
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 `define PCSTOP 16'hx
-`define CNTSTOP 140000
+`define CNTSTOP 340000
 
 module tb;
   string tests[];
@@ -66,9 +66,9 @@ module tb;
   initial begin
     rst = 1;
     memValid = 0;
-    #18;
+    #360;
     rst = 0;
-    #14;
+    #720;
     memValid = 1;
   end
   initial begin

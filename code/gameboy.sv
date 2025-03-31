@@ -7,11 +7,11 @@ module gameboy(
   output logic [1:0] frame_pixel,
   output logic frame_pixel_valid
 );
-
-  logic [15:0] memData;
+  logic cpu_clk=0;
+  logic [15:0] memData,mmu_memData;
   logic memValid;
-  logic [7:0] ie;
-  logic [7:0] iflg;
+  logic [7:0] mmu_ie,ie;
+  logic [7:0] mmu_iflg,iflg;
   logic stop;
   logic [15:0] memWdata;
   logic [15:0] memWadr;
@@ -31,12 +31,26 @@ module gameboy(
 
   logic [15:0] port0_addr, port1_addr;
   logic [15:0] port0_data, port1_data;
+  logic [1:0] cnt=0;
 
 
 
-  flopenr #(1) validflop(clk2,rst,memAdr===16'h100,1'b1,memValid);
+  flopenr #(1) validflop(cpu_clk,rst,memAdr===16'h100,1'b1,memValid);
+  flop #(16) memflop(cpu_clk,mmu_memData, memData);
+  flop #(16) memflg(cpu_clk,{mmu_ie,mmu_iflg}, {ie,iflg});
+  always_ff @(posedge clk) begin
+    if (rst) begin
+      //cpu_clk = 0;
+      //cnt = 0;
+      //cpu_ppu = 0;
+    end
+    if(&cnt) cpu_clk = ~cpu_clk;
+    cnt++;
+    //if(&cnt[0]) ppu_clk = ~ppu_clk;
+  end
+    
 
-  cpu cpu(.clk(clk2),
+  cpu cpu(.clk(cpu_clk),
           .rst,
           .memData,
           .memValid,
@@ -75,9 +89,9 @@ module gameboy(
           .LCDC_R,
           .STAT_R,
           .PPU_R,
-          .IF_R(iflg),
-          .IE_R(ie),
-          .cpu_out_data(memData),
+          .IF_R(mmu_iflg),
+          .IE_R(mmu_ie),
+          .cpu_out_data(mmu_memData),
           // .cpu_data_valid(memValid),
           .ppu_out_data1(port0_data),
           .ppu_out_data2(port1_data),
