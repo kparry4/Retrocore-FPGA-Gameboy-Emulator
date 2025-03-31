@@ -34,11 +34,12 @@ typedef struct packed {
 module PPU_Mode_controller (
   input  logic         clk,
   input  logic         reset,
-  input  logic         LCDC,
+  input  logic [7:0]   LCDC, SCX, SCY,
   input  logic         scanline_processed,
   output logic [8:0]   dot,
   output logic [7:0]   line,
   output logic [1:0]   mode,
+  output logic [7:0]   scx_latched, scy_latched,
   output logic         fifo_clear,
   output logic         full_frame_done
 );
@@ -46,6 +47,8 @@ module PPU_Mode_controller (
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
       mode <= 2'd2; // start in OAM search mode
+      scx_latched <= SCX;
+      scy_latched <= SCY;
     end else begin
       if(line < 8'd144) begin
         if(dot < 9'd80)
@@ -69,10 +72,10 @@ module PPU_Mode_controller (
       full_frame_done <= 1'b0;
     end else begin
       fifo_clear <= (dot < 9'd80);
-      if(dot < 9'd455) begin 
+      if(dot < 9'd455) begin
         dot <= dot + 9'd1;
         full_frame_done <= 1'b0;
-      end 
+      end
       else begin
         dot <= 9'd0;
         if(line < 8'd153) begin
@@ -135,12 +138,12 @@ module OAM_Search (
   sprite_t selected_sprites_reg [0:9];
   logic [3:0] sort_i, sort_j;
   sprite_t temp_sprite;
-  
+
   typedef enum logic { SORT_EVEN, SORT_ODD } sort_phase_t;
   sort_phase_t sort_phase;
 
-  assign sprite_count = LCDC[1] ? selected_count : 4'd0;
-  
+  assign sprite_count = selected_count;
+
   // Sequential logic for fetching and sorting OAM sprites.
   always_ff @(posedge clk or posedge reset) begin
     if(reset) begin
@@ -170,7 +173,7 @@ module OAM_Search (
         OAM_FETCH: begin
           oam_port0_addr <= OAM_TABLE_BASE_ADDRESS + (oam_index << 2);
           oam_port1_addr <= OAM_TABLE_BASE_ADDRESS + (oam_index << 2) + 16'd2;
-          temp_sprite.y           = oam_port0_data[7:0];
+          temp_sprite.y           = oam_port0_data[7:0] - 8'd16;
           temp_sprite.x           = oam_port0_data[15:8];
           temp_sprite.tile_index  = oam_port1_data[7:0];
           temp_sprite.flags       = oam_port1_data[15:8];
@@ -325,12 +328,12 @@ module FIFO #(
       count  <= 0;
     end else begin
 
-      if ((push && !full) && (pop && (count > THRESHOLD))) begin 
+      if ((push && !full) && (pop && (count > THRESHOLD))) begin
         fifo_mem[wr_ptr] <= data_in;
         wr_ptr <= (wr_ptr == DEPTH-1) ? 0 : wr_ptr + 1;
         rd_ptr <= (rd_ptr == DEPTH-1) ? 0 : rd_ptr + 1;
         count  <= count;
-      end 
+      end
       else if(push && !full) begin
         fifo_mem[wr_ptr] <= data_in;
         wr_ptr <= (wr_ptr == DEPTH-1) ? 0 : wr_ptr + 1;
@@ -342,7 +345,7 @@ module FIFO #(
       end
     end
   end
-  
+
   assign empty     = (count == 0);
   assign full      = (count == DEPTH);
   assign size      = count;
@@ -391,7 +394,7 @@ module Render_BG (
   input  logic         port0_data_valid,
   output pixel_t       bg_fifo_data,
   output logic         bg_done,
-  output logic         bg_push  
+  output logic         bg_push
 );
 
   //==================================================================
@@ -456,7 +459,7 @@ module Render_BG (
   // Tile Map Coordinate Calculation
   //==================================================================
   // Calculate tile coordinates (tile_x, tile_y) with wrap-around.
-  
+
   always_comb begin
     if (!use_window) begin
       tile_x = ((scx_latched + pixel_total) >> 3) & 5'b11111;
@@ -495,17 +498,17 @@ module Render_BG (
   assign tile_number = tile_map_index_reg;
   logic [15:0] tile_data_addr;
 
-  always_comb begin 
-    if (LCDC[4]) begin 
+  always_comb begin
+    if (LCDC[4]) begin
       tile_data_addr = 16'h8000 + (tile_map_index_reg * 16) + tile_row_offset;
-    end else begin 
-      if (tile_number > 8'd127) begin 
+    end else begin
+      if (tile_number > 8'd127) begin
         tile_data_addr = 16'h8800 + ((tile_number - 8'd128) * 16) + tile_row_offset;
-      end else begin 
+      end else begin
         tile_data_addr = 16'h9000 + (tile_number * 16) + tile_row_offset;
-      end 
-    end 
-  end 
+      end
+    end
+  end
 
   //==================================================================
   // Pixel Data Generation
@@ -588,11 +591,11 @@ module Render_BG (
           if (!LCDC[0]) begin
             bg_pixel.pixel <= 2'b00;
             temp_pixel <= 2'b00;
-          end 
+          end
           else begin
             temp_pixel <= {bg_tile_data_word[7 - pixel_index], bg_tile_data_word[15 - pixel_index]};
             bg_pixel.pixel <= {bg_tile_data_word[7 - pixel_index], bg_tile_data_word[15 - pixel_index]};
-          end 
+          end
           bg_pixel.palette         <= BGP;
           bg_pixel.sprite_priority <= 1'b0;
           // Advance pixel index; after 8 pixels, reset index and advance pixel_total.
@@ -627,9 +630,9 @@ module Render_BG (
       bg_done <= 1'b0;
     else if (state == BG_DONE)
       bg_done <= 1'b1;
-    else 
+    else
       bg_done <= bg_done;
-  end 
+  end
 
   //==================================================================
   // Next State Logic (Combinational)
@@ -640,10 +643,15 @@ module Render_BG (
       case (state)
         BG_IDLE:         next_state = (start) ? BG_PROCESS_PIXELS : BG_IDLE;
         BG_PROCESS_PIXELS: begin
-          if (pixel_total + 8 < 8'd160)
+          if (pixel_index < 3'd7) begin
             next_state = BG_PROCESS_PIXELS;
-          else
-            next_state = BG_DONE;
+          end
+          else begin
+              if (pixel_total + 8 < 8'd160)
+                next_state = BG_PROCESS_PIXELS;
+              else
+                next_state = BG_DONE;
+          end
         end
         BG_DONE:         next_state = BG_IDLE;
         default:         next_state = BG_PROCESS_PIXELS;
@@ -683,9 +691,9 @@ endmodule
 
 //==================================================================
 // Module: Render_Sprites
-// Description: Renders sprite pixels for a scanline. If no sprite is 
+// Description: Renders sprite pixels for a scanline. If no sprite is
 //              found at the current X coordinate, outputs a transparent
-//              pixel (00). Otherwise, fetches sprite tile data and dumps 
+//              pixel (00). Otherwise, fetches sprite tile data and dumps
 //              8 pixels from the candidate sprite.
 // Inputs:
 //   clk, reset, start       : control signals.
@@ -706,7 +714,7 @@ module Render_Sprites (
   input  logic         clk,
   input  logic         reset,
   input  logic         start,
-  input  logic         fifo_clear, 
+  input  logic         fifo_clear,
   input  logic [7:0]   LCDC,
   input  logic [7:0]   SCX,
   input  logic [7:0]   SCY,
@@ -717,7 +725,7 @@ module Render_Sprites (
   input  sprite_t      sprites[0:9],
   output pixel_t       sprite_pixel,
   output logic         sprite_done,
-  output logic         sprite_push, 
+  output logic         sprite_push,
   // Memory interface for sprite tile data:
   output logic [15:0]  port_addr,
   output logic         port_read_en,
@@ -736,7 +744,7 @@ module Render_Sprites (
     DONE
   } state_t;
   state_t state, next_state;
-  
+
   // X coordinate for scanline (0 to 159)
   logic [9:0] x_coord;
   // Pixel index within an 8-pixel block.
@@ -752,7 +760,7 @@ module Render_Sprites (
   logic [7:0]   row_offset;
   // Output candidate pixel.
   pixel_t       candidate_pixel;
-  
+
   // Candidate selection with priority: choose the sprite overlapping x_coord
   // with the smallest x (tie-breaker: lower OAM index).
   integer i;
@@ -762,7 +770,7 @@ module Render_Sprites (
     candidate_index = 4'd0;
     best_x = 8'hFF;
     for (i = 0; i < 10; i = i + 1) begin
-      if ((i < sprite_count) && (sprites[i].x != 8'd0) && (sprites[i].x < 8'd168) 
+      if ((i < sprite_count) && (sprites[i].x != 8'd0) && (sprites[i].x < 8'd168)
           && (x_coord < sprites[i].x) && (x_coord >= (sprites[i].x - 8))) begin
         if (!candidate_valid) begin
           candidate_valid = 1'b1;
@@ -775,7 +783,7 @@ module Render_Sprites (
       end
     end
   end
-  
+
   // Merge candidate_pixel updates into one always_ff block.
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
@@ -805,15 +813,15 @@ module Render_Sprites (
           x_coord <= x_coord + 1;
           sprite_push <= 1'b1;
         end
-        else begin 
+        else begin
           sprite_push <= 1'b0;
-        end 
+        end
         // Otherwise, if candidate_valid is true, we don't push here.
-      end 
+      end
       else if (state == FETCH_TILE) begin
         // In FETCH_TILE, we do not output any pixel; we wait for tile data.
         sprite_push <= 1'b0;
-      end 
+      end
       else if (state == DUMP_PIXELS && use_sprite) begin
         // Dump sprite pixel data.
         candidate_pixel.x <= x_coord + pixel_index;
@@ -824,7 +832,7 @@ module Render_Sprites (
         sprite_push <= 1'b1;
         if (pixel_index < 3'd7) begin
           pixel_index <= pixel_index + 1;
-        end 
+        end
         else begin
           pixel_index <= 3'd0;
           x_coord <= x_coord + 8;
@@ -832,7 +840,7 @@ module Render_Sprites (
       end
     end
   end
-  
+
   // Next state logic.
   always_comb begin
     next_state = state;
@@ -862,13 +870,13 @@ module Render_Sprites (
       default: next_state = IDLE;
     endcase
   end
-  
+
   // Update row_offset on SCAN_CHECK.
   always_ff @(posedge clk) begin
     if (state == SCAN_CHECK)
       row_offset <= ((LY - (sprites[candidate_index].y)) & 8'h07) << 1;
   end
-  
+
   // Memory interface for sprite tile data.
   logic [7:0] effective_tile_index;
   always_comb begin
@@ -877,17 +885,17 @@ module Render_Sprites (
     else
       effective_tile_index = sprites[candidate_index].tile_index;
   end
-  
+
   assign port_addr = (state == SCAN_CHECK && candidate_valid) ?
          (16'h8000 + (effective_tile_index * 16) + row_offset) : 16'h8000;
 
   assign port_read_en = (state == SCAN_CHECK && candidate_valid);
-  
+
   always_ff @(posedge clk) begin
     if (state == FETCH_TILE)
       tile_data_word <= port_data;
   end
-  
+
   always_ff @(posedge clk or posedge reset) begin
     if (reset)
       sprite_done <= 1'b0;
@@ -895,12 +903,12 @@ module Render_Sprites (
       sprite_done <= 1'b0;
     else if (state == DONE)
       sprite_done <= 1'b1;
-    else 
+    else
       sprite_done <= sprite_done;
   end
-  
+
   assign sprite_pixel = candidate_pixel;
-  
+
 endmodule
 
 
@@ -966,12 +974,12 @@ module Pixel_Gen (
   // Adjust internal pixel logics to be 31 bits wide (pixel_t is 31 bits).
   logic [30:0] internal_bg_pixel;
   logic [30:0] internal_sprite_pixel;
-  
+
   // Push signals from render modules.
   logic bg_push;
   logic sprite_push;
   logic bg_done, sprite_done;
-  
+
   // Instantiate Render_BG.
   Render_BG render_bg_inst (
     .clk(clk),
@@ -993,7 +1001,7 @@ module Pixel_Gen (
     .bg_done(bg_done),
     .bg_push(bg_push)                   // Push signal output
   );
-  
+
   // Instantiate Render_Sprites.
   Render_Sprites render_sprites_inst (
     .clk(clk),
@@ -1016,10 +1024,10 @@ module Pixel_Gen (
     .port_data(sprite_port_data),
     .port_data_valid(sprite_port_data_valid)
   );
-  
+
   // Instantiate FIFO for background pixels.
   FIFO #(
-    .DEPTH(16),
+    .DEPTH(64),
     .THRESHOLD(0)
   ) bg_fifo_inst (
     .clk(clk),
@@ -1034,7 +1042,7 @@ module Pixel_Gen (
     .size(),  // Unused
     .out_valid(bg_out_valid)
   );
-  
+
   // Instantiate FIFO for sprite pixels.
   FIFO #(
     .DEPTH(64),
@@ -1050,12 +1058,12 @@ module Pixel_Gen (
     .empty(), // Unused
     .full(),  // Unused
     .size(),  // Unused
-    .out_valid(sprite_out_valid) 
+    .out_valid(sprite_out_valid)
   );
-  
+
   // Scanline is processed when both render modules are done.
   assign scanline_processed = bg_done & sprite_done;
-  
+
 endmodule
 
 
@@ -1096,18 +1104,18 @@ module Pixel_Mixer (
   assign fetch_pixel = bg_pixel_ready & sprite_pixel_ready;
 
   always_ff @(posedge clk or posedge reset) begin
-    if(reset) begin 
+    if(reset) begin
       pixel_out <= 2'b00;
       pixel_out_valid <= '0;
-    end 
+    end
     else begin
       pixel_out_valid <= fetch_pixel;
       if(sprite_pixel_in.pixel != 2'b00)
         pixel_out <= map_palette(sprite_pixel_in.pixel, sprite_pixel_in.palette);
       else
         pixel_out <= map_palette(bg_pixel_in.pixel, bg_pixel_in.palette);
-    end 
-  end 
+    end
+  end
 
 endmodule
 
@@ -1156,9 +1164,9 @@ module VGA_Controller (
   parameter V_ACTIVE = 144, V_FRONT = 4, V_SYNC = 2, V_BACK = 4;
   parameter H_TOTAL = H_ACTIVE + H_FRONT + H_SYNC + H_BACK;
   parameter V_TOTAL = V_ACTIVE + V_FRONT + V_SYNC + V_BACK;
-  
+
   logic [9:0] h_count, v_count;
-  
+
   always_ff @(posedge clk or posedge reset) begin
     if(reset) begin
       h_count <= 0;
@@ -1175,12 +1183,12 @@ module VGA_Controller (
       end
     end
   end
-  
+
   assign hsync = ~((h_count >= (H_ACTIVE + H_FRONT)) &&
                    (h_count < (H_ACTIVE + H_FRONT + H_SYNC)));
   assign vsync = ~((v_count >= (V_ACTIVE + V_FRONT)) &&
                    (v_count < (V_ACTIVE + V_FRONT + V_SYNC)));
-  
+
   DMG_Color_Mapper mapper (
     .dmg_color(fb_pixel),
     .vga_color(vga_color)
@@ -1215,7 +1223,7 @@ module PPU_Wrapper (
   input  logic [7:0]   BGP,
   input  logic [7:0]   OBP0,
   input  logic [7:0]   OBP1,
-  output logic [1:0]   mode, 
+  output logic [1:0]   mode,
 
   output logic [7:0]   LY,
   // Memory ports (used either for OAM or for VRAM depending on mode)
@@ -1231,12 +1239,12 @@ module PPU_Wrapper (
 
   // Internal timing signals from the mode controller.
   logic [8:0] dot;
-  logic [7:0] line;
+  logic [7:0] line, scx_latched, scy_latched;
   logic       fifo_clear;
   logic       oam_search_done;
   logic [3:0] oam_sprite_count;
   logic       tile_pix_out_valid;
-  
+
   // Internal memory interface signals for each purpose.
   // For OAM accesses (used in mode 2)
   logic [15:0] oam0_addr_sig, oam1_addr_sig;
@@ -1249,26 +1257,27 @@ module PPU_Wrapper (
 
   // OAM search and sprite selection.
   sprite_t selected_sprites [0:9];
-  
+
   // Pixel FIFO outputs.
   pixel_t bg_fifo_data;
   pixel_t sprite_fifo_data;
   // Final pixel (2-bit index) after mixing.
   logic [1:0] mixed_pixel;
-  
+
   // Mode controller instantiation.
   PPU_Mode_controller mode_ctrl (
     .clk(clk),
     .reset(reset || (!LCDC[7])),
-    .LCDC(LCDC),
+    .LCDC(LCDC), .SCX, .SCY,
     .scanline_processed(tile_pix_out_valid),
     .dot(dot),
     .line(LY),
+    .scx_latched, .scy_latched,
     .mode(mode),
-    .fifo_clear(fifo_clear), 
+    .fifo_clear(fifo_clear),
     .full_frame_done(full_frame_done)
   );
-  
+
   // OAM search instantiation.
   OAM_Search oam_search (
     .clk(clk),
@@ -1284,7 +1293,7 @@ module PPU_Wrapper (
     .sprite_count(oam_sprite_count),
     .selected_sprites(selected_sprites)
   );
-  
+
   // Pixel generation instantiation.
   Pixel_Gen Pixel_Gen_inst (
     .clk(clk),
@@ -1292,8 +1301,8 @@ module PPU_Wrapper (
     .start((dot == 9'd80) ? 1'b1 : 1'b0),
     .fifo_clear(fifo_clear),
     .LCDC(LCDC),
-    .SCX(SCX),
-    .SCY(SCY),
+    .SCX(scx_latched),
+    .SCY(scy_latched),
     .WX(WX),
     .WY(WY),
     .LY(LY),
@@ -1301,7 +1310,7 @@ module PPU_Wrapper (
     .OBP0(OBP0),
     .OBP1(OBP1),
     .sprite_count(oam_sprite_count),
-    .selected_sprites(selected_sprites), 
+    .selected_sprites(selected_sprites),
     .bg_port_addr(bg_addr_sig),
     .bg_port_read_en(bg_read_en_sig),
     .bg_port_data(port0_data),        // In VRAM mode, port0_data is used for BG.
@@ -1317,14 +1326,14 @@ module PPU_Wrapper (
     .sprite_fifo_data(sprite_fifo_data),
     .scanline_processed(tile_pix_out_valid)
   );
-  
+
   // Memory port assignments based on current mode.
   // When mode == 2, use ports as OAM ports; when mode == 3, use port0 for BG and port1 for sprites.
   assign port0_addr    = (mode == 2) ? oam0_addr_sig : bg_addr_sig;
   assign port0_read_en = (mode == 2) ? 1'b1          : bg_read_en_sig;
   assign port1_addr    = (mode == 2) ? oam1_addr_sig : sprite_addr_sig;
   assign port1_read_en = (mode == 2) ? 1'b1          : sprite_read_en_sig;
-  
+
   // Pixel mixer instantiation.
   Pixel_Mixer pixel_mixer_inst (
     .clk(clk),
@@ -1337,9 +1346,9 @@ module PPU_Wrapper (
     .pixel_out_valid(pixel_out_valid),
     .pixel_out(mixed_pixel)
   );
-  
+
   // Frame pixel outputs.
   assign frame_pixel_valid = pixel_out_valid && (mode != 2'b1);
   assign frame_pixel       = mixed_pixel;
-  
+
 endmodule
