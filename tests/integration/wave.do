@@ -6,6 +6,8 @@ add wave -noupdate /tb/gb/cpu/regfile/regs
 add wave -noupdate /tb/frame_buffer
 add wave -noupdate /tb/gb/cpu/ctrl.done
 add wave -noupdate /tb/gb/cpu/decoder/mpc_enum
+add wave -noupdate /tb/gb/mmu/memory_units/dma_guy/doing_dma
+add wave -noupdate -radix dec /tb/gb/mmu/memory_units/dma_guy/cycle_count
 add wave -noupdate /tb/gb/ppu_mode
 add wave -noupdate /tb/frame_pixel
 add wave -noupdate /tb/frame_pixel_valid

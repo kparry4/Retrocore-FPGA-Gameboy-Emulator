@@ -7,7 +7,7 @@ module gameboy(
   output logic [1:0] frame_pixel,
   output logic frame_pixel_valid
 );
-  logic cpu_clk=0;
+  logic ppu_clk=1,cpu_clk=1;
   logic [15:0] memData,mmu_memData;
   logic memValid;
   logic [7:0] mmu_ie,ie;
@@ -39,20 +39,20 @@ module gameboy(
   flop #(16) memflop(cpu_clk,mmu_memData, memData);
   flop #(16) memflg(cpu_clk,{mmu_ie,mmu_iflg}, {ie,iflg});
   always_ff @(posedge clk) begin
-    if (rst) begin
-      //cpu_clk = 0;
-      //cnt = 0;
-      //cpu_ppu = 0;
-    end
+    // if (rst) begin
+    //   cpu_clk = clk;
+    //   cnt = 0;
+    //   //cpu_ppu = 0;
+    // end
     if(&cnt) cpu_clk = ~cpu_clk;
+    if(cnt[0]) ppu_clk = ~ppu_clk;
     cnt++;
-    //if(&cnt[0]) ppu_clk = ~ppu_clk;
   end
     
 
   cpu cpu(.clk(cpu_clk),
           .rst,
-          .memData,
+          .memData(memData),
           .memValid,
           .ie,.iflg,
           .stop,
@@ -63,7 +63,8 @@ module gameboy(
           .memAdr);
 
   MMU mmu(.CLK_4MHZ(clk),
-          .cpu_clock(clk2),
+          .ppu_clock(clk2),//*** change
+          .cpu_clock(cpu_clk),//*** change
           .rst,
           .cpu_addr_read(memAdr),
           .cpu_addr_write(memWadr),

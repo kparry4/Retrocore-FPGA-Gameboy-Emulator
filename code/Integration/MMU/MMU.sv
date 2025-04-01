@@ -8,6 +8,7 @@
 
 module MMU (input logic CLK_4MHZ, // 5 Mhz?
             input logic cpu_clock,
+            input logic ppu_clock,
             input logic rst,
 
             input logic [15:0] cpu_addr_read,
@@ -115,7 +116,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     ///////////////////////////////////////////
 
     logic [15:0] prev_cpu_addr_read; //***KEP
-    always_ff @(posedge cpu_clock) begin
+    always_ff @(posedge ppu_clock) begin
       prev_cpu_addr_read <= cpu_addr_read;//***KEP
     end
 
@@ -138,11 +139,11 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
 
 
     IO_handler io_registers  (.clock(CLK_4MHZ),
-			      .cpu_clock,
+			                        .cpu_clock,
+			                        .ppu_clock,
                               .reset(rst),
                               .vblank,
-                              // .cpu_addr_read,
-                              .cpu_addr_read, //***KEP I BROKE SOME TIMING SEE 01 cnt=16510 look for xxxx in load instr
+                              .cpu_addr_read,
                               .cpu_addr_write,
                               .cpu_wren,
                               .cpu_in_data,
@@ -184,6 +185,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     //TODO: sanity check hwo dma data is passed, do i need antoher register
     BRAM_handler memory_units (.clock(CLK_4MHZ),
                               .cpu_clock,
+			                        .ppu_clock,
                               .reset(rst),
                               .cpu_addr_read,
                               .cpu_addr_write,
