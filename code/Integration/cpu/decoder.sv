@@ -18,6 +18,7 @@ module decoder (
   logic [7:0] nextInstr;
   logic cb,cbpre, done, ime,imeen,newime;
   logic mpcen, nmpcen, interupt;
+  logic [1:0] allllmost;
 
   assign interupt = |(iflg[4:0]&ie[4:0])&ime;
 
@@ -28,7 +29,8 @@ module decoder (
   flopenr #(8) oldopreg (clk,rst,ctrl.iren,instr,op);
   flopenr #(8) nextopreg (clk,rst,ctrl.iren,instr,nextOp);
   flopr #(1) cbprereg (clk,rst,cb,cbpre);
-  flopenr #(1) imereg (clk,rst,imeen,newime,ime);
+  flopenr #(2) imereg (clk,rst,imeen,{newime,imeen},allllmost);
+  flopenr #(1) imereg2 (clk,rst,allllmost[0],allllmost[1],ime);
   always_ff @(posedge clk) begin
     if(rst) mpcen = 1;
     else mpcen = nmpcen;
