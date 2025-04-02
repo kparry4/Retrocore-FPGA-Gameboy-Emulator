@@ -31,7 +31,7 @@ module MM_addr_contention_handler  (input logic clock,
                                     output logic [11:0] wram_addr_r,
                                     output logic [6:0] oam_addr_rw,
                                     output logic [6:0] oam_addr_r,
-                                    output logic [3:0] hram_addr_r
+                                    output logic [6:0] hram_addr_r
 );
 
 

@@ -4,8 +4,8 @@
 `define PATH "games/"
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
-`define PCSTOP 16'hx
-`define CNTSTOP 340000
+`define PCSTOP 16'hx // tetris 2f2 important
+`define CNTSTOP 400000
 
 module tb;
   string tests[];
@@ -42,9 +42,9 @@ module tb;
   integer pixel_count;
   integer r, c, red, green, blue, file;
 
-  // assign pc = gb.memAdr&{16{predone}};
+  assign pc = gb.memAdr&{16{predone}};
   always @(posedge clk2) begin
-    pc = gb.memAdr;
+    // pc = gb.memAdr;
     tmp = (pc==16'hff44) ? 16'h90 : `PROG(pc);
     if(gb.memWen) `PROG(gb.memWadr) = gb.memWdata;
     predone = gb.cpu.decoder.ctrl.done;
@@ -98,7 +98,7 @@ module tb;
   // Capture pixels and update pixel_count in one always_ff block.
   always_ff @(posedge clk2 or posedge rst) begin : fb
     if(rst || !gb.ppu.LCDC[7]) for(int i=0; i<HEIGHT; i++) for(int j=0; j<WIDTH; j++) frame_buffer[i][j] = '0;
-    if (rst|(pixel_count >= WIDTH * HEIGHT)) begin
+    if (rst|(pixel_count >= WIDTH * HEIGHT) || !gb.ppu.LCDC[7] || gb.ppu.mode==2'b1) begin
       pixel_count <= 0;
     end else if (frame_pixel_valid) begin
       row = pixel_count / WIDTH;

@@ -47,7 +47,7 @@ module BRAM_handler(input logic clock,
 
     //160 kB inside work vram, 16 bit width --> 80 entries (makes sense, given 40 sprites)
     logic [6:0] oam_addr_rw,    oam_addr_r;
-    logic [3:0] hram_addr_r,   hram_addr_w; //if this overflows I'll kill myself
+    logic [6:0] hram_addr_r,   hram_addr_w; //if this overflows I'll kill myself
 
     //--- WRITE ENABLES FOR RAM UNITS ------
     logic vram_wren, exram_wren, wram_wren, oam_wren, hram_wren;
@@ -214,7 +214,7 @@ module BRAM_handler(input logic clock,
                       .data_a   (oam_data_in),     .data_b   (16'hXXXX));
 
     //--- HRAM  ------  this feels too small to make a memory unit.
-    logic[0:15][15:0] HRAM;
+    logic[0:127][15:0] HRAM;
     logic[15:0] unbuffered_hram_out;
     assign unbuffered_hram_out = HRAM[hram_addr_r];
     always_ff @(posedge ppu_clock) begin
