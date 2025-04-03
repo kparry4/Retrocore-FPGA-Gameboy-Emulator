@@ -504,11 +504,7 @@ module IO_handler(input logic clock,
 
             STAT_R[1:0] <= ppu_mode;
             STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R);
-            STAT_R[3] <= (ppu_mode == 2'd0) && LCDC_R[7];
-            STAT_R[4] <= (ppu_mode == 2'd1) && LCDC_R[7];
-            STAT_R[5] <= (ppu_mode == 2'd2) && LCDC_R[7];
-            STAT_R[6] <= (PPU_R.LY_R == PPU_R.LYC_R) && LCDC_R[7];
-            STAT_R[7] <= 1'b1;
+            STAT_R[7:3] <= cpu_IO_in_data[7:3];
 
 
 
