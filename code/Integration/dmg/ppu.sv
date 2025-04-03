@@ -46,7 +46,7 @@ module PPU_Mode_controller (
   // Update mode register on each clock.
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
-      mode <= 2'd2; // start in OAM search mode
+      mode <= 2'd1; // start in OAM search mode
       scx_latched <= SCX;
       scy_latched <= SCY;
     end else begin
@@ -67,7 +67,7 @@ module PPU_Mode_controller (
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
       dot        <= 9'd0;
-      line       <= 8'd90;
+      line       <= 8'h90;
       fifo_clear <= 1'b1;
       full_frame_done <= 1'b0;
     end else begin
