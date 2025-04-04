@@ -1117,6 +1117,15 @@ endmodule
 // Output:
 //   pixel_out - final 2-bit pixel index.
 //==================================================================
+
+// `define map_palette(idx,pal)  \
+//     begin case(idx) \
+//       2'd0: pixel_out <= pal[1:0]; \
+//       2'd1: pixel_out <= pal[3:2]; \
+//       2'd2: pixel_out <= pal[5:4]; \
+//       2'd3: pixel_out <= pal[7:6]; \
+//       default: pixel_out <= 2'b00; \
+//     endcase end
 module Pixel_Mixer (
   input  logic        clk,
   input  logic        reset,
@@ -1128,18 +1137,18 @@ module Pixel_Mixer (
   output logic        pixel_out_valid,
   output logic [1:0]  pixel_out
 );
-  function automatic [1:0] map_palette(
-    input logic [1:0] pixel_idx,
-    input logic [7:0] palette_reg
-  );
-    case(pixel_idx)
-      2'd0: map_palette = palette_reg[1:0];
-      2'd1: map_palette = palette_reg[3:2];
-      2'd2: map_palette = palette_reg[5:4];
-      2'd3: map_palette = palette_reg[7:6];
-      default: map_palette = 2'b00;
-    endcase
-  endfunction
+  // function automatic [1:0] `map_palette(
+  //   input logic [1:0] pixel_idx,
+  //   input logic [7:0] palette_reg,
+  // );
+  //   case(pixel_idx)
+  //     2'd0: `map_palette = palette_reg[1:0];
+  //     2'd1: `map_palette = palette_reg[3:2];
+  //     2'd2: `map_palette = palette_reg[5:4];
+  //     2'd3: `map_palette = palette_reg[7:6];
+  //     default: `map_palette = 2'b00;
+  //   endcase
+  // endfunction
 
   assign fetch_pixel = bg_pixel_ready & sprite_pixel_ready;
 
@@ -1150,12 +1159,22 @@ module Pixel_Mixer (
     end
     else begin
       pixel_out_valid <= fetch_pixel;
-      if (sprite_pixel_in.sprite_priority)
-        pixel_out <= map_palette(sprite_pixel_in.pixel, sprite_pixel_in.palette);
-      else if(bg_pixel_in.pixel == 2'b00)
-        pixel_out <= map_palette(sprite_pixel_in.pixel, sprite_pixel_in.palette);
+      if (sprite_pixel_in.sprite_priority | sprite_pixel_in.pixel != 2'b0)
+        case(sprite_pixel_in.pixel)
+          2'd0: pixel_out = sprite_pixel_in.palette[1:0];
+          2'd2: pixel_out = sprite_pixel_in.palette[3:2];
+          2'd1: pixel_out = sprite_pixel_in.palette[5:4];
+          2'd3: pixel_out = sprite_pixel_in.palette[7:6];
+          default: pixel_out = 2'bx;
+        endcase
       else
-        pixel_out <= map_palette(bg_pixel_in.pixel, bg_pixel_in.palette);
+        case(bg_pixel_in.pixel)
+          2'd0: pixel_out = bg_pixel_in.palette[1:0];
+          2'd2: pixel_out = bg_pixel_in.palette[3:2];
+          2'd1: pixel_out = bg_pixel_in.palette[5:4];
+          2'd3: pixel_out = bg_pixel_in.palette[7:6];
+          default: pixel_out = 2'bx;
+        endcase
     end
   end
 

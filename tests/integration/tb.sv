@@ -5,7 +5,7 @@
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 `define PCSTOP 16'hx // tetris 2f2 important
-`define CNTSTOP 469503
+`define CNTSTOP 469534//1000000
 
 module tb;
   string tests[];
@@ -78,6 +78,8 @@ module tb;
 
     if(`TEST == "tetris") begin
       tests = {tests, "tetris"};
+    end if(`TEST == "Dr.Mario") begin
+      tests = {tests, "Dr.Mario"};
     end if(`TEST == "dmg-acid-test") begin
       tests = {tests, "dmg-acid-test"};
     end if(`TEST == "06") begin
@@ -140,8 +142,8 @@ module tb;
         for (c = 0; c < WIDTH; c = c + 1) begin
           case (frame_buffer[r][c])
               2'b11: {red, green, blue} = {0,0,0};
-              2'b10: {red, green, blue} = {160,160,160};
-              2'b01: {red, green, blue} = {211,211,211};
+              2'b10: {red, green, blue} = {85,85,85};
+              2'b01: {red, green, blue} = {170,170,170};
               2'b00: {red, green, blue} = {255,255,255};
           endcase
           $fwrite(file, "%0d %0d %0d ", red, green, blue);
