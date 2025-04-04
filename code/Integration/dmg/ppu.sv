@@ -43,12 +43,31 @@ module PPU_Mode_controller (
   output logic         fifo_clear,
   output logic         full_frame_done
 );
+
+  
+  logic LCD_disabled_prev; 
+
+  always_ff @(posedge clk) begin 
+    if (LCDC[7]) begin 
+      LCD_disabled_prev <= (full_frame_done) ? 1'b0 : LCD_disabled_prev;
+    end else begin 
+      LCD_disabled_prev <= 1'b1;
+    end 
+  end 
+
   // Update mode register on each clock.
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
       mode <= 2'd2; // start in OAM search mode
       scx_latched <= SCX;
       scy_latched <= SCY;
+    end else if (LCD_disabled_prev && line == 8'd0) begin 
+      if (dot < 9'd76) 
+        mode <= 2'd0;
+      else if((~scanline_processed))
+        mode <= 2'd3;
+      else
+        mode <= 2'd0; 
     end else begin
       if(line < 8'd144) begin
         if(dot < 9'd80)
@@ -63,14 +82,31 @@ module PPU_Mode_controller (
     end
   end
 
+
   // Dot and line counters are updated on the clock.
   always_ff @(posedge clk or posedge reset) begin
-    if (reset) begin
+    if (reset || ~LCDC[7]) begin
       dot        <= 9'd0;
       line       <= 8'h0;
       fifo_clear <= 1'b1;
       full_frame_done <= 1'b0;
-    end else begin
+    end else if (LCD_disabled_prev && line == 8'd0) begin
+      fifo_clear <= (dot < 9'd76);
+      if(dot < 9'd451) begin
+        dot <= dot + 9'd1;
+        full_frame_done <= 1'b0;
+      end
+      else begin
+        dot <= 9'd0;
+        if(line < 8'd149) begin
+          line <= line + 8'd1;
+          full_frame_done <= 1'b0;
+        end else begin
+          line <= 8'd0;
+          full_frame_done <= 1'bx;
+        end
+      end
+    end else begin 
       fifo_clear <= (dot < 9'd80);
       if(dot < 9'd455) begin
         dot <= dot + 9'd1;
