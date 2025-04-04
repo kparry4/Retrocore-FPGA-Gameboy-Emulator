@@ -268,16 +268,20 @@ module IO_handler(input logic clock,
 
     logic stat_sync;
     logic stat_posedge;
-    assign stat_posedge = ~stat_sync && (|(STAT_R[6:3]));
+    
+    logic hidden_stat;
+    assign hidden_stat = (STAT_R[6] & STAT_R[2]) | (STAT_R[5] & (STAT_R[1:0] == 2'd2)) | (STAT_R[4] & (STAT_R[1:0] == 2'd1)) | (STAT_R[3] & (STAT_R[1:0] == 2'd0));
 
-    always_ff @(posedge clock or posedge reset) begin
-        if (reset)
-            stat_sync <= 1'b0;
-        else if(stop_inst_hit || halted)
-            stat_sync <= 1'b0;
-        else
-            stat_sync <= |(STAT_R[6:3]);
-    end
+    // assign stat_posedge = ~stat_sync && hidden_stat;
+
+    // always_ff @(posedge cpu_clock or posedge reset) begin
+    //     if (reset)
+    //         stat_sync <= 1'b0;
+    //     else if(stop_inst_hit || halted)
+    //         stat_sync <= 1'b0;
+    //     else
+    //         stat_sync <= hidden_stat;
+    // end
 
 
 
@@ -420,7 +424,7 @@ module IO_handler(input logic clock,
                   //handle INTERRUPT FLAG (7,6,5 are dont cares):
                   IF_R[3] <= 1'b0; //wserial control (not implented)
                   // IF_R[1] <= |(STAT_R[6:3]);
-                  IF_R[1] <= stat_posedge;
+                  IF_R[1] <= hidden_stat;
 
                   if(IF_R[4] == 1'b0) begin
                       IF_R[4] <= joypad_press;
@@ -512,7 +516,7 @@ module IO_handler(input logic clock,
                 LCDC_R <= LCDC_R;
                 PPU_R <= PPU_R;
             end
-            PPU_R.LY_R <= ppu_LY; // ***
+            PPU_R.LY_R <= (LCDC_R[7]) ? ppu_LY : 8'd0; // ***
                       `ifdef DOC
             PPU_R.LY_R <= 16'h90;//***KEP
                       `endif
@@ -520,11 +524,11 @@ module IO_handler(input logic clock,
             if(cpu_addr_write == `STAT && cpu_wren) begin
                 STAT_R[1:0] <= (LCDC_R[7]) ? ppu_mode : 2'b0;
                 STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R);
-                STAT_R[7:3] <= cpu_IO_in_data[7:3];
+                STAT_R[7:3] <= {1'b1,cpu_IO_in_data[6:3]};
             end else begin
                 STAT_R[1:0] <= (LCDC_R[7]) ? ppu_mode : 2'b0;
                 STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R);
-                STAT_R[7:3] <= STAT_R[7:3];
+                STAT_R[7:3] <= {1'b1,STAT_R[6:3]};
             end
 
 
