@@ -266,6 +266,22 @@ module IO_handler(input logic clock,
         // cpu_out_data <= out_data; //delay by a cycle to be consistent with BRAM behavior
         assign cpu_out_data = out_data; //delay by a cycle to be consistent with BRAM behavior
 
+    logic stat_sync;
+    logic stat_posedge;
+    assign stat_posedge = ~stat_sync && (|(STAT_R[6:3]));
+
+    always_ff @(posedge clock or posedge reset) begin
+        if (reset)
+            stat_sync <= 1'b0;
+        else if(stop_inst_hit || halted)
+            stat_sync <= 1'b0;
+        else
+            stat_sync <= |(STAT_R[6:3]);
+    end
+
+
+
+
     always_ff@(posedge clock) begin
         if(reset) begin
             halted             <= 1'b0;
@@ -397,15 +413,14 @@ module IO_handler(input logic clock,
                 TAC_R <= TAC_R;
             end
 
-
-
             if(cpu_addr_write == `IF && cpu_wren) begin
                 IF_R <= cpu_IO_in_data;
             end else begin
                 if(~interupt) begin
                   //handle INTERRUPT FLAG (7,6,5 are dont cares):
                   IF_R[3] <= 1'b0; //wserial control (not implented)
-                  IF_R[1] <= |(STAT_R[6:3]);
+                  // IF_R[1] <= |(STAT_R[6:3]);
+                  IF_R[1] <= stat_posedge;
 
                   if(IF_R[4] == 1'b0) begin
                       IF_R[4] <= joypad_press;
@@ -502,9 +517,15 @@ module IO_handler(input logic clock,
             PPU_R.LY_R <= 16'h90;//***KEP
                       `endif
 
-            STAT_R[1:0] <= ppu_mode;
-            STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R);
-            STAT_R[7:3] <= cpu_IO_in_data[7:3];
+            if(cpu_addr_write == `STAT && cpu_wren) begin
+                STAT_R[1:0] <= (LCDC_R[7]) ? ppu_mode : 2'b0;
+                STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R);
+                STAT_R[7:3] <= cpu_IO_in_data[7:3];
+            end else begin
+                STAT_R[1:0] <= (LCDC_R[7]) ? ppu_mode : 2'b0;
+                STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R);
+                STAT_R[7:3] <= STAT_R[7:3];
+            end
 
 
 

@@ -5,7 +5,7 @@
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 `define PCSTOP 16'hx // tetris 2f2 important
-`define CNTSTOP 400000
+`define CNTSTOP 500000
 
 module tb;
   string tests[];

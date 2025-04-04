@@ -173,7 +173,7 @@ module OAM_Search (
         OAM_FETCH: begin
           oam_port0_addr <= OAM_TABLE_BASE_ADDRESS + (oam_index << 2);
           oam_port1_addr <= OAM_TABLE_BASE_ADDRESS + (oam_index << 2) + 16'd2;
-          temp_sprite.y           = oam_port0_data[7:0] - 8'd16;
+          temp_sprite.y           = oam_port0_data[7:0];
           temp_sprite.x           = oam_port0_data[15:8];
           temp_sprite.tile_index  = oam_port1_data[7:0];
           temp_sprite.flags       = oam_port1_data[15:8];
@@ -439,7 +439,7 @@ module Render_BG (
   // Window mode is active if LCDC[5] is set, LY >= WY, and (SCX + pixel_total) >= (WX - 7)
   logic use_window;
   always_comb begin
-    use_window = (LCDC[5] && (LY >= WY) && ((scx_latched + pixel_total) >= (WX - 7)));
+    use_window = (LCDC[5] && (LY >= WY) && (pixel_total >= (WX - 7)));
   end
 
   // Compute the effective screen X coordinate.
@@ -808,7 +808,7 @@ module Render_Sprites (
           candidate_pixel.y <= LY + SCY;
           candidate_pixel.pixel <= 2'b00;
           candidate_pixel.palette <= 8'd0;
-          candidate_pixel.sprite_priority <= 1'b1;
+          candidate_pixel.sprite_priority <= 1'b0;
           // Advance x_coord by one pixel.
           x_coord <= x_coord + 1;
           sprite_push <= 1'b1;
@@ -826,9 +826,13 @@ module Render_Sprites (
         // Dump sprite pixel data.
         candidate_pixel.x <= x_coord + pixel_index;
         candidate_pixel.y <= LY + SCY;
-        candidate_pixel.pixel <= { tile_data_word[7 - pixel_index], tile_data_word[15 - pixel_index] };
+        if (sprites[candidate_index].flags[5]) begin
+            candidate_pixel.pixel <= { tile_data_word[pixel_index], tile_data_word[8 + pixel_index] };
+        end else begin
+            candidate_pixel.pixel <= { tile_data_word[7 - pixel_index], tile_data_word[15 - pixel_index] };
+        end
         candidate_pixel.palette <= (sprites[candidate_index].flags[4]) ? OBP1 : OBP0;
-        candidate_pixel.sprite_priority <= 1'b1;
+        candidate_pixel.sprite_priority <= sprites[candidate_index].flags[7];
         sprite_push <= 1'b1;
         if (pixel_index < 3'd7) begin
           pixel_index <= pixel_index + 1;
@@ -874,7 +878,7 @@ module Render_Sprites (
   // Update row_offset on SCAN_CHECK.
   always_ff @(posedge clk) begin
     if (state == SCAN_CHECK)
-      row_offset <= ((LY - (sprites[candidate_index].y)) & 8'h07) << 1;
+      row_offset <= (sprites[candidate_index].flags[6]) ? (((8'd7 - (LY - (sprites[candidate_index].y)) & 8'h07)) << 1) : ((LY - (sprites[candidate_index].y)) & 8'h07) << 1;
   end
 
   // Memory interface for sprite tile data.
@@ -1110,7 +1114,9 @@ module Pixel_Mixer (
     end
     else begin
       pixel_out_valid <= fetch_pixel;
-      if(sprite_pixel_in.pixel != 2'b00)
+      if (sprite_pixel_in.sprite_priority)
+        pixel_out <= map_palette(sprite_pixel_in.pixel, sprite_pixel_in.palette);
+      else if(bg_pixel_in.pixel == 2'b00)
         pixel_out <= map_palette(sprite_pixel_in.pixel, sprite_pixel_in.palette);
       else
         pixel_out <= map_palette(bg_pixel_in.pixel, bg_pixel_in.palette);
