@@ -107,7 +107,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     logic doing_dma;
 
     logic[15:0] memory_out_cpu_data;
-    logic[15:0] IO_out_cpu_data;
+    logic[7:0] IO_out_cpu_data;
 
     logic cpu_IO_data_valid, cpu_memory_data_valid;
 
@@ -121,7 +121,7 @@ module MMU (input logic CLK_4MHZ, // 5 Mhz?
     end
 
     always_comb begin
-        if(within_range(prev_cpu_addr_read, `IO_START, `IO_END) && ~doing_dma) begin//***KEP
+        if((within_range(prev_cpu_addr_read, `IO_START, `IO_END) | prev_cpu_addr_read==16'hffff) & ~doing_dma) begin//***KEP
             /* even case: {8'd0, IO_data}
                odd case: {IO_data, 8'd0}  */
             // cpu_data_valid = cpu_IO_data_valid;

@@ -5,7 +5,8 @@
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 `define PCSTOP 16'hx // tetris 2f2 important
-`define CNTSTOP 469534//1000000
+`define CNTSTOP 969534//1000000
+`define BTN 614441//1000000
 
 module tb;
   string tests[];
@@ -41,6 +42,7 @@ module tb;
   // Declare pixel_count and loop variables.
   integer pixel_count;
   integer r, c, red, green, blue, file;
+  logic joypad_select=0,joypad_start=0,joypad_dpad_up=0,joypad_dpad_down=0,joypad_dpad_left=0,joypad_dpad_right=0,joypad_a_button=0,joypad_b_button=0;
 
   assign pc = gb.memAdr&{16{predone}};
   always @(posedge clk2) begin
@@ -51,7 +53,15 @@ module tb;
     #1; // little memory delay
     // memData = tmp;
   end
-  gameboy gb (.clk,.clk2, .rst, .frame_pixel, .LY, .frame_pixel_valid);
+  gameboy gb (.clk,.clk2, .rst, .frame_pixel, .LY, .frame_pixel_valid,
+          .joypad_select,
+          .joypad_start,
+          .joypad_dpad_up,
+          .joypad_dpad_down,
+          .joypad_dpad_left,
+          .joypad_dpad_right,
+          .joypad_a_button,
+          .joypad_b_button);
 
   always #5 clk = ~clk;
   always #10 clk2 = ~clk2;
@@ -126,6 +136,25 @@ module tb;
     end
     if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)) begin
       cnt++;
+    end
+    if(`BTN<cnt & cnt<`BTN+1000)begin
+      joypad_select = 0;
+      joypad_start = 1;
+      joypad_dpad_up = 0;
+      joypad_dpad_down = 0;
+      joypad_dpad_left = 0;
+      joypad_dpad_right = 0;
+      joypad_a_button = 0;
+      joypad_b_button = 0;
+    end else begin
+      joypad_select = 0;
+      joypad_start = 0;
+      joypad_dpad_up = 0;
+      joypad_dpad_down = 0;
+      joypad_dpad_left = 0;
+      joypad_dpad_right = 0;
+      joypad_a_button = 0;
+      joypad_b_button = 0;
     end
     if(cnt>`CNTSTOP || pc == `PCSTOP) begin
       $display("finish");

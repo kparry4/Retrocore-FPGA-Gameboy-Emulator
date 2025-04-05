@@ -36,7 +36,7 @@
 
     `define DIV  16'hFF04
     `define TIMA 16'hFF05
-    `define TMA  16'hFF05
+    `define TMA  16'hFF06 
     `define TAC  16'hFF07
 
     `define IF 16'hFF0F

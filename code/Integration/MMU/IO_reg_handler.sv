@@ -36,7 +36,7 @@ module IO_handler(input logic clock,
 
                   input logic stop_inst_hit,
 
-                  output logic [15:0] cpu_out_data,
+                  output logic [7:0] cpu_out_data,
                   output logic        cpu_data_valid,
 
                   output logic restart_after_stop,
@@ -90,7 +90,7 @@ module IO_handler(input logic clock,
     assign even_cpu_write_io_addr = is_even(cpu_addr_write);
     assign cpu_IO_in_data = is_even(cpu_addr_write) ? cpu_in_data[7:0] : cpu_in_data[15:8];
 
-    logic [15:0] out_data;
+    logic [7:0] out_data;
 
     always_comb begin
         casez(cpu_addr_read)
@@ -253,12 +253,21 @@ module IO_handler(input logic clock,
         default: TIMA_TICK_COUNT = 0; //HOPEFULLY unreachable
         endcase
     end
+    logic [3:0] DPAD_R, BTN_R;
+    always_ff @(posedge clock) begin
+      if(reset) {DPAD_R,BTN_R} <= 8'hff;
+      else if(joypad_start|joypad_select|joypad_b_button|joypad_a_button)
+        BTN_R <= {~joypad_start, ~joypad_select, ~joypad_b_button, ~joypad_a_button};
+      else if(joypad_dpad_down|joypad_dpad_up|joypad_dpad_left|joypad_dpad_right)
+        DPAD_R <= {~joypad_dpad_down, ~joypad_dpad_up, ~joypad_dpad_left, ~joypad_dpad_right};
+      else {DPAD_R,BTN_R} <= {DPAD_R,BTN_R};
+    end
 
     always_comb begin
         casex(JOYPAD_R[5:4])
-        2'bx0: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],~joypad_start, ~joypad_select, ~joypad_b_button, ~joypad_a_button};
-        2'b0x: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],~joypad_dpad_down, ~joypad_dpad_up, ~joypad_dpad_left, ~joypad_dpad_right};
-        default: JOYPAD_OUTPUT = 'x; //unreachable?
+        2'bx0: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],DPAD_R};
+        2'b0x: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],BTN_R};
+        default: JOYPAD_OUTPUT = 16'h3f; //unreachable?
         endcase
     end
 
@@ -369,7 +378,7 @@ module IO_handler(input logic clock,
                 JOYPAD_R[7:4] <= cpu_IO_in_data[7:4];
 		            // JOYPAD_R <= cpu_IO_in_data;
             end else begin
-		            JOYPAD_R <= JOYPAD_R;
+		            JOYPAD_R[7:4] <= JOYPAD_R[7:4];
   	        end
 
             //HANDLE DIV: Divider

@@ -151,11 +151,11 @@ module cpu (
 
   // new flag register write data
   always_comb casez(ie[4:0]&iflg[4:0])
-    5'b10000: newiflg = {13'b0,iflg[3:0]};
-    5'b?1000: newiflg = {8'b0,iflg[4],1'b0,iflg[2:0]};
-    5'b??100: newiflg = {8'b0,iflg[4:3],1'b0,iflg[1:0]};
-    5'b???10: newiflg = {8'b0,iflg[4:2],1'b0,iflg[0]};
-    5'b????1: newiflg = {8'b0,iflg[4:1],1'b0};
+    5'b10000: newiflg = {4'b0,iflg[3:0]};
+    5'b?1000: newiflg = {4'b0,iflg[4],4'b0};
+    5'b??100: newiflg = {4'b0,iflg[4:3],3'b0};
+    5'b???10: newiflg = {4'b0,iflg[4:2],2'b0};
+    5'b????1: newiflg = {4'b0,iflg[4:1],1'b0};
     default: newiflg = 'x;
   endcase
   // memory write data calculation
@@ -177,7 +177,7 @@ module cpu (
     // if youre writting pc you better be writting the entire pc
     WDAT_PCL: memWdata = memWadr[0] ? {pc[7:0], memData[7:0]} : pc;
     WDAT_PC: memWdata = memWadr[0] ? pc : {memData[15:8], pc[15:8]}; 
-    WDAT_FLG: memWdata = newiflg; 
+    WDAT_FLG: memWdata = {newiflg,8'b0}; 
     // WADR_RS: memWdata = memWadr[0] ? {n, memData[7:0]} : {memData[15:8], n};
     default: memWdata = 'x;
   endcase
