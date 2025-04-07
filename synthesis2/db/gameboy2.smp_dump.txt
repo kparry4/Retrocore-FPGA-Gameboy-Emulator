@@ -1,0 +1,31 @@
+
+State Machine - |chipInterface|gameboy:dut|PPU_Wrapper:ppu|Pixel_Gen:Pixel_Gen_inst|Render_Sprites:render_sprites_inst|state
+Name state.DUMP_PIXELS state.FETCH_TILE state.SCAN_CHECK state.IDLE state.DONE 
+state.IDLE 0 0 0 0 0 
+state.SCAN_CHECK 0 0 1 1 0 
+state.FETCH_TILE 0 1 0 1 0 
+state.DUMP_PIXELS 1 0 0 1 0 
+state.DONE 0 0 0 1 1 
+
+State Machine - |chipInterface|gameboy:dut|PPU_Wrapper:ppu|Pixel_Gen:Pixel_Gen_inst|Render_BG:render_bg_inst|state
+Name state.BG_DONE state.BG_PROCESS_PIXELS state.BG_FETCH_TILE_DATA state.BG_FETCH_TILE_MAP state.BG_FETCH_TILE state.BG_IDLE 
+state.BG_IDLE 0 0 0 0 0 0 
+state.BG_FETCH_TILE 0 0 0 0 1 1 
+state.BG_FETCH_TILE_MAP 0 0 0 1 0 1 
+state.BG_FETCH_TILE_DATA 0 0 1 0 0 1 
+state.BG_PROCESS_PIXELS 0 1 0 0 0 1 
+state.BG_DONE 1 0 0 0 0 1 
+
+State Machine - |chipInterface|gameboy:dut|PPU_Wrapper:ppu|OAM_Search:oam_search|state
+Name state.OAM_DONE state.OAM_SORT state.OAM_FETCH state.OAM_IDLE 
+state.OAM_IDLE 0 0 0 0 
+state.OAM_FETCH 0 0 1 1 
+state.OAM_SORT 0 1 0 1 
+state.OAM_DONE 1 0 0 1 
+
+State Machine - |chipInterface|gameboy:dut|MMU:mmu|BRAM_handler:memory_units|DMA_controller:dma_guy|state
+Name state.FINISHED state.WRITING state.READING state.IDLE 
+state.IDLE 0 0 0 0 
+state.READING 0 0 1 1 
+state.WRITING 0 1 0 1 
+state.FINISHED 1 0 0 1 
