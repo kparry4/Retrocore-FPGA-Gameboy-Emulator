@@ -69,7 +69,7 @@ module chipInterface(
     localparam HEIGHT = 144;
     integer pixel_count;
 
-    reg[1:0] frame_buffer [0:HEIGHT-1][0:WIDTH-1];
+    reg[1:0] frame_buffer [0:HEIGHT-1][0:WIDTH-1]; /* synthesis ramstyle = "M9K" */ 
     integer r, c;
 
     // instantiate vga module
