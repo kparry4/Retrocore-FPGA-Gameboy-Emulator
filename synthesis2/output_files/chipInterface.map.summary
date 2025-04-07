@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Mon Apr  7 17:55:21 2025
+Quartus Prime Version : 23.1std.1 Build 993 05/14/2024 SC Standard Edition
+Revision Name : chipInterface
+Top-level Entity Name : chipInterface
+Family : Cyclone IV E
+Total logic elements : 10,272
+    Total combinational functions : 7,627
+    Dedicated logic registers : 3,439
+Total registers : 3439
+Total pins : 173
+Total virtual pins : 0
+Total memory bits : 986,304
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0
