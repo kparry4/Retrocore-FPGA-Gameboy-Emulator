@@ -25,6 +25,7 @@ module chipInterface(
 
     //inputs into gameboy
     logic rst, unsync_reset;
+	 logic vga_clock;
     assign unsync_reset = ~KEY[0];
     logic [7:0] LY;
 
@@ -42,28 +43,17 @@ module chipInterface(
     //outputs from gameboy
     logic [1:0] frame_pixel;
     logic frame_pixel_valid;
+	 logic vga_wren;
 
 
     //misc assigns
     assign LY = 8'd01;
 
-    //chip interface assigns
-
-//    assign VGA_R = 8'd1;
-//    assign VGA_G = 8'd1;
-//    assign VGA_B = 8'd1;
-//
-//    assign VGA_BLANK_N = 1'b1;
-//    assign VGA_CLK = CLOCK_50;
-//    assign VGA_SYNC_N = 1'b1;
-//    assign VGA_VS = 1'b1;
-//    assign VGA_HS = 1'b1;
-//
     assign LEDR[7:0] = GPIO[7:0];
     assign LEDR[17:8] = '0;
     assign LEDG = frame_pixel_valid;
-
-
+	 
+	 assign vga_clock = CLOCK3_50;
 
     always_ff @(posedge CLOCK3_50) begin
         rst <= unsync_reset;
@@ -76,13 +66,14 @@ module chipInterface(
     integer pixel_count;
 
     integer r, c;
+	 
 
 
-    vga v1(.CLOCK_50(CLOCK3_50), .row(vga_row), .col(vga_col), .HS(VGA_HS), .VS(VGA_VS), .blank, .reset());
+    vga #(20) v1(.CLOCK_50(vga_clock), .row(vga_row), .col(vga_col), .HS(VGA_HS), .VS(VGA_VS), .blank, .reset());
     // Connect VGA active low signals
     assign VGA_BLANK_N = ~blank;
     assign VGA_SYNC_N = 1'b0;
-    assign VGA_CLK = ~CLOCK3_50;
+    assign VGA_CLK = ~vga_clock;
 
     assign VGA_R = vga_color[23:16];
     assign VGA_G = vga_color[15:8];
@@ -90,7 +81,6 @@ module chipInterface(
 
     logic [23:0] vga_color, vga_color_pixel;
     logic [15:0] frame_buffer_pixel; //NOTE THAT THIS IS 2 BITS WIDE ACTUALLY BC NO COLOUR
-	
 	 assign r = pixel_count / `WIDTH;
     assign c = pixel_count % `WIDTH;
 
@@ -100,7 +90,8 @@ module chipInterface(
         end else begin
             vga_color = 24'hFF_00_00;
         end
-	  end
+	 end
+	  
 	  
 	  always_comb begin
        case (frame_buffer_pixel)
@@ -118,6 +109,16 @@ module chipInterface(
     gameboy dut (.clk (CLOCK_50), //8Mhz
                 .clk2(CLOCK2_50), //4Mhz
                 .*);
+					 
+	  logic[1:0] test_pixel;
+	  logic[2:0] counter;
+	  always_ff@(posedge CLOCK2_50) begin
+			if(frame_pixel_valid)begin
+				test_pixel <= 2'b11;
+			end else begin
+				test_pixel <= 2'b00;
+			end
+	  end
 
 
      FRAME_BUFFER frame ( .rdaddress( GET_FRAME_ADDR(vga_row, vga_col) ),
@@ -125,7 +126,7 @@ module chipInterface(
                          .q(frame_buffer_pixel),
                          .wraddress( GET_FRAME_ADDR(r, c) ),
                          .wrclock(CLOCK2_50), //4 Mhz
-                         .wren(frame_pixel_valid),
+                         .wren(vga_wren),
                          .data(frame_pixel));
 
     SevenSegmentDisplayWithHex hi (
@@ -142,13 +143,18 @@ module chipInterface(
     always_ff @(posedge CLOCK2_50) begin
         if(rst) begin
             pixel_count <= 0;
+				vga_wren <= '0;
         end else begin
             if(rst | pixel_count >= `WIDTH*`HEIGHT) begin
                 pixel_count <= '0;
+					 vga_wren <= '0;
             end else if(frame_pixel_valid) begin
                 if(r < `HEIGHT) begin
                     pixel_count <= pixel_count + 1;
-                end
+						  vga_wren <= '1;
+                end else begin 
+						  vga_wren <= '0;
+					 end 
             end
         end
     end

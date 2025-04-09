@@ -1,14 +1,27 @@
 `default_nettype none
 
-module vga
+module vga #(CLOCK_NS = 20)
 (input logic CLOCK_50, reset,
 output logic HS, VS, blank,
 output logic [8:0] row,
 output logic [9:0] col);
 
-logic clear_hs_ct, clear_vs_ct, two_clocks, start_col, start_row;
+ logic clear_hs_ct, clear_vs_ct, two_clocks, start_col, start_row;
  logic [10:0] hs_num_clk;
  logic [19:0] vs_num_clk;
+ 
+ integer vsync = 16.7*(10**6)/CLOCK_NS; //VS (833600 if 50mhz)
+ integer vpulse = 64 *(10**3)/CLOCK_NS; //(3200 if 50 mhz)
+ integer vfront = 320*(10**3)/CLOCK_NS; //(front porch, 16000 if 50mhz)
+ integer vback = 928 *(10**3)/CLOCK_NS; //(back porch, 46400 if 50mhz) 
+ 
+ 
+ integer hsync = 32*(10**3)/CLOCK_NS; //HS (1600 if 50 mhz)
+ integer hpulse = 3.84*(10**3)/CLOCK_NS; //(192 if 50mhz)
+ integer hfront = 640/CLOCK_NS; //(front porch, 32 if 50mhz)
+ integer hback = 1.92*(10**3)/CLOCK_NS; //(back porch, 96 if 50mhz)
+
+ 
 
 
 
@@ -21,10 +34,16 @@ logic clear_hs_ct, clear_vs_ct, two_clocks, start_col, start_row;
 
 
  // Send clear signal to counter every sync pulse period
- MagComp #(11) HS_num_clock (.A(hs_num_clk), .B(11'd1599),
+// MagComp #(11) HS_num_clock (.A(hs_num_clk), .B(11'd1599),
+// .AeqB(clear_hs_ct));
+// MagComp #(20) VS_num_clock (.A(vs_num_clk), .B(20'd833599),
+// .AeqB(clear_vs_ct));
+
+ MagComp #(11) HS_num_clock (.A(hs_num_clk), .B(hsync),
  .AeqB(clear_hs_ct));
- MagComp #(20) VS_num_clock (.A(vs_num_clk), .B(20'd833599),
+ MagComp #(20) VS_num_clock (.A(vs_num_clk), .B(vsync),
  .AeqB(clear_vs_ct));
+
 
  // row counter
  // increment on each clear
@@ -43,27 +62,49 @@ logic clear_hs_ct, clear_vs_ct, two_clocks, start_col, start_row;
  assign two_clocks = hs_num_clk[0];
 
  // HS/VS window check
- range_check #(11) hs_period(.val(hs_num_clk),
- .low(11'd192),
- .high(11'd1599),
+  range_check #(11) hs_period(.val(hs_num_clk),
+ .low(hpulse),
+ .high(hsync),
  .is_between(HS));
+ 
+ //range_check #(11) hs_period(.val(hs_num_clk),
+ //.low(11'd192),
+ //.high(11'd1599),
+ //.is_between(HS));
 
- range_check #(20) vs_period(.val(vs_num_clk),
- .low(20'd3200),
- .high(20'd833599),
+  range_check #(20) vs_period(.val(vs_num_clk),
+ .low(vpulse),
+ .high(vsync),
  .is_between(VS));
+ 
+// range_check #(20) vs_period(.val(vs_num_clk),
+// .low(20'd3200),
+// .high(20'd833599),
+// .is_between(VS));
 
  // Tdisp window check
  range_check #(11) tdisphs_period(.val(hs_num_clk),
- .low(11'd288),
- .high(11'd1567),
- .is_between(start_col));
+											 .low(hback+hpulse),
+											 .high(hsync-hfront),
+											 .is_between(start_col));
+ 
+ 
+ // Tdisp window check
+ //range_check #(11) tdisphs_period(.val(hs_num_clk),
+ //.low(11'd288),
+ //.high(11'd1567),
+ //.is_between(start_col));
 
- range_check #(20) tdispvs_period(.val(vs_num_clk),
- .low(20'd49600),
- .high(20'd817599),
- .is_between(start_row));
 
+ range_check #(20) tdispvs_period( .val(vs_num_clk),
+  											  .low(vback+vpulse),
+											  .high(vsync-vfront),
+											  .is_between(start_row)); 
+
+ //range_check #(20) tdispvs_period(.val(vs_num_clk),h_sync
+ //.low(20'd49600),
+ //.high(20'd817599),
+ //.is_between(start_row));
 
  assign blank = ~(start_col & start_row);
 
