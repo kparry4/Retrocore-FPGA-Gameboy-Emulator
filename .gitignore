@@ -1,3 +1,9 @@
 .DS_Store
 .vscode/
 frame.ppm
+synthesis2/db
+synthesis2/incremental*
+synthesis2/output_files/*
+synthesis2/simulation
+synthesis2/*.bak
+
