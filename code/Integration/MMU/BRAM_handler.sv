@@ -81,11 +81,11 @@ module BRAM_handler(input logic clock,
     always_comb begin
         case(cpu_memory_selector)
         `ROM_SELECT:   cpu_out_data = rom0_out_data;
-        `VRAM_SELECT:  cpu_out_data = vram_out_data_rw;
+        `VRAM_SELECT:  cpu_out_data = vram_out_data_r;
         `EXRAM_SELECT: cpu_out_data = exram_out_data;
         `WRAM_SELECT:  cpu_out_data = wram_out_data;
         `HRAM_SELECT:  cpu_out_data = hram_out_data;
-        `OAM_SELECT:   cpu_out_data = oam_out_data_rw;
+        `OAM_SELECT:   cpu_out_data = oam_out_data_r;
         `INVALID:      cpu_out_data = 8'hFF;
         default:      cpu_out_data = 8'hxx;
         endcase

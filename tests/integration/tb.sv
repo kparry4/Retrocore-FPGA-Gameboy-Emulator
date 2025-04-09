@@ -5,7 +5,7 @@
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 `define PCSTOP 16'hx // tetris 2f2 important
-`define CNTSTOP 2069534//1000000
+`define CNTSTOP 3069534//1000000
 `define BTN 614441//1000000
 `define BTN2 1569534//1000000
 
@@ -13,7 +13,7 @@ module tb;
   string tests[];
   // solution in the first 3 words
   logic [7:0] prog [`INSTRS:0];
-  int cnt=0;
+  logic [64:0] cnt=0;
   int progNum;
   logic [15:0] pc, memData,memAdr;
   string testname;
@@ -138,26 +138,7 @@ module tb;
     if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)) begin
       cnt++;
     end
-    if(`BTN<cnt & cnt<`BTN+1000)begin
-      joypad_select = 0;
-      joypad_start = 1;
-      joypad_dpad_up = 0;
-      joypad_dpad_down = 0;
-      joypad_dpad_left = 0;
-      joypad_dpad_right = 0;
-      joypad_a_button = 0;
-      joypad_b_button = 0;
-    end else begin
-      joypad_select = 0;
-      joypad_start = 0;
-      joypad_dpad_up = 0;
-      joypad_dpad_down = 0;
-      joypad_dpad_left = 0;
-      joypad_dpad_right = 0;
-      joypad_a_button = 0;
-      joypad_b_button = 0;
-    end
-    if(`BTN2<cnt & cnt<`BTN2+1000)begin
+    if((`BTN<cnt & cnt<`BTN+1000) | (`BTN2<cnt & cnt<`BTN2+1000))begin
       joypad_select = 0;
       joypad_start = 1;
       joypad_dpad_up = 0;
