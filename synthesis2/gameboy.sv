@@ -13,7 +13,9 @@ module gameboy(
   input logic joypad_a_button,
   input logic joypad_b_button,
   output logic [1:0] frame_pixel,
-  output logic frame_pixel_valid
+  output logic frame_pixel_valid,
+  output logic[7:0] LCDC_R,
+  output logic [1:0] ppu_mode
 );
   logic ppu_clk=1,cpu_clk=1;
   logic [15:0] memData,mmu_memData;
@@ -25,13 +27,13 @@ module gameboy(
   logic [15:0] memWadr;
   logic memWen;
   logic [7:0] ppu_LY;
-  logic [1:0] ppu_mode;
+  //logic [1:0] ppu_mode;
   logic [15:0] memAdr;
 
 
 
   //PPU bullshit
-  logic[7:0] LCDC_R;
+  //logic[7:0] LCDC_R;
   logic[7:0] STAT_R; //mixed r/w register
   PPU_DATA PPU_R;
 

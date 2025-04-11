@@ -43,6 +43,8 @@ module chipInterface(
     //outputs from gameboy
     logic [1:0] frame_pixel;
     logic frame_pixel_valid;
+	 logic[7:0] LCDC_R;
+	 logic [1:0] ppu_mode;
 	 logic vga_wren;
 
 
@@ -85,7 +87,7 @@ module chipInterface(
     assign c = pixel_count % `WIDTH;
 
     always_comb begin
-        if(vga_row < `HEIGHT*4 & vga_col  < `WIDTH*4) begin
+        if(vga_row < `HEIGHT*3 & vga_col  < `WIDTH*3) begin
             vga_color = vga_color_pixel;
         end else begin
             vga_color = 24'hFF_00_00;
@@ -102,31 +104,33 @@ module chipInterface(
 				  default: vga_color_pixel = 24'h00_FF_00;
         endcase
     end
+	 
+	 logic ppu_clk=0;
+	 
+	  always_ff @(posedge CLOCK_50) begin
+		 // if (rst) begin
+		 //   cpu_clk = clk;
+		 //   cnt = 0;
+		 //   //cpu_ppu = 0;
+		 // end
+		 ppu_clk <= ~ppu_clk;
+	  end	 
 
 
 
 
     gameboy dut (.clk (CLOCK_50), //8Mhz
-                .clk2(CLOCK2_50), //4Mhz
+                .clk2(ppu_clk), //4Mhz
                 .*);
 					 
-	  logic[1:0] test_pixel;
-	  logic[2:0] counter;
-	  always_ff@(posedge CLOCK2_50) begin
-			if(frame_pixel_valid)begin
-				test_pixel <= 2'b11;
-			end else begin
-				test_pixel <= 2'b00;
-			end
-	  end
 
-
-     FRAME_BUFFER frame ( .rdaddress( GET_FRAME_ADDR(vga_row >> 2, vga_col >> 2) ),
+     FRAME_BUFFER frame ( .rdaddress( GET_FRAME_ADDR(vga_row / 3, vga_col / 3) ),
                          .rdclock(CLOCK3_50), //50 Mhz
                          .q(frame_buffer_pixel),
+								 
                          .wraddress( GET_FRAME_ADDR(r, c) ),
-                         .wrclock(CLOCK2_50), //4 Mhz
-                         .wren(1'b0),
+                         .wrclock(ppu_clk), //4 Mhz
+                         .wren(vga_wren),
                          .data(frame_pixel));
 
     SevenSegmentDisplayWithHex hi (
@@ -140,12 +144,12 @@ module chipInterface(
             .BCD0(vga_color[3:0]),
             .HEX7, .HEX6, .HEX5, .HEX4, .HEX3, .HEX2, .HEX1, .HEX0);
 
-    always_ff @(posedge CLOCK2_50) begin
+    always_ff @(posedge ppu_clk) begin
         if(rst) begin
             pixel_count <= 0;
 				vga_wren <= '0;
         end else begin
-            if(rst | pixel_count >= `WIDTH*`HEIGHT) begin
+            if(rst | pixel_count >= `WIDTH*`HEIGHT | ~LCDC_R[7] | ppu_mode==2'b1) begin
                 pixel_count <= '0;
 					 vga_wren <= '0;
             end else if(frame_pixel_valid) begin
