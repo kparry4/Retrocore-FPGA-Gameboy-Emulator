@@ -85,7 +85,7 @@ module chipInterface(
     assign c = pixel_count % `WIDTH;
 
     always_comb begin
-        if(vga_row < `HEIGHT & vga_col  < `WIDTH) begin
+        if(vga_row < `HEIGHT*4 & vga_col  < `WIDTH*4) begin
             vga_color = vga_color_pixel;
         end else begin
             vga_color = 24'hFF_00_00;
@@ -121,12 +121,12 @@ module chipInterface(
 	  end
 
 
-     FRAME_BUFFER frame ( .rdaddress( GET_FRAME_ADDR(vga_row, vga_col) ),
+     FRAME_BUFFER frame ( .rdaddress( GET_FRAME_ADDR(vga_row >> 2, vga_col >> 2) ),
                          .rdclock(CLOCK3_50), //50 Mhz
                          .q(frame_buffer_pixel),
                          .wraddress( GET_FRAME_ADDR(r, c) ),
                          .wrclock(CLOCK2_50), //4 Mhz
-                         .wren(vga_wren),
+                         .wren(1'b0),
                          .data(frame_pixel));
 
     SevenSegmentDisplayWithHex hi (
