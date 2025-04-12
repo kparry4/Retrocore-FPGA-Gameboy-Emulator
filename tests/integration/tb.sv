@@ -5,7 +5,7 @@
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 `define PCSTOP 16'hx // tetris 2f2 important
-`define CNTSTOP 6069534//1000000
+`define CNTSTOP 6069534//10000000
 `define BTN 614441//1000000
 `define BTN2 2569534//1000000
 
@@ -93,6 +93,8 @@ module tb;
       tests = {tests, "Dr.Mario"};
     end if(`TEST == "dmg-acid-test") begin
       tests = {tests, "dmg-acid-test"};
+    end if(`TEST == "link") begin
+      tests = {tests, "link"};
     end if(`TEST == "06") begin
       tests = {tests, "06-ldr,r"}; //241012
     end if(tests[0] == "") begin
@@ -140,7 +142,7 @@ module tb;
     end
     if((`BTN<cnt & cnt<`BTN+100000) | (`BTN2<cnt & cnt<`BTN2+100000))begin
       joypad_select = 0;
-      joypad_start = (`BTN<cnt & cnt<`BTN+100000)|(`BTN2<cnt & cnt<`BTN2+100000);
+      joypad_start = 0;//(`BTN<cnt & cnt<`BTN+100000)|(`BTN2<cnt & cnt<`BTN2+100000);
       joypad_dpad_up = 0;
       joypad_dpad_down = 0;//(`BTN2<cnt & cnt<`BTN2+100000);
       joypad_dpad_left = 0;

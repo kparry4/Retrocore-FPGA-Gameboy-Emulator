@@ -383,6 +383,7 @@ package defs;
       RST_N4,
       HALT, // stop till interupt
       STOP, // off button
+      STOP2, // off button
       DI,    // disable interupt
       EI,    // enable interupt
       INTERUPT,    // enable interupt
