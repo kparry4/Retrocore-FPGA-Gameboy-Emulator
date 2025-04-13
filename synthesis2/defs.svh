@@ -1,7 +1,6 @@
 `ifndef DEFS
 `define DEFS
 package defs;
-  `define DOC
   
   typedef enum logic [2:0] {
       PC_1,                 // PC + 1
