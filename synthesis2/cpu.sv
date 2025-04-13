@@ -12,7 +12,11 @@ module cpu (
   output logic [15:0] memWdata,
   output logic [15:0] memWadr,
   output logic memWen,
-  output logic [15:0] memAdr
+  output logic [15:0] memAdr,
+  output logic [15:0] pc,
+  output logic [15:0] npc,
+  output logic done
+  
 );  
   logic [7:0] rs1, rs2;
   logic [7:0] src1, src2;
@@ -25,10 +29,10 @@ module cpu (
   logic [3:0] flg;
   logic [7:0] newiflg;
   logic carry, hcarry, nflg, jmp, zflg;
-  logic [15:0] npc, pc;
+  //logic [15:0] npc, pc;
   ctrl_t ctrl;
   logic preAdr; // lsb of previous acessed memory
-
+  assign done = ctrl.done;
 //*** had to add a new adder for the pc in order to keep 
 //    cycle accuracy with our diffrent type of memory
 //    the other option was adding a register for rs1

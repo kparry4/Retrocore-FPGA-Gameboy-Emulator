@@ -1,5 +1,4 @@
 // `default_nettype none
-// `define DOC
 `include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
@@ -526,10 +525,6 @@ module IO_handler(input logic clock,
                 PPU_R <= PPU_R;
             end
             PPU_R.LY_R <= (LCDC_R[7]) ? ppu_LY : 8'd0; // ***
-                      `ifdef DOC
-            PPU_R.LY_R <= 16'h90;//***KEP
-                      `endif
-
             if(cpu_addr_write == `STAT && cpu_wren) begin
                 STAT_R[1:0] <= (LCDC_R[7]) ? ppu_mode : 2'b0;
                 STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R);
@@ -539,8 +534,6 @@ module IO_handler(input logic clock,
                 STAT_R[2] <= (PPU_R.LY_R == PPU_R.LYC_R);
                 STAT_R[7:3] <= {1'b1,STAT_R[6:3]};
             end
-
-
 
 
             if(cpu_addr_write == `IE && cpu_wren) begin

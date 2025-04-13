@@ -17,7 +17,6 @@ module regfile (
   logic [11:0][7:0] regs;
   always_ff @(posedge clk) begin : rf
     if(rst) begin 
-      // `ifdef DOC
        regs[A] = 8'h01;
        regs[F] = 8'hB0;
        regs[B] = 8'h00;

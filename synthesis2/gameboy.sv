@@ -1,9 +1,8 @@
-`define DOC
+
 `include "RegisterPkg.svh"
 module gameboy(
   input logic clk,clk2, //*** make a second clock
   input  logic rst,
-  input logic [7:0] LY,
   input logic joypad_select,
   input logic joypad_start,
   input logic joypad_dpad_up,
@@ -17,8 +16,10 @@ module gameboy(
   output logic[7:0] LCDC_R,
   output logic [1:0] ppu_mode,
   output logic [15:0] pc,
-  output logic [15:0] npc
-  
+  output logic [15:0] npc,
+  output logic done,
+  output logic [31:0] instr_counter,
+  output logic [7:0] ppu_LY
 );
   logic ppu_clk=1,cpu_clk=1;
   logic [15:0] memData,mmu_memData;
@@ -29,7 +30,6 @@ module gameboy(
   logic [15:0] memWdata;
   logic [15:0] memWadr;
   logic memWen;
-  logic [7:0] ppu_LY;
   //logic [1:0] ppu_mode;
   logic [15:0] memAdr;
 
@@ -63,6 +63,20 @@ module gameboy(
     if(cnt[0]) ppu_clk = ~ppu_clk;
     cnt++;
   end
+  
+  		
+		
+	always_ff @(posedge cpu_clk) begin
+		if(rst) begin
+			instr_counter <= '0;
+		 end else begin
+		 	if(done) begin
+				instr_counter <= instr_counter + 32'd1;
+			 end else begin
+				instr_counter <= instr_counter;
+			 end
+ 		end
+	end
 
 
   cpu cpu(.clk(cpu_clk),
@@ -76,8 +90,9 @@ module gameboy(
           .memWadr,
           .memWen,
           .memAdr,
-			 .pc,
-			 .npc);
+		  .pc,
+		  .npc,
+	 	  .done);
 
   MMU mmu(.CLK_4MHZ(clk),
           .ppu_clock(clk2),//*** change

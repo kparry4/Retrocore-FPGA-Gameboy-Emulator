@@ -11,7 +11,7 @@
 module chipInterface(
     input logic CLOCK_50, //8Mhz
     input logic CLOCK2_50, //4Mhz
-	input logic CLOCK3_50, //50 Mhz
+	input logic CLOCK3_50, //gameboy:dut|50 Mhz
     input logic [3:0] KEY,
     input logic [35:0] GPIO,
     input logic [17:0] SW,
@@ -25,9 +25,16 @@ module chipInterface(
 
     //inputs into gameboy
     logic rst, unsync_reset;
+	 logic clk_key, unsync_key;
 	 logic vga_clock;
     assign unsync_reset = ~KEY[2] || SW[0];
-    logic [7:0] LY;
+	 assign unsync_key = ~KEY[3] || SW[1];
+	 
+	 logic [31:0] instr_counter, time_ticks;
+	 logic fake_clock;
+
+	 localparam integer clock_freq = 8_000_000;
+    localparam integer DIV_TICK_COUNT = clock_freq/2048; // (an 256hz clock)
 
 
     logic joypad_select;
@@ -44,25 +51,26 @@ module chipInterface(
     logic [1:0] frame_pixel;
     logic frame_pixel_valid;
 	 logic[7:0] LCDC_R;
+	 logic[7:0] ppu_LY;
 	 logic [15:0] pc, npc;
 	 logic [1:0] ppu_mode;
 	 logic vga_wren;
+	 logic done;
 
-
-    //misc assigns
-    assign LY = 8'd01;
 
     assign LEDR[7:0] = GPIO[7:0];
     assign LEDR[16:8] = '0;
     assign LEDG[0] = frame_pixel_valid;
 	 assign LEDG[1] = rst;
-	 assign LEDG[8:2] = '0;
+	 assign LEDG[2] = instr_counter >= 32'd8000;
+	 assign LEDG[8:3] = '0;
 	 assign LEDR[17] = rst;
 
 	 assign vga_clock = CLOCK3_50;
 
     always_ff @(posedge CLOCK3_50) begin
         rst <= unsync_reset;
+		  clk_key <= unsync_key;
     end
 
     logic HS, VS, blank;
@@ -113,15 +121,25 @@ module chipInterface(
 
 	  always_ff @(posedge CLOCK_50) begin
 		 ppu_clk <= ~ppu_clk;
-	  end
+		 
+		 if(time_ticks == DIV_TICK_COUNT - 1) begin
+			  time_ticks <= '0;
+			  fake_clock <= ~fake_clock;
+		 end else begin
+			  time_ticks <= time_ticks + 1;
+			  fake_clock <= fake_clock;
+		 end
+ 
+end
+	  
+	  
 
 
 
 
-    gameboy dut (.clk (CLOCK_50), //8Mhz
+    gameboy dut (.clk (fake_clock), //8Mhz
                 .clk2(ppu_clk), //4Mhz
 					 .rst,
-					 .LY,
 					 .joypad_select(1'b0),
 					 .joypad_start(1'b0),
 					 .joypad_dpad_up(1'b0),
@@ -133,7 +151,11 @@ module chipInterface(
 					 .frame_pixel,
 					 .frame_pixel_valid,
 					 .LCDC_R,
-					 .ppu_mode);
+					 .ppu_mode,
+			 		 .done,
+					 .instr_counter,
+					 .pc,
+					 .ppu_LY);
 
 
      FRAME_BUFFER frame ( .rdaddress( GET_FRAME_ADDR(vga_row / 3, vga_col / 3) ),
@@ -146,10 +168,10 @@ module chipInterface(
                          .data(frame_pixel));
 
     SevenSegmentDisplayWithHex hi (
-            .BCD7(npc[15:12]),
-            .BCD6(npc[11:8]),
-            .BCD5(npc[7:4]),
-            .BCD4(npc[3:0]),
+            .BCD7(4'b0),
+            .BCD6(4'b0),
+            .BCD5(ppu_LY[7:4]),
+            .BCD4(ppu_LY[3:0]),
 				
             .BCD3(pc[15:12]),
             .BCD2(pc[11:8]),
