@@ -28,6 +28,8 @@ add wave -group {PIXMIX} -noupdate /tb/gb/ppu/pixel_mixer_inst/*
 add wave -group {PIXGEN} -noupdate /tb/gb/ppu/Pixel_Gen_inst/*
 add wave -group {OAMSEARCH} -noupdate /tb/gb/ppu/oam_search/*
 add wave -group {BG} -noupdate /tb/gb/ppu/Pixel_Gen_inst/render_bg_inst/*
+add wave -group {SPRITE_RENDER} -noupdate /tb/gb/ppu/Pixel_Gen_inst/render_sprites_inst/*
+add wave -noupdate /tb/gb/ppu/Pixel_Gen_inst/render_sprites_inst/sprites
 add wave -group {Decode} -noupdate /tb/gb/cpu/decoder/*
 #add wave -group {RegFile} -noupdate /tb/gb/cpu/regfile/*
 add wave -noupdate /tb/prog
