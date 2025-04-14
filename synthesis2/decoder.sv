@@ -2348,6 +2348,7 @@ module decoder (
         ctrl.adrSel = ADR_INT;
         ctrl.done = 1;
       end
+		default:begin ctrl.done = 0; ctrl.pcSel = PC_DC;end
 
     endcase
   end

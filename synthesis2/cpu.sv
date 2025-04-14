@@ -72,7 +72,7 @@ module cpu (
     PC_RS: npc = rs16+1;
     PC_PRE: npc = pre+1;
     PC_INT: npc = intAdr+1;
-    default: npc = 'x;
+    default: npc = 0;
   endcase
   always_comb case(ctrl.cc)
     CC_NZ: jmp = ~zflg;

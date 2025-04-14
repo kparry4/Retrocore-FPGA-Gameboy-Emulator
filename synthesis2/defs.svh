@@ -9,7 +9,7 @@ package defs;
       PC_IDU,                 // PC + instrSz
       PC_PRE,                 // PC + instrSz
       PC_INT,                 // PC + instrSz
-      PC_DC = 'x            // Don't care value
+      PC_DC            // Don't care value
   } pcSel_t;
 
   typedef enum logic [2:0] {
@@ -389,7 +389,7 @@ package defs;
       INTERUPT3,
       INTERUPT4,
       INTERUPT5,
-      BAD = 'x
+      BAD
   } mpc_t;
 endpackage
 

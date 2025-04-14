@@ -31,10 +31,10 @@ module chipInterface(
 	 assign unsync_key = ~KEY[3] || SW[1];
 	 
 	 logic [31:0] instr_counter, time_ticks;
-	 logic fake_clock;
-
+	 logic stop_collecting;
+	 
 	 localparam integer clock_freq = 8_000_000;
-    localparam integer DIV_TICK_COUNT = clock_freq/2048; // (an 256hz clock)
+    localparam integer DIV_TICK_COUNT = clock_freq/1024; // (an 256hz clock)
 
 
     logic joypad_select;
@@ -62,7 +62,7 @@ module chipInterface(
     assign LEDR[16:8] = '0;
     assign LEDG[0] = frame_pixel_valid;
 	 assign LEDG[1] = rst;
-	 assign LEDG[2] = instr_counter >= 32'd8000;
+	 assign LEDG[2] = stop_collecting;
 	 assign LEDG[8:3] = '0;
 	 assign LEDR[17] = rst;
 
@@ -71,6 +71,16 @@ module chipInterface(
     always_ff @(posedge CLOCK3_50) begin
         rst <= unsync_reset;
 		  clk_key <= unsync_key;
+		  if(rst) begin
+			stop_collecting <= 1'b0;
+		  end else begin
+			if(instr_counter > 32'd10_000) begin //614440 FOR DR MARIO FRAME
+				stop_collecting <= 1'b1;
+			end else begin
+				stop_collecting <= stop_collecting;
+			end
+		  
+		  end
     end
 
     logic HS, VS, blank;
@@ -118,6 +128,8 @@ module chipInterface(
     end
 
 	 logic ppu_clk=0;
+	 logic fake_clock=0;
+	 logic ppu_fake_clk=0;
 
 	  always_ff @(posedge CLOCK_50) begin
 		 ppu_clk <= ~ppu_clk;
@@ -129,15 +141,17 @@ module chipInterface(
 			  time_ticks <= time_ticks + 1;
 			  fake_clock <= fake_clock;
 		 end
+	 end
+		 
+		 
+		always_ff @(posedge fake_clock) begin
+			ppu_fake_clk <= ~ppu_fake_clk;
+		end
  
-end
 	  
 	  
 
-
-
-
-    gameboy dut (.clk (fake_clock), //8Mhz
+    gameboy dut (.clk (CLOCK_50), //8Mhz
                 .clk2(ppu_clk), //4Mhz
 					 .rst,
 					 .joypad_select(1'b0),
