@@ -45,6 +45,15 @@ module chipInterface(
     logic joypad_dpad_right;
     logic joypad_a_button;
     logic joypad_b_button;
+	 
+	 assign joypad_select =     ~GPIO[3];
+	 assign joypad_start =      ~GPIO[4];
+	 assign joypad_dpad_up =    ~GPIO[1];
+	 assign joypad_dpad_down =  ~GPIO[5];
+	 assign joypad_dpad_left =  ~GPIO[2];
+	 assign joypad_dpad_right = ~GPIO[0];
+	 assign joypad_a_button =   ~GPIO[6];
+	 assign joypad_b_button =   ~GPIO[7];
 
 
     //outputs from gameboy
@@ -150,18 +159,27 @@ module chipInterface(
  
 	  
 	  
-
+	/*
+						 .joypad_select(joypad_select),
+					 .joypad_start(joypad_start),
+					 .joypad_dpad_up(joypad_dpad_up),
+					 .joypad_dpad_down(joypad_dpad_down),
+					 .joypad_dpad_left(joypad_dpad_left),
+					 .joypad_dpad_right(joypad_dpad_right),
+					 .joypad_a_button(joypad_a_button),
+					 .joypad_b_button(joypad_b_button),
+	*/
     gameboy dut (.clk (CLOCK_50), //8Mhz
                 .clk2(ppu_clk), //4Mhz
 					 .rst,
-					 .joypad_select(1'b0),
-					 .joypad_start(1'b0),
-					 .joypad_dpad_up(1'b0),
-					 .joypad_dpad_down(1'b0),
-					 .joypad_dpad_left(1'b0),
-					 .joypad_dpad_right(1'b0),
-					 .joypad_a_button(1'b0),
-					 .joypad_b_button(1'b0),
+					 .joypad_select,
+					 .joypad_start,
+					 .joypad_dpad_up,
+					 .joypad_dpad_down,
+					 .joypad_dpad_left,
+					 .joypad_dpad_right,
+					 .joypad_a_button,
+					 .joypad_b_button,
 					 .frame_pixel,
 					 .frame_pixel_valid,
 					 .LCDC_R,
