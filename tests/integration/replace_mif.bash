@@ -6,7 +6,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-ROM_PATH="../../code/Integration/MMU/BRAMS/ROM_BANK.v"
+ROM_PATH="../../synthesis2/BRAMS/ROM_BANK.v"
 NEW_FILE_NAME="$1"
 NEW_PATH="../../code/Integration/MMU/mif_files/$NEW_FILE_NAME.mif"
 

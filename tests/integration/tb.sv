@@ -5,7 +5,7 @@
 `define PROG(a) {prog[(a&~1)+1],prog[(a&~1)]}
 import defs::*;
 `define PCSTOP 16'hx // tetris 2f2 important
-`define CNTSTOP 6069534//10000000
+`define CNTSTOP 614441//10000000
 `define BTN 614441//1000000
 `define BTN2 2569534//1000000
 
@@ -54,7 +54,7 @@ module tb;
     #1; // little memory delay
     // memData = tmp;
   end
-  gameboy gb (.clk,.clk2, .rst, .frame_pixel, .LY, .frame_pixel_valid,
+  gameboy gb (.clk,.clk2, .rst, .frame_pixel, .frame_pixel_valid,
           .joypad_select,
           .joypad_start,
           .joypad_dpad_up,

@@ -31,10 +31,6 @@ package defs;
       WADR_DC = 'x            // Don't care value
   } wadr_sel_t;
 
-  typedef enum logic [2:0] {
-      DAT_NOP,               // NOP
-      DAT_DC = 'x            // Don't care value
-  } data_sel_t;
 
   typedef enum logic [2:0] {
       IDU_PC,                // PC as input

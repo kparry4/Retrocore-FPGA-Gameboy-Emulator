@@ -44,32 +44,30 @@ module PPU_Mode_controller (
   output logic         full_frame_done
 );
 
-  
-  logic LCD_disabled_prev; 
 
-  always_ff @(posedge clk) begin 
-    if (LCDC[7]) begin 
+  logic LCD_disabled_prev;
+
+  always_ff @(posedge clk) begin
+    if (LCDC[7]) begin
       LCD_disabled_prev <= (full_frame_done) ? 1'b0 : LCD_disabled_prev;
-    end else begin 
+    end else begin
       LCD_disabled_prev <= 1'b1;
-    end 
-  end 
+    end
+  end
 
   // Update mode register on each clock.
   always_ff @(posedge clk) begin
-    scx_latched <= scx_latched;
-    scy_latched <= scy_latched;
     if (reset) begin
       mode <= 2'd2; // start in OAM search mode
-      scx_latched <= SCX;
-      scy_latched <= SCY;
-    end else if (LCD_disabled_prev && line == 8'd0) begin 
-      if (dot < 9'd76) 
+      // scx_latched <= SCX;
+      // scy_latched <= SCY;
+    end else if (LCD_disabled_prev && line == 8'd0) begin
+      if (dot < 9'd76)
         mode <= 2'd0;
       else if((~scanline_processed))
         mode <= 2'd3;
       else
-        mode <= 2'd0; 
+        mode <= 2'd0;
     end else begin
       if(line < 8'd144) begin
         if(dot < 9'd80)
@@ -92,15 +90,18 @@ module PPU_Mode_controller (
       line       <= 8'h0;
       fifo_clear <= 1'b1;
       full_frame_done <= 1'b0;
+      scx_latched <= SCX;
+      scy_latched <= SCY;
     end else if (LCD_disabled_prev && line == 8'd0) begin
       fifo_clear <= (dot < 9'd76);
       if(dot < 9'd451) begin
         dot <= dot + 9'd1;
         full_frame_done <= 1'b0;
-		  line <= line;
       end
       else begin
         dot <= 9'd0;
+        scx_latched <= SCX;
+        scy_latched <= SCY;
         if(line < 8'd149) begin
           line <= line + 8'd1;
           full_frame_done <= 1'b0;
@@ -109,15 +110,16 @@ module PPU_Mode_controller (
           full_frame_done <= 1'bx;
         end
       end
-    end else begin 
+    end else begin
       fifo_clear <= (dot < 9'd80);
       if(dot < 9'd455) begin
         dot <= dot + 9'd1;
         full_frame_done <= 1'b0;
-		  line <= line;
       end
       else begin
         dot <= 9'd0;
+        scx_latched <= SCX;
+        scy_latched <= SCY;
         if(line < 8'd153) begin
           line <= line + 8'd1;
           full_frame_done <= 1'b0;
@@ -418,7 +420,7 @@ endmodule
 module Render_BG (
   input  logic         clk,
   input  logic         reset,
-  input  logic         start,
+  input  logic         start, full_frame_done,
   input  logic         fifo_clear,
   input  logic [7:0]   LCDC,      // Bit 0 enables BG, bit 4 selects tile data addressing mode,
                                   // bit 3 selects BG tile map; Bit 5 enables window; Bit 6 selects window map.
@@ -479,21 +481,37 @@ module Render_BG (
   // Window mode is active if LCDC[5] is set, LY >= WY, and (SCX + pixel_total) >= (WX - 7)
   logic use_window;
   always_comb begin
-    use_window = (LCDC[5] && (LY >= WY) && (pixel_total >= (WX - 7)));
+    use_window = (LCDC[5] && (LY >= WY) && ((pixel_total + 7) >= (WX)));
   end
 
   // Compute the effective screen X coordinate.
   // BG mode: (SCX + pixel_total)
   // Window mode: (WX - 7) + pixel_total
   logic [8:0] screen_x;
-  assign screen_x = (use_window ? (pixel_total + (WX - 7)) : (SCX + pixel_total));
+  assign screen_x = (use_window ? (pixel_total) : (SCX + pixel_total));
+
+  // Window internal counter
+  logic [7:0] wly, wly_reg;
+  logic prev_use_window;
+  always_ff @(posedge clk) begin
+    wly_reg <= wly;
+    if (reset || full_frame_done) begin
+      wly <= 8'd0;
+      prev_use_window <= 1'b0;
+    end else begin
+      if (!prev_use_window && use_window)
+        wly <= wly + 1;
+      prev_use_window <= use_window;
+    end
+  end
+
 
   // Compute the effective Y coordinate.
   // BG mode: LY + SCY; Window mode: LY - WY.
   logic [7:0] bg_y;
   assign bg_y = LY + SCY;
   logic [7:0] effective_line;
-  assign effective_line = (use_window ? (LY - WY) : bg_y);
+  assign effective_line = (use_window ? ((!prev_use_window && use_window) ? wly : wly_reg) : bg_y);
 
   //==================================================================
   // Tile Map Coordinate Calculation
@@ -506,7 +524,7 @@ module Render_BG (
       tile_y = (bg_y >> 3) & 5'b11111;
     end else begin
       tile_x = (((screen_x - (WX - 7)) >> 3)) & 5'b11111;
-      tile_y = ((LY - WY) >> 3) & 5'b11111;
+      tile_y = (effective_line >> 3) & 5'b11111;
     end
   end
 
@@ -583,7 +601,7 @@ module Render_BG (
   end
 
   //==================================================================
-  // Main State Machine (Data Captured on Clock Edge)
+  // Main State Machine
   //==================================================================
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
@@ -675,7 +693,7 @@ module Render_BG (
   end
 
   //==================================================================
-  // Next State Logic (Combinational)
+  // Next State Logic
   //==================================================================
   always_comb begin
     if (!LCDC[0]) begin
@@ -835,8 +853,7 @@ module Render_Sprites (
     end else begin
       state <= next_state;
       if (state == IDLE && start) begin
-        // Start at SCX (sprites use SCX as horizontal offset).
-        x_coord <= SCX;
+        x_coord <= 10'd0;
         pixel_index <= 3'd0;
         sprite_push <= 1'b0;
       end
@@ -848,7 +865,7 @@ module Render_Sprites (
           candidate_pixel.y <= LY + SCY;
           candidate_pixel.pixel <= 2'b00;
           candidate_pixel.palette <= 8'd0;
-          candidate_pixel.sprite_priority <= 1'b0;
+          candidate_pixel.sprite_priority <= 1'b1;
           // Advance x_coord by one pixel.
           x_coord <= x_coord + 1;
           sprite_push <= 1'b1;
@@ -866,13 +883,15 @@ module Render_Sprites (
         // Dump sprite pixel data.
         candidate_pixel.x <= x_coord + pixel_index;
         candidate_pixel.y <= LY + SCY;
-        if (sprites[candidate_index].flags[5]) begin
+        if (~LCDC[1]) begin
+            candidate_pixel.pixel <= 2'b00;
+        end else if (sprites[candidate_index].flags[5]) begin
             candidate_pixel.pixel <= { tile_data_word[pixel_index], tile_data_word[8 + pixel_index] };
         end else begin
             candidate_pixel.pixel <= { tile_data_word[7 - pixel_index], tile_data_word[15 - pixel_index] };
         end
         candidate_pixel.palette <= (sprites[candidate_index].flags[4]) ? OBP1 : OBP0;
-        candidate_pixel.sprite_priority <= sprites[candidate_index].flags[7];
+        candidate_pixel.sprite_priority <= (LCDC[1]) ? sprites[candidate_index].flags[7] : 1'b1;
         sprite_push <= 1'b1;
         if (pixel_index < 3'd7) begin
           pixel_index <= pixel_index + 1;
@@ -916,12 +935,56 @@ module Render_Sprites (
   end
 
   // Update row_offset on SCAN_CHECK.
-  always_ff @(posedge clk) begin
-    if (state == SCAN_CHECK)
-      row_offset <= (sprites[candidate_index].flags[6]) ? (((8'd7 - (LY - (sprites[candidate_index].y)) & 8'h07)) << 1) : ((LY - (sprites[candidate_index].y)) & 8'h07) << 1;
+  /*
+  logic [7:0] sprite_height;
+  always_comb begin
+    sprite_height = (LCDC[2] ? 8'd16 : 8'd8) - 8'd1;
   end
 
+  always_ff @(posedge clk) begin
+    if (state == SCAN_CHECK)
+      row_offset <= (sprites[candidate_index].flags[6]) ? ((( (sprite_height) - (LY - (sprites[candidate_index].y)) & 8'd7)) << 1) : ((LY - (sprites[candidate_index].y)) & 8'd7) << 1;
+  end
+  */
+ logic [7:0] sprite_line;
+logic [2:0] tile_line;
+logic [7:0] effective_tile_index;
+
+always_comb begin
+  sprite_line = LY - sprites[candidate_index].y;
+  // 8x8 sprites
+  if (!LCDC[2]) begin
+    tile_line = sprite_line[2:0];
+    if (sprites[candidate_index].flags[6])
+      tile_line = 3'd7 - tile_line;
+    effective_tile_index = sprites[candidate_index].tile_index;
+    row_offset = tile_line << 1;
+  end else begin
+  // 8x16 sprites
+    if (sprite_line < 8) begin
+      if (sprites[candidate_index].flags[6]) begin
+        effective_tile_index = (sprites[candidate_index].tile_index & 8'hFE) + 1;
+        tile_line = 3'd7 - sprite_line[2:0];
+      end else begin
+        effective_tile_index = sprites[candidate_index].tile_index & 8'hFE;
+        tile_line = sprite_line[2:0];
+      end
+    end else begin
+      if (sprites[candidate_index].flags[6]) begin
+        effective_tile_index = sprites[candidate_index].tile_index & 8'hFE;
+        tile_line = 3'd7 - ((sprite_line - 8'd8) & 8'd7);
+      end else begin
+        effective_tile_index = (sprites[candidate_index].tile_index & 8'hFE) + 1;
+        tile_line = (sprite_line - 8'd8) & 8'd7;
+      end
+    end
+    row_offset = tile_line << 1;
+  end
+end
+
+
   // Memory interface for sprite tile data.
+  /*
   logic [7:0] effective_tile_index;
   always_comb begin
     if (LCDC[2])    // If using 8x16 sprites, force the LSB to 0.
@@ -929,6 +992,7 @@ module Render_Sprites (
     else
       effective_tile_index = sprites[candidate_index].tile_index;
   end
+  */
 
   assign port_addr = (state == SCAN_CHECK && candidate_valid) ?
          (16'h8000 + (effective_tile_index * 16) + row_offset) : 16'h8000;
@@ -981,7 +1045,7 @@ endmodule
 module Pixel_Gen (
   input  logic         clk,
   input  logic         reset,
-  input  logic         start,
+  input  logic         start, full_frame_done,
   input  logic         fifo_clear,
   input  logic [7:0]   LCDC,
   input  logic [7:0]   SCX,
@@ -1029,6 +1093,7 @@ module Pixel_Gen (
     .clk(clk),
     .reset(reset),
     .start(start),
+    .full_frame_done,
     .fifo_clear(fifo_clear),
     .LCDC(LCDC),
     .SCX(SCX),
@@ -1163,7 +1228,15 @@ module Pixel_Mixer (
     end
     else begin
       pixel_out_valid <= fetch_pixel;
-      if (sprite_pixel_in.sprite_priority | sprite_pixel_in.pixel != 2'b0)
+      if (~sprite_pixel_in.sprite_priority && sprite_pixel_in.pixel != 2'b00)
+        case(sprite_pixel_in.pixel)
+          2'd0: pixel_out = sprite_pixel_in.palette[1:0];
+          2'd2: pixel_out = sprite_pixel_in.palette[3:2];
+          2'd1: pixel_out = sprite_pixel_in.palette[5:4];
+          2'd3: pixel_out = sprite_pixel_in.palette[7:6];
+          default: pixel_out = 2'bx;
+        endcase
+      else if (bg_pixel_in.pixel == 2'b00)
         case(sprite_pixel_in.pixel)
           2'd0: pixel_out = sprite_pixel_in.palette[1:0];
           2'd2: pixel_out = sprite_pixel_in.palette[3:2];
@@ -1208,57 +1281,6 @@ module DMG_Color_Mapper(
   end
 endmodule
 
-//==================================================================
-// Module: VGA_Controller
-// Description: Generates VGA sync signals and outputs final VGA color.
-// Inputs:
-//   clk, reset, fb_pixel - final 2-bit pixel index.
-// Outputs:
-//   hsync, vsync - VGA sync signals.
-//   vga_color    - 12-bit VGA color output.
-//==================================================================
-module VGA_Controller (
-  input  logic clk,
-  input  logic reset,
-  input  logic [1:0] fb_pixel,
-  output logic hsync,
-  output logic vsync,
-  output logic [23:0] vga_color
-);
-  parameter H_ACTIVE = 160, H_FRONT = 8, H_SYNC = 16, H_BACK = 8;
-  parameter V_ACTIVE = 144, V_FRONT = 4, V_SYNC = 2, V_BACK = 4;
-  parameter H_TOTAL = H_ACTIVE + H_FRONT + H_SYNC + H_BACK;
-  parameter V_TOTAL = V_ACTIVE + V_FRONT + V_SYNC + V_BACK;
-
-  logic [9:0] h_count, v_count;
-
-  always_ff @(posedge clk or posedge reset) begin
-    if(reset) begin
-      h_count <= 0;
-      v_count <= 0;
-    end else begin
-      if(h_count == H_TOTAL - 1) begin
-        h_count <= 0;
-        if(v_count == V_TOTAL - 1)
-          v_count <= 0;
-        else
-          v_count <= v_count + 1;
-      end else begin
-        h_count <= h_count + 1;
-      end
-    end
-  end
-
-  assign hsync = ~((h_count >= (H_ACTIVE + H_FRONT)) &&
-                   (h_count < (H_ACTIVE + H_FRONT + H_SYNC)));
-  assign vsync = ~((v_count >= (V_ACTIVE + V_FRONT)) &&
-                   (v_count < (V_ACTIVE + V_FRONT + V_SYNC)));
-
-  DMG_Color_Mapper mapper (
-    .dmg_color(fb_pixel),
-    .vga_color(vga_color)
-  );
-endmodule
 
 //==================================================================
 // Module: PPU_Wrapper
@@ -1364,6 +1386,7 @@ module PPU_Wrapper (
     .clk(clk),
     .reset(reset || (!LCDC[7])),
     .start((dot == 9'd80) ? 1'b1 : 1'b0),
+    .full_frame_done,
     .fifo_clear(fifo_clear),
     .LCDC(LCDC),
     .SCX(scx_latched),

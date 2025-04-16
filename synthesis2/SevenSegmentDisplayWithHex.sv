@@ -1,4 +1,4 @@
-`default_nettype none
+//`default_nettype none
 
 // Given 8 binary represented hex, output 8 corresponding 
 // display vector for LED

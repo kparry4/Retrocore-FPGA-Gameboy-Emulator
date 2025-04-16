@@ -1236,14 +1236,6 @@ module Pixel_Mixer (
           2'd3: pixel_out = sprite_pixel_in.palette[7:6];
           default: pixel_out = 2'bx;
         endcase
-      else if (bg_pixel_in.pixel == 2'b00)
-        case(sprite_pixel_in.pixel)
-          2'd0: pixel_out = sprite_pixel_in.palette[1:0];
-          2'd2: pixel_out = sprite_pixel_in.palette[3:2];
-          2'd1: pixel_out = sprite_pixel_in.palette[5:4];
-          2'd3: pixel_out = sprite_pixel_in.palette[7:6];
-          default: pixel_out = 2'bx;
-        endcase
       else
         case(bg_pixel_in.pixel)
           2'd0: pixel_out = bg_pixel_in.palette[1:0];
