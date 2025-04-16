@@ -56,7 +56,7 @@ module PPU_Mode_controller (
   end
 
   // Update mode register on each clock.
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk ) begin
     if (reset) begin
       mode <= 2'd2; // start in OAM search mode
       // scx_latched <= SCX;
@@ -84,7 +84,7 @@ module PPU_Mode_controller (
 
 
   // Dot and line counters are updated on the clock.
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk ) begin
     if (reset || ~LCDC[7]) begin
       dot        <= 9'd0;
       line       <= 8'h0;
@@ -187,7 +187,7 @@ module OAM_Search (
   assign sprite_count = selected_count;
 
   // Sequential logic for fetching and sorting OAM sprites.
-  always_ff @(posedge clk or posedge reset) begin
+  always_ff @(posedge clk ) begin
     if(reset) begin
       state          <= OAM_IDLE;
       oam_index      <= 6'd0;
@@ -359,7 +359,7 @@ module FIFO #(
   logic [$clog2(DEPTH+1)-1:0] count;
   pixel_t fifo_mem [0:DEPTH-1];
 
-  always_ff @(posedge clk or posedge reset) begin
+  always_ff @(posedge clk ) begin
     if(reset) begin
       wr_ptr <= 0;
       rd_ptr <= 0;
@@ -468,7 +468,7 @@ module Render_BG (
 
   // Latch SCX at start of scanline.
   logic [7:0] scx_latched;
-  always_ff @(posedge clk or posedge reset) begin
+  always_ff @(posedge clk ) begin
     if(reset)
       scx_latched <= 8'd0;
     else if(state == BG_IDLE && start)
@@ -491,16 +491,19 @@ module Render_BG (
   assign screen_x = (use_window ? (pixel_total) : (SCX + pixel_total));
 
   // Window internal counter
-  logic [7:0] wly, wly_reg;
+  logic [7:0] wly, wly_reg, wly_next;
   logic prev_use_window;
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk ) begin
     wly_reg <= wly;
     if (reset || full_frame_done) begin
       wly <= 8'd0;
+      wly_next <= 8'd0;
       prev_use_window <= 1'b0;
+    end else if (bg_done) begin
+      wly <= wly_next;
     end else begin
       if (!prev_use_window && use_window)
-        wly <= wly + 1;
+        wly_next <= wly_next + 1;
       prev_use_window <= use_window;
     end
   end
@@ -511,7 +514,7 @@ module Render_BG (
   logic [7:0] bg_y;
   assign bg_y = LY + SCY;
   logic [7:0] effective_line;
-  assign effective_line = (use_window ? ((!prev_use_window && use_window) ? wly : wly_reg) : bg_y);
+  assign effective_line = (use_window ? wly : bg_y);
 
   //==================================================================
   // Tile Map Coordinate Calculation
@@ -603,7 +606,7 @@ module Render_BG (
   //==================================================================
   // Main State Machine
   //==================================================================
-  always_ff @(posedge clk or posedge reset) begin
+  always_ff @(posedge clk ) begin
     if (reset) begin
       state              <= BG_IDLE;
       pixel_index        <= 3'd0;
@@ -681,7 +684,7 @@ module Render_BG (
   //==================================================================
   // BG Done Flag: Assert when a complete scanline (160 pixels) is processed.
   //==================================================================
-  always_ff @(posedge clk or posedge reset) begin
+  always_ff @(posedge clk ) begin
     if (reset)
       bg_done <= 1'b0;
     else if (fifo_clear)
@@ -811,7 +814,7 @@ module Render_Sprites (
   logic use_sprite;
   // Candidate selection signals.
   logic         candidate_valid;
-  logic [3:0]   candidate_index;
+  logic [3:0]   candidate_index, prev_candidate_index;
   // Fetched tile data.
   logic [15:0]  tile_data_word;
   // Row offset for sprite tile data.
@@ -843,7 +846,8 @@ module Render_Sprites (
   end
 
   // Merge candidate_pixel updates into one always_ff block.
-  always_ff @(posedge clk or posedge reset) begin
+  always_ff @(posedge clk ) begin
+    prev_candidate_index <= candidate_index;
     if (reset) begin
       state           <= IDLE;
       x_coord         <= 10'd0;
@@ -859,6 +863,7 @@ module Render_Sprites (
       end
       if (state == SCAN_CHECK) begin
         use_sprite <= candidate_valid;
+        pixel_index <= '0;
         if (!candidate_valid) begin
           // No sprite candidate: immediately push an empty (transparent) pixel.
           candidate_pixel.x <= x_coord;
@@ -878,27 +883,30 @@ module Render_Sprites (
       else if (state == FETCH_TILE) begin
         // In FETCH_TILE, we do not output any pixel; we wait for tile data.
         sprite_push <= 1'b0;
+        pixel_index <= '0;
       end
       else if (state == DUMP_PIXELS && use_sprite) begin
         // Dump sprite pixel data.
-        candidate_pixel.x <= x_coord + pixel_index;
+        candidate_pixel.x <= x_coord;
         candidate_pixel.y <= LY + SCY;
         if (~LCDC[1]) begin
             candidate_pixel.pixel <= 2'b00;
-        end else if (sprites[candidate_index].flags[5]) begin
-            candidate_pixel.pixel <= { tile_data_word[pixel_index], tile_data_word[8 + pixel_index] };
-        end else begin
+        end else if (~sprites[candidate_index].flags[5]) begin
             candidate_pixel.pixel <= { tile_data_word[7 - pixel_index], tile_data_word[15 - pixel_index] };
+        end else begin
+            candidate_pixel.pixel <= { tile_data_word[pixel_index], tile_data_word[8 + pixel_index] };
         end
         candidate_pixel.palette <= (sprites[candidate_index].flags[4]) ? OBP1 : OBP0;
         candidate_pixel.sprite_priority <= (LCDC[1]) ? sprites[candidate_index].flags[7] : 1'b1;
         sprite_push <= 1'b1;
+        // x_coord <= x_coord + 1;
         if (pixel_index < 3'd7) begin
           pixel_index <= pixel_index + 1;
+          x_coord <= x_coord + 1;
         end
         else begin
           pixel_index <= 3'd0;
-          x_coord <= x_coord + 8;
+          x_coord <= x_coord + 1;
         end
       end
     end
@@ -924,7 +932,10 @@ module Render_Sprites (
           next_state = FETCH_TILE;
       end
       DUMP_PIXELS: begin
-        if (pixel_index < 3'd7)
+        if (prev_candidate_index != candidate_index) begin
+          next_state = SCAN_CHECK;
+        end
+        else if (pixel_index < 3'd7)
           next_state = DUMP_PIXELS;
         else
           next_state = SCAN_CHECK;
@@ -947,52 +958,28 @@ module Render_Sprites (
   end
   */
  logic [7:0] sprite_line;
-logic [2:0] tile_line;
+logic [3:0] tile_line;
 logic [7:0] effective_tile_index;
 
 always_comb begin
-  sprite_line = LY - sprites[candidate_index].y;
-  // 8x8 sprites
-  if (!LCDC[2]) begin
-    tile_line = sprite_line[2:0];
-    if (sprites[candidate_index].flags[6])
-      tile_line = 3'd7 - tile_line;
-    effective_tile_index = sprites[candidate_index].tile_index;
-    row_offset = tile_line << 1;
-  end else begin
-  // 8x16 sprites
-    if (sprite_line < 8) begin
-      if (sprites[candidate_index].flags[6]) begin
-        effective_tile_index = (sprites[candidate_index].tile_index & 8'hFE) + 1;
-        tile_line = 3'd7 - sprite_line[2:0];
-      end else begin
-        effective_tile_index = sprites[candidate_index].tile_index & 8'hFE;
-        tile_line = sprite_line[2:0];
-      end
-    end else begin
-      if (sprites[candidate_index].flags[6]) begin
-        effective_tile_index = sprites[candidate_index].tile_index & 8'hFE;
-        tile_line = 3'd7 - ((sprite_line - 8'd8) & 8'd7);
-      end else begin
-        effective_tile_index = (sprites[candidate_index].tile_index & 8'hFE) + 1;
-        tile_line = (sprite_line - 8'd8) & 8'd7;
-      end
-    end
-    row_offset = tile_line << 1;
-  end
-end
-
-
-  // Memory interface for sprite tile data.
-  /*
-  logic [7:0] effective_tile_index;
-  always_comb begin
-    if (LCDC[2])    // If using 8x16 sprites, force the LSB to 0.
-      effective_tile_index = sprites[candidate_index].tile_index & 8'hFE;
-    else
+    sprite_line = LY - sprites[candidate_index].y;
+    if (!LCDC[2]) begin
+      tile_line = sprite_line[2:0];
+      if (sprites[candidate_index].flags[6])
+        tile_line = 3'd7 - tile_line;
       effective_tile_index = sprites[candidate_index].tile_index;
+      row_offset = tile_line << 1;
+    end else begin
+        if (sprites[candidate_index].flags[6]) begin
+          effective_tile_index = (sprites[candidate_index].tile_index & 8'hFE); // + sprite_line[3];
+          tile_line = 4'd15 - sprite_line[3:0];
+        end else begin
+          effective_tile_index = (sprites[candidate_index].tile_index & 8'hFE); // + sprite_line[3];
+          tile_line = sprite_line[3:0];
+        end
+      row_offset = tile_line[3:0] << 1;
+    end
   end
-  */
 
   assign port_addr = (state == SCAN_CHECK && candidate_valid) ?
          (16'h8000 + (effective_tile_index * 16) + row_offset) : 16'h8000;
@@ -1004,7 +991,7 @@ end
       tile_data_word <= port_data;
   end
 
-  always_ff @(posedge clk or posedge reset) begin
+  always_ff @(posedge clk ) begin
     if (reset)
       sprite_done <= 1'b0;
     else if (fifo_clear)
@@ -1221,7 +1208,7 @@ module Pixel_Mixer (
 
   assign fetch_pixel = bg_pixel_ready & sprite_pixel_ready;
 
-  always_ff @(posedge clk or posedge reset) begin
+  always_ff @(posedge clk ) begin
     if(reset) begin
       pixel_out <= 2'b00;
       pixel_out_valid <= '0;
@@ -1246,7 +1233,41 @@ module Pixel_Mixer (
         endcase
     end
   end
-
+  /*
+  always_ff @(posedge clk ) begin
+    if(reset) begin
+      pixel_out <= 2'b00;
+      pixel_out_valid <= '0;
+    end
+    else begin
+      pixel_out_valid <= fetch_pixel;
+      if (~sprite_pixel_in.sprite_priority && sprite_pixel_in.pixel != 2'b00)
+        case(sprite_pixel_in.pixel)
+          2'd0: pixel_out = sprite_pixel_in.palette[1:0];
+          2'd2: pixel_out = sprite_pixel_in.palette[3:2];
+          2'd1: pixel_out = sprite_pixel_in.palette[5:4];
+          2'd3: pixel_out = sprite_pixel_in.palette[7:6];
+          default: pixel_out = 2'bx;
+        endcase
+      else if (bg_pixel_in.pixel == 2'b00)
+        case(sprite_pixel_in.pixel)
+          2'd0: pixel_out = sprite_pixel_in.palette[1:0];
+          2'd2: pixel_out = sprite_pixel_in.palette[3:2];
+          2'd1: pixel_out = sprite_pixel_in.palette[5:4];
+          2'd3: pixel_out = sprite_pixel_in.palette[7:6];
+          default: pixel_out = 2'bx;
+        endcase
+      else
+        case(bg_pixel_in.pixel)
+          2'd0: pixel_out = bg_pixel_in.palette[1:0];
+          2'd2: pixel_out = bg_pixel_in.palette[3:2];
+          2'd1: pixel_out = bg_pixel_in.palette[5:4];
+          2'd3: pixel_out = bg_pixel_in.palette[7:6];
+          default: pixel_out = 2'bx;
+        endcase
+    end
+  end
+  */
 endmodule
 
 
