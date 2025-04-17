@@ -36,7 +36,23 @@
 					"strict" : false
 				},
 				{
+					"name" : "LEDR[17]",
+					"strict" : false
+				},
+				{
 					"name" : "LEDG[0]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDG[1]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDG[2]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX0[0]",
 					"strict" : false
 				},
 				{
@@ -56,7 +72,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "HEX0[5]",
+					"strict" : false
+				},
+				{
 					"name" : "HEX0[6]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX1[0]",
 					"strict" : false
 				},
 				{
@@ -76,7 +100,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "HEX1[5]",
+					"strict" : false
+				},
+				{
 					"name" : "HEX1[6]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX2[0]",
 					"strict" : false
 				},
 				{
@@ -96,7 +128,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "HEX2[5]",
+					"strict" : false
+				},
+				{
 					"name" : "HEX2[6]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX3[0]",
 					"strict" : false
 				},
 				{
@@ -116,7 +156,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "HEX3[5]",
+					"strict" : false
+				},
+				{
 					"name" : "HEX3[6]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX4[0]",
 					"strict" : false
 				},
 				{
@@ -136,7 +184,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "HEX4[5]",
+					"strict" : false
+				},
+				{
 					"name" : "HEX4[6]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX5[0]",
 					"strict" : false
 				},
 				{
@@ -153,6 +209,10 @@
 				},
 				{
 					"name" : "HEX5[4]",
+					"strict" : false
+				},
+				{
+					"name" : "HEX5[5]",
 					"strict" : false
 				},
 				{
@@ -308,15 +368,15 @@
 					"strict" : false
 				},
 				{
-					"name" : "CLOCK2_50",
+					"name" : "SW[0]",
+					"strict" : false
+				},
+				{
+					"name" : "KEY[2]",
 					"strict" : false
 				},
 				{
 					"name" : "CLOCK_50",
-					"strict" : false
-				},
-				{
-					"name" : "KEY[0]",
 					"strict" : false
 				}
 			]

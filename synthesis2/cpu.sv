@@ -25,7 +25,7 @@ module cpu (
   logic [7:0] rd2;
   logic [15:0] rd;
   logic [15:0] rs16;
-  logic [7:0] mem, n, pre, intAdr;
+  logic [7:0] mem, pre, intAdr;
   logic [3:0] flg;
   logic [7:0] newiflg;
   logic carry, hcarry, nflg, jmp, zflg;
@@ -40,7 +40,6 @@ module cpu (
 
   flopr #(1) memAdrflop(clk, rst, memAdr[0], preAdr);
   assign mem = preAdr ? memData[15:8] : memData[7:0];
-  assign n = mem;
   // control unit
   decoder decoder(.instr(mem), 
                   .memValid, 
@@ -66,12 +65,12 @@ module cpu (
   flopenr #(16,16'h100) pcflop(clk, rst, ctrl.pcen, npc, pc);
   // select next pc
   always_comb case(ctrl.pcSel)
-    PC_1: npc = pc+1;
-    PC_M1: npc = pc-1;
-    PC_IDU: npc = iduOut+1;
-    PC_RS: npc = rs16+1;
-    PC_PRE: npc = pre+1;
-    PC_INT: npc = intAdr+1;
+    PC_1: npc = pc+16'b1;
+    PC_M1: npc = pc-16'b1;
+    PC_IDU: npc = iduOut+16'b1;
+    PC_RS: npc = rs16+16'b1;
+    PC_PRE: npc = pre+16'b1;
+    PC_INT: npc = intAdr+16'b1;
     default: npc = 0;
   endcase
   always_comb case(ctrl.cc)
@@ -150,8 +149,8 @@ module cpu (
   endcase
 
   // do idu opperation
-  assign iduOut = ctrl.iduSub ? iduIn-1 : 
-                  iduIn+((ctrl.iduSel==IDU_PCE) ? {{8{src1[7]}},src1} : 1);
+  assign iduOut = ctrl.iduSub ? iduIn-16'b1 : 
+                  iduIn+((ctrl.iduSel==IDU_PCE) ? {{8{src1[7]}},src1} : 16'b1);
 
   // new flag register write data
   always_comb casez(ie[4:0]&iflg[4:0])

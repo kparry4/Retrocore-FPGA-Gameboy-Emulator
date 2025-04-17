@@ -1,5 +1,5 @@
 Flow report for chipInterface
-Mon Apr  7 17:55:52 2025
+Thu Apr 17 15:18:01 2025
 Quartus Prime Version 23.1std.1 Build 993 05/14/2024 SC Standard Edition
 
 
@@ -41,20 +41,20 @@ https://fpgasoftware.intel.com/eula.
 +-----------------------------------------------------------------------------------------+
 ; Flow Summary                                                                            ;
 +------------------------------------+----------------------------------------------------+
-; Flow Status                        ; Successful - Mon Apr  7 17:55:52 2025              ;
+; Flow Status                        ; Successful - Thu Apr 17 15:18:01 2025              ;
 ; Quartus Prime Version              ; 23.1std.1 Build 993 05/14/2024 SC Standard Edition ;
 ; Revision Name                      ; chipInterface                                      ;
 ; Top-level Entity Name              ; chipInterface                                      ;
 ; Family                             ; Cyclone IV E                                       ;
 ; Device                             ; EP4CE115F29C7                                      ;
 ; Timing Models                      ; Final                                              ;
-; Total logic elements               ; 8,897 / 114,480 ( 8 % )                            ;
-;     Total combinational functions  ; 7,629 / 114,480 ( 7 % )                            ;
-;     Dedicated logic registers      ; 3,439 / 114,480 ( 3 % )                            ;
-; Total registers                    ; 3439                                               ;
+; Total logic elements               ; 9,255 / 114,480 ( 8 % )                            ;
+;     Total combinational functions  ; 8,014 / 114,480 ( 7 % )                            ;
+;     Dedicated logic registers      ; 3,425 / 114,480 ( 3 % )                            ;
+; Total registers                    ; 3425                                               ;
 ; Total pins                         ; 173 / 529 ( 33 % )                                 ;
 ; Total virtual pins                 ; 0                                                  ;
-; Total memory bits                  ; 986,304 / 3,981,312 ( 25 % )                       ;
+; Total memory bits                  ; 986,432 / 3,981,312 ( 25 % )                       ;
 ; Embedded Multiplier 9-bit elements ; 0 / 532 ( 0 % )                                    ;
 ; Total PLLs                         ; 0 / 4 ( 0 % )                                      ;
 +------------------------------------+----------------------------------------------------+
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 04/07/2025 17:54:53 ;
+; Start date & time ; 04/17/2025 15:16:49 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; chipInterface       ;
 +-------------------+---------------------+
@@ -76,7 +76,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
 ; Assignment Name                     ; Value                                  ; Default Value ; Entity Name ; Section Id                        ;
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
-; COMPILER_SIGNATURE_ID               ; 817182823243.174406289350244           ; --            ; --          ; --                                ;
+; COMPILER_SIGNATURE_ID               ; 817182748819.174491740900707           ; --            ; --          ; --                                ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_timing           ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_boundary_scan    ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_signal_integrity ;
@@ -99,12 +99,12 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:27     ; 1.0                     ; 598 MB              ; 00:00:35                           ;
-; Fitter               ; 00:00:18     ; 1.2                     ; 1963 MB             ; 00:00:40                           ;
-; Assembler            ; 00:00:02     ; 1.0                     ; 454 MB              ; 00:00:02                           ;
-; Timing Analyzer      ; 00:00:03     ; 1.4                     ; 772 MB              ; 00:00:04                           ;
+; Analysis & Synthesis ; 00:00:31     ; 1.0                     ; 597 MB              ; 00:00:39                           ;
+; Fitter               ; 00:00:28     ; 1.1                     ; 1954 MB             ; 00:01:10                           ;
+; Assembler            ; 00:00:02     ; 1.0                     ; 455 MB              ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:03     ; 1.4                     ; 756 MB              ; 00:00:03                           ;
 ; EDA Netlist Writer   ; 00:00:02     ; 1.0                     ; 698 MB              ; 00:00:01                           ;
-; Total                ; 00:00:52     ; --                      ; --                  ; 00:01:22                           ;
+; Total                ; 00:01:06     ; --                      ; --                  ; 00:01:55                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -113,11 +113,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+------------------------------+---------+------------+----------------+
 ; Module Name          ; Machine Hostname             ; OS Name ; OS Version ; Processor type ;
 +----------------------+------------------------------+---------+------------+----------------+
-; Analysis & Synthesis ; hh-1305-23.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
-; Fitter               ; hh-1305-23.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
-; Assembler            ; hh-1305-23.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
-; Timing Analyzer      ; hh-1305-23.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
-; EDA Netlist Writer   ; hh-1305-23.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Analysis & Synthesis ; hh-1305-00.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Fitter               ; hh-1305-00.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Assembler            ; hh-1305-00.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Timing Analyzer      ; hh-1305-00.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; EDA Netlist Writer   ; hh-1305-00.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
 +----------------------+------------------------------+---------+------------+----------------+
 
 
