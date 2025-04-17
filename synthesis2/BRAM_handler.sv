@@ -1,4 +1,4 @@
-// `default_nettype none
+`default_nettype none
 `include "RegisterPkg.svh"
 `include "addresses.svh"
 `include "select.svh"
@@ -169,9 +169,9 @@ module BRAM_handler(input logic clock,
     assign wram_wren = cpu_wren && within_range(cpu_addr_write, `WRAM_START, `WRAM_END);
     assign hram_wren = cpu_wren && within_range(cpu_addr_write, `HRAM_START, `HRAM_END);
 
-    assign exram_addr_w = convert_to_BRAM_addr(cpu_addr_write, `EXRAM_START);
-    assign wram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `WRAM_START);
-    assign hram_addr_w  = convert_to_BRAM_addr(cpu_addr_write, `HRAM_START);
+    assign exram_addr_w = (12)'(convert_to_BRAM_addr(cpu_addr_write, `EXRAM_START));
+    assign wram_addr_w  = (12)'(convert_to_BRAM_addr(cpu_addr_write, `WRAM_START));
+    assign hram_addr_w  = (7)'(convert_to_BRAM_addr(cpu_addr_write, `HRAM_START));
 
 
     assign cpu_data_valid = 1'b1;//(cpu_memory_selector != `INVALID);

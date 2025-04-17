@@ -10,16 +10,16 @@ output logic [9:0] col);
  logic [10:0] hs_num_clk;
  logic [19:0] vs_num_clk;
  
- integer vsync = 16.7*(10**6)/CLOCK_NS; //VS (833600 if 50mhz)
- integer vpulse = 64 *(10**3)/CLOCK_NS; //(3200 if 50 mhz)
- integer vfront = 320*(10**3)/CLOCK_NS; //(front porch, 16000 if 50mhz)
- integer vback = 928 *(10**3)/CLOCK_NS; //(back porch, 46400 if 50mhz) 
+ logic[19:0] vsync = (20)'(16.7*(10**6)/CLOCK_NS); //VS (833600 if 50mhz)
+ logic[19:0] vpulse = (20)'(64 *(10**3)/CLOCK_NS); //(3200 if 50 mhz)
+ logic[19:0] vfront = (20)'(320*(10**3)/CLOCK_NS); //(front porch, 16000 if 50mhz)
+ logic[19:0] vback = (20)'(928 *(10**3)/CLOCK_NS); //(back porch, 46400 if 50mhz) 
  
  
- integer hsync = 32*(10**3)/CLOCK_NS; //HS (1600 if 50 mhz)
- integer hpulse = 3.84*(10**3)/CLOCK_NS; //(192 if 50mhz)
- integer hfront = 640/CLOCK_NS; //(front porch, 32 if 50mhz)
- integer hback = 1.92*(10**3)/CLOCK_NS; //(back porch, 96 if 50mhz)
+ logic[10:0] hsync = (11)'(32*(10**3)/CLOCK_NS); //HS (1600 if 50 mhz)
+ logic[10:0] hpulse = (11)'(3.84*(10**3)/CLOCK_NS); //(192 if 50mhz)
+ logic[10:0] hfront = (11)'(640/CLOCK_NS); //(front porch, 32 if 50mhz)
+ logic[10:0] hback = (11)'(1.92*(10**3)/CLOCK_NS); //(back porch, 96 if 50mhz)
 
  
 
@@ -142,8 +142,8 @@ always_ff @(posedge clock)
 if (clear | reset) Q <= 0;
 else if (load) Q <= D;
 else if (en) begin
-if (up) Q <= Q + 1;
-else Q <= Q - 1;
+if (up) Q <= Q + (WIDTH)'(1);
+else Q <= Q-(WIDTH)'(1);
 end
 
 endmodule: Counter

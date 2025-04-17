@@ -64,8 +64,8 @@ module IO_handler(input logic clock,
 
                   output logic start_dma);
 
-    localparam integer clock_freq = 4_000_000;
-    localparam integer DIV_TICK_COUNT = clock_freq/16384 * 2; //should be 244
+    localparam integer clock_freq = 8_000_000;
+    localparam integer DIV_TICK_COUNT = clock_freq/16384; //should be 244
     logic [11:0] TIMA_TICK_COUNT; //this would be local param but it gets set during runtime
 
     logic[10:0] tima_ticks, divider_ticks;
@@ -84,9 +84,6 @@ module IO_handler(input logic clock,
 
 
     logic [7:0] cpu_IO_in_data;
-
-    logic even_cpu_write_io_addr;
-    assign even_cpu_write_io_addr = is_even(cpu_addr_write);
     assign cpu_IO_in_data = is_even(cpu_addr_write) ? cpu_in_data[7:0] : cpu_in_data[15:8];
 
     logic [7:0] out_data;
@@ -98,11 +95,11 @@ module IO_handler(input logic clock,
                               cpu_data_valid = 1'b1;
                          end
         `SERIAL_TRANS_D: begin
-                              out_data       = 16'hFF;
+                              out_data       = 8'hFF;
                               cpu_data_valid = 1'b1;
                          end
         `SERIAL_TRANS_C: begin
-                              out_data       = 16'hFF;
+                              out_data       = 8'hFF;
                               cpu_data_valid = 1'b1;
                          end
         `DIV:            begin
@@ -174,7 +171,7 @@ module IO_handler(input logic clock,
                          end
 
 
-        16'hFF3?:        begin
+        16'hFF30:        begin
                               out_data       = APU_R.WAV_RAM_R[cpu_addr_read - `WAV_RAM_START][7:0];
                               cpu_data_valid = 1'b1;
                          end
@@ -234,13 +231,11 @@ module IO_handler(input logic clock,
                               cpu_data_valid = 1'b1;
                         end
         default:        begin
-                              out_data       = 16'hxx;
+                              out_data       = 8'h00;
                               cpu_data_valid = 1'b0;
                         end
         endcase
     end
-
-    logic debug_skip_ppu;
 
 
     always_comb begin
@@ -263,10 +258,12 @@ module IO_handler(input logic clock,
     end
 
     always_comb begin
-        casex(JOYPAD_R[5:4])
-        2'bx0: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],DPAD_R};
-        2'b0x: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],BTN_R};
-        default: JOYPAD_OUTPUT = 16'h3f; //unreachable?
+        case(JOYPAD_R[5:4])
+        2'b10: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],DPAD_R};
+		  2'b11: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],DPAD_R};
+        2'b01: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],BTN_R};
+		  2'b00: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],BTN_R};
+        default: JOYPAD_OUTPUT = 8'h3f; //unreachable?
         endcase
     end
 
@@ -389,7 +386,7 @@ module IO_handler(input logic clock,
                     divider_ticks <= '0;
                     DIV_R <= DIV_R + 8'd1;
                 end else begin
-                    divider_ticks <= divider_ticks + 1;
+                    divider_ticks <= divider_ticks + 11'd1;
                     DIV_R <= DIV_R;
                 end
             end
@@ -480,7 +477,7 @@ module IO_handler(input logic clock,
                 NR52_R[7] <= NR52_R[7];
             end
 
-            NR52_R[3:0] <= NR52_R; //this is read only, always gets populated by APU
+            NR52_R[3:0] <= APU_NR52_bits; //this is read only, always gets populated by APU
 
 
             //DMA transfer write
@@ -497,7 +494,6 @@ module IO_handler(input logic clock,
 
             //PPU-related writes
             if((within_range(cpu_addr_write, `LCDC, `WX) && cpu_wren)) begin
-                debug_skip_ppu <= 1'b1;
                 if(cpu_addr_write == `LCDC) begin
                     LCDC_R <= cpu_IO_in_data;//NOTE: stat is handled by ppu write
                 end else if(cpu_addr_write == `SCY) begin
@@ -520,7 +516,6 @@ module IO_handler(input logic clock,
                     PPU_R.OBP1_R <= cpu_IO_in_data;
                 end
             end else begin
-                debug_skip_ppu <= 1'b0;
                 LCDC_R <= LCDC_R;
                 PPU_R <= PPU_R;
             end

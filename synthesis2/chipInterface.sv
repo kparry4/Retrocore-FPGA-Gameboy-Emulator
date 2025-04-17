@@ -121,7 +121,7 @@ module chipInterface(
         if(vga_row < `HEIGHT*3 & vga_col  < `WIDTH*3) begin
             vga_color = vga_color_pixel;
         end else begin
-            vga_color = 24'hFF_00_00;
+            vga_color = 24'h00_00_00;
         end
 	 end
 
@@ -132,7 +132,7 @@ module chipInterface(
               2'b10: vga_color_pixel = {8'd85,8'd85,8'd85};
               2'b01: vga_color_pixel = {8'd170,8'd170,8'd170};
               2'b00: vga_color_pixel = {8'd255,8'd255,8'd255};
-				  default: vga_color_pixel = 24'h00_FF_00;
+				  default: vga_color_pixel = 24'h00_00_00;
         endcase
     end
 
