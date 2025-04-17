@@ -38,8 +38,8 @@ module alu (
 
   always_comb begin
     adj=0;
-    if((~nflg&(src1[3:0] > 9))|hcin) adj[3:0] = 6;
-    if((~nflg&(src1 > 8'h99))|cin) adj[7:4] = 6;
+    if((~nflg&(src1[3:0] > 9))|hcin) adj[3:0] = 4'd6;
+    if((~nflg&(src1 > 8'h99))|cin) adj[7:4] = 4'd6;
   end
 
   always_comb begin

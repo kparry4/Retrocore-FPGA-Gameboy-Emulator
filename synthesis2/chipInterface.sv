@@ -25,7 +25,7 @@ module chipInterface(
 
     //inputs into gameboy
     logic rst, unsync_reset;
-	 logic clk_key, unsync_key;
+	 logic unsync_key;//clk_key, unsync_key;
 	 logic vga_clock;
     assign unsync_reset = ~KEY[2] || SW[0];
 	 assign unsync_key = ~KEY[3] || SW[1];
@@ -79,7 +79,7 @@ module chipInterface(
 
     always_ff @(posedge CLOCK3_50) begin
         rst <= unsync_reset;
-		  clk_key <= unsync_key;
+		  //clk_key <= unsync_key;
 		  if(rst) begin
 			stop_collecting <= 1'b0;
 		  end else begin

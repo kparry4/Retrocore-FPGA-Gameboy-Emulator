@@ -143,7 +143,7 @@ if (clear | reset) Q <= 0;
 else if (load) Q <= D;
 else if (en) begin
 if (up) Q <= Q + (WIDTH)'(1);
-else Q <= Q-(WIDTH)'(1);
+else Q <= Q - (WIDTH)'(1);
 end
 
 endmodule: Counter
