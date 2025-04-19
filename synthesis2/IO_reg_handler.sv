@@ -47,6 +47,9 @@ module IO_handler(input logic clock,
                   output logic[7:0] NR52_R, //Audio registers
                   output APU_DATA   APU_R,
 
+                  output logic [7:0] SB_R, //Serial transfer data
+                  output logic [7:0] SC_R, //Serial transfer control
+
                   output logic[7:0] LCDC_R, //PPU Registers
                   output logic[7:0] STAT_R,
                   output PPU_DATA   PPU_R,
@@ -64,11 +67,17 @@ module IO_handler(input logic clock,
 
                   output logic start_dma);
 
-    localparam integer clock_freq = 4_000_000;
-    localparam integer DIV_TICK_COUNT = clock_freq/16384 * 2; //should be 244
+    localparam integer clock_freq = 8_000_000;
+    localparam integer DIV_TICK_COUNT = clock_freq/16384; //should be 244
+    localparam integer SERIAL_TRANSFER_TICK_COUNT = clock_freq/8192;
     logic [11:0] TIMA_TICK_COUNT; //this would be local param but it gets set during runtime
 
-    logic[10:0] tima_ticks, divider_ticks;
+
+    logic[10:0] tima_ticks, divider_ticks, serial_ticks;
+
+    enum logic[1:0] {IDLE, SERIAL_TRANSFER} SC_state, SC_nextState;
+    logic en_serial_cycle_ctr, transfer_complete;
+    logic [3:0] serial_cycles;
 
     logic vblank_sync;
     logic vblank_posedge;
@@ -92,17 +101,50 @@ module IO_handler(input logic clock,
     logic [7:0] out_data;
 
     always_comb begin
+        case(SC_state)
+            IDLE: begin
+                transfer_complete = 1'b0;
+                en_serial_cycle_ctr = 1'b0;
+                if(SC_R == 8'h81) begin
+                    SC_nextState = SERIAL_TRANSFER;
+                end else begin
+                    SC_nextState = IDLE;
+                end
+           end
+            SERIAL_TRANSFER: begin
+                if(serial_cycles == 4'h7) begin
+                    //once we've hit 8 cycles, then serial transfer shift
+                    //register routine should be complete
+                    SC_nextState = IDLE;
+                    transfer_complete = 1'b1;
+                    en_serial_cycle_ctr = 1'b1;
+                end else begin
+                    SC_nextState = SERIAL_TRANSFER;
+                    transfer_complete = 1'b0;
+                    en_serial_cycle_ctr = 1'b0;
+                end
+            end
+            default: begin
+                SC_nextState = IDLE; //hopefully unreachable
+                transfer_complete = 1'b0;
+                en_serial_cycle_ctr = 1'b0;
+            end
+        endcase
+
+    end
+
+    always_comb begin
         casez(cpu_addr_read)
         `JOYPAD:         begin
                               out_data       = JOYPAD_OUTPUT;
                               cpu_data_valid = 1'b1;
                          end
-        `SERIAL_TRANS_D: begin
-                              out_data       = 16'hFF;
+        `SB:             begin
+                              out_data       = SB_R;
                               cpu_data_valid = 1'b1;
                          end
-        `SERIAL_TRANS_C: begin
-                              out_data       = 16'hFF;
+        `SC:             begin
+                              out_data       = SC_R;
                               cpu_data_valid = 1'b1;
                          end
         `DIV:            begin
@@ -276,7 +318,7 @@ module IO_handler(input logic clock,
 
     logic stat_sync;
     logic stat_posedge;
-    
+
     logic hidden_stat;
     assign hidden_stat = (STAT_R[6] & STAT_R[2]) | (STAT_R[5] & (STAT_R[1:0] == 2'd2)) | (STAT_R[4] & (STAT_R[1:0] == 2'd1)) | (STAT_R[3] & (STAT_R[1:0] == 2'd0));
 
@@ -299,25 +341,28 @@ module IO_handler(input logic clock,
             halted             <= 1'b0;
             restart_after_stop <= 1'b0;
             vblank_sync        <= 1'b0;
-            tima_ticks          <= '0;
+            tima_ticks         <= '0;
             divider_ticks      <= '0;
+            serial_ticks       <= '0;
+            serial_cycles      <= '0;
+            SC_state <= IDLE;
 
             JOYPAD_R   <= 8'hcf;
-            // NR52_R     <= '0;
             NR52_R     <= 8'hf1;
 
+
+            //Serial data control registers
+            SB_R <= 8'h00;
+            SC_R <= 8'h7E;
             //TODO: audio registers are hardcoded to zero for NOW
             APU_R      <= '0;
 
             //PPU REGISTERS
-            // LCDC_R       <= 8'hd3;
             LCDC_R       <= 8'h91;
             STAT_R       <= 8'h81; //1 in MSB for dmg mode
-            //PPU_R      <= '0;
             PPU_R.SCY_R  <= 8'h00;
             PPU_R.SCX_R  <= 8'h00;
             PPU_R.LY_R   <= 8'h90;
-            // PPU_R.LY_R   <= 8'h00; // old
             PPU_R.LYC_R  <= 8'h00;
             PPU_R.BGP_R  <= 8'he4;
             PPU_R.OBP0_R <= 8'h00;
@@ -349,6 +394,9 @@ module IO_handler(input logic clock,
                 restart_after_stop <= 1'b0;
             end
 
+            SC_state <= SC_nextState;
+
+
             LCDC_R        <= 1'b0;
             vblank_sync   <= 1'b0;
             JOYPAD_R      <= JOYPAD_R;
@@ -368,6 +416,7 @@ module IO_handler(input logic clock,
             halted <= 1'b0;
             restart_after_stop <= 1'b0;
             vblank_sync <= vblank;
+            SC_state <= SC_nextState;
 
             //HANDLE joypad:
             if(cpu_addr_write == `JOYPAD && cpu_wren) begin
@@ -402,7 +451,9 @@ module IO_handler(input logic clock,
             end
 
             //HANDLE TIMA: Timer Counter
-            if(tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2]) begin
+            if(cpu_addr_write == `TIMA && cpu_wren) begin
+                TIMA_R <= cpu_IO_in_data; //unexplained in pandocs but dr mario apparently can write to tima
+            end else if(tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2]) begin
                 if(TIMA_R == 8'hFF) begin
                     TIMA_R <= TMA_R;
                     tima_ticks <= '0;
@@ -425,12 +476,42 @@ module IO_handler(input logic clock,
                 TAC_R <= TAC_R;
             end
 
+            if(cpu_addr_write == `SB && cpu_wren) begin
+                SB_R <= cpu_IO_in_data;
+            end else begin
+                SB_R <= SB_R;
+            end
+
+            if(cpu_addr_write == `SC && cpu_wren) begin
+                SC_R <= cpu_IO_in_data;
+            end else begin
+                if(transfer_complete) begin
+                    SC_R <= {1'b0, SC_R[6:0]}; //flip 7th bit
+                end else begin
+                    SC_R <= SC_R;
+                end
+            end
+
+            if(en_serial_cycle_ctr) begin
+                if(serial_ticks == SERIAL_TRANSFER_TICK_COUNT - 1) begin
+                    serial_cycles <= serial_cycles + 4'h1;
+                    serial_ticks <= '0;
+                end else begin
+                    serial_cycles <= serial_cycles;
+                    serial_ticks <= serial_ticks + 11'h1;
+                end
+            end else begin
+                serial_cycles <= '0;
+                serial_ticks <= '0;
+            end
+
+
             if(cpu_addr_write == `IF && cpu_wren) begin
                 IF_R <= cpu_IO_in_data;
             end else begin
                 if(~interupt) begin
                   //handle INTERRUPT FLAG (7,6,5 are dont cares):
-                  IF_R[3] <= 1'b0; //wserial control (not implented)
+                  IF_R[3] <= transfer_complete;
                   // IF_R[1] <= |(STAT_R[6:3]);
                   IF_R[1] <= hidden_stat;
 

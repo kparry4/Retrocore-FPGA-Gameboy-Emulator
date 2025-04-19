@@ -31,12 +31,12 @@
 
     `define JOYPAD 16'hFF00
 
-    `define SERIAL_TRANS_D 16'hFF01 //dont think we need this
-    `define SERIAL_TRANS_C 16'hFF02 //dont think we need this
+    `define SB 16'hFF01 //dont think we need this
+    `define SC 16'hFF02 //dont think we need this
 
     `define DIV  16'hFF04
     `define TIMA 16'hFF05
-    `define TMA  16'hFF06 
+    `define TMA  16'hFF06
     `define TAC  16'hFF07
 
     `define IF 16'hFF0F
@@ -129,12 +129,12 @@
 
     function logic within_range(input logic [15:0] value, input logic [15:0] min, input logic [15:0] max);
         return (value >= min) && (value <= max);
-    endfunction   
+    endfunction
 
     function logic is_even(input logic [15:0] address);
         return address[0] == 1'b0;
-    endfunction    
-    
+    endfunction
+
     function logic[15:0] convert_to_BRAM_addr(input logic[15:0] cpu_addr, input logic[15:0] memory_start_region);
         return (cpu_addr - memory_start_region) >> 1;
     endfunction
