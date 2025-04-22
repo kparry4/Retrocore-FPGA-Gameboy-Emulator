@@ -259,13 +259,14 @@ module IO_handler(input logic clock,
         BTN_R <= {~joypad_start, ~joypad_select, ~joypad_b_button, ~joypad_a_button};
       else if(joypad_dpad_down|joypad_dpad_up|joypad_dpad_left|joypad_dpad_right)
         DPAD_R <= {~joypad_dpad_down, ~joypad_dpad_up, ~joypad_dpad_left, ~joypad_dpad_right};
-      else {DPAD_R,BTN_R} <= {DPAD_R,BTN_R};
+      //else {DPAD_R,BTN_R} <= {DPAD_R,BTN_R};
+		else {DPAD_R,BTN_R} <= 8'hff;
     end
 
     always_comb begin
         casex(JOYPAD_R[5:4])
-        2'bx0: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],DPAD_R};
-        2'b0x: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],BTN_R};
+        2'b10: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],DPAD_R};
+        2'b01: JOYPAD_OUTPUT = {2'b11,JOYPAD_R[5:4],BTN_R};
         default: JOYPAD_OUTPUT = 16'h3f; //unreachable?
         endcase
     end

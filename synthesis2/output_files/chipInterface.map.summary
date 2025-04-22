@@ -1,12 +1,12 @@
-Analysis & Synthesis Status : Successful - Tue Apr 22 12:41:45 2025
+Analysis & Synthesis Status : Successful - Tue Apr 22 14:11:55 2025
 Quartus Prime Version : 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 Revision Name : chipInterface
 Top-level Entity Name : chipInterface
 Family : Cyclone IV E
-Total logic elements : 10,773
-    Total combinational functions : 8,131
-    Dedicated logic registers : 3,482
-Total registers : 3482
+Total logic elements : 10,772
+    Total combinational functions : 8,130
+    Dedicated logic registers : 3,490
+Total registers : 3490
 Total pins : 173
 Total virtual pins : 0
 Total memory bits : 986,304

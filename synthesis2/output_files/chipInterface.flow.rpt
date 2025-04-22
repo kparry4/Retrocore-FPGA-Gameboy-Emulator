@@ -1,5 +1,5 @@
 Flow report for chipInterface
-Tue Apr 22 12:42:26 2025
+Tue Apr 22 14:12:36 2025
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -41,17 +41,17 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Flow Summary                                                                     ;
 +------------------------------------+---------------------------------------------+
-; Flow Status                        ; Successful - Tue Apr 22 12:42:23 2025       ;
+; Flow Status                        ; Successful - Tue Apr 22 14:12:33 2025       ;
 ; Quartus Prime Version              ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                      ; chipInterface                               ;
 ; Top-level Entity Name              ; chipInterface                               ;
 ; Family                             ; Cyclone IV E                                ;
 ; Device                             ; EP4CE115F29C7                               ;
 ; Timing Models                      ; Final                                       ;
-; Total logic elements               ; 9,412 / 114,480 ( 8 % )                     ;
-;     Total combinational functions  ; 8,133 / 114,480 ( 7 % )                     ;
-;     Dedicated logic registers      ; 3,482 / 114,480 ( 3 % )                     ;
-; Total registers                    ; 3482                                        ;
+; Total logic elements               ; 9,380 / 114,480 ( 8 % )                     ;
+;     Total combinational functions  ; 8,132 / 114,480 ( 7 % )                     ;
+;     Dedicated logic registers      ; 3,490 / 114,480 ( 3 % )                     ;
+; Total registers                    ; 3490                                        ;
 ; Total pins                         ; 173 / 529 ( 33 % )                          ;
 ; Total virtual pins                 ; 0                                           ;
 ; Total memory bits                  ; 986,304 / 3,981,312 ( 25 % )                ;
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 04/22/2025 12:41:04 ;
+; Start date & time ; 04/22/2025 14:11:15 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; chipInterface       ;
 +-------------------+---------------------+
@@ -76,7 +76,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
 ; Assignment Name                     ; Value                                  ; Default Value ; Entity Name ; Section Id                        ;
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
-; COMPILER_SIGNATURE_ID               ; 225373657047031.174534006405134        ; --            ; --          ; --                                ;
+; COMPILER_SIGNATURE_ID               ; 225373657047031.174534547522318        ; --            ; --          ; --                                ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_timing           ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_boundary_scan    ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_signal_integrity ;
@@ -96,11 +96,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:40     ; 1.0                     ; 544 MB              ; 00:00:51                           ;
-; Fitter               ; 00:00:34     ; 1.1                     ; 1617 MB             ; 00:01:12                           ;
-; Assembler            ; 00:00:03     ; 1.0                     ; 390 MB              ; 00:00:02                           ;
-; Timing Analyzer      ; 00:00:03     ; 1.5                     ; 674 MB              ; 00:00:04                           ;
-; Total                ; 00:01:20     ; --                      ; --                  ; 00:02:09                           ;
+; Analysis & Synthesis ; 00:00:39     ; 1.0                     ; 544 MB              ; 00:00:50                           ;
+; Fitter               ; 00:00:34     ; 1.1                     ; 1585 MB             ; 00:01:15                           ;
+; Assembler            ; 00:00:03     ; 1.0                     ; 392 MB              ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:03     ; 1.4                     ; 662 MB              ; 00:00:03                           ;
+; Total                ; 00:01:19     ; --                      ; --                  ; 00:02:10                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 

@@ -45,15 +45,18 @@ module chipInterface(
     logic joypad_dpad_right;
     logic joypad_a_button;
     logic joypad_b_button;
+	 logic [5:0] joypad_cnt=0;
 	 
-	 assign joypad_select =     ~GPIO[3];
-	 assign joypad_start =      ~GPIO[4];
-	 assign joypad_dpad_up =    ~GPIO[1];
-	 assign joypad_dpad_down =  ~GPIO[5];
-	 assign joypad_dpad_left =  ~GPIO[2];
-	 assign joypad_dpad_right = ~GPIO[0];
-	 assign joypad_a_button =   ~GPIO[6];
-	 assign joypad_b_button =   ~GPIO[7];
+	 always_ff @(posedge CLOCK2_50) begin
+	 joypad_select =     ~GPIO[3];
+	 joypad_start =      ~GPIO[4];
+	 joypad_dpad_up =    ~GPIO[1];
+	 joypad_dpad_down =  ~GPIO[5];
+	 joypad_dpad_left =  ~GPIO[2];
+	 joypad_dpad_right = ~GPIO[0];
+	 joypad_a_button =   ~GPIO[6];
+	 joypad_b_button =   ~GPIO[7];
+	 end
 
 
     //outputs from gameboy
@@ -68,7 +71,7 @@ module chipInterface(
 
 
     assign LEDR[7:0] = GPIO[7:0];
-    assign LEDR[16:8] = '0;
+    assign LEDR[16:8] = {joypad_select,joypad_start,joypad_dpad_up,joypad_dpad_down,joypad_dpad_left,joypad_dpad_right,joypad_a_button,joypad_b_button};
     assign LEDG[0] = frame_pixel_valid;
 	 assign LEDG[1] = rst;
 	 assign LEDG[2] = stop_collecting;

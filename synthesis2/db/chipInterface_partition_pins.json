@@ -36,6 +36,38 @@
 					"strict" : false
 				},
 				{
+					"name" : "LEDR[8]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDR[9]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDR[10]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDR[11]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDR[12]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDR[13]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDR[14]",
+					"strict" : false
+				},
+				{
+					"name" : "LEDR[15]",
+					"strict" : false
+				},
+				{
 					"name" : "LEDR[17]",
 					"strict" : false
 				},
@@ -365,6 +397,10 @@
 				},
 				{
 					"name" : "CLOCK3_50",
+					"strict" : false
+				},
+				{
+					"name" : "CLOCK2_50",
 					"strict" : false
 				},
 				{
