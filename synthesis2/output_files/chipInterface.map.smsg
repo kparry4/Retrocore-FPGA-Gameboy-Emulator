@@ -1,7 +1,7 @@
-Warning (10268): Verilog HDL information at ppu.sv(190): always construct contains both blocking and non-blocking assignments File: /home/katherine/code/Gameboy/synthesis2/ppu.sv Line: 190
-Info (10281): Verilog HDL Declaration information at ppu.sv(438): object "bg_done" differs only in case from object "BG_DONE" in the same scope File: /home/katherine/code/Gameboy/synthesis2/ppu.sv Line: 438
-Warning (10273): Verilog HDL warning at ppu.sv(1237): extended using "x" or "z" File: /home/katherine/code/Gameboy/synthesis2/ppu.sv Line: 1237
-Warning (10273): Verilog HDL warning at ppu.sv(1245): extended using "x" or "z" File: /home/katherine/code/Gameboy/synthesis2/ppu.sv Line: 1245
-Warning (10273): Verilog HDL warning at ppu.sv(1253): extended using "x" or "z" File: /home/katherine/code/Gameboy/synthesis2/ppu.sv Line: 1253
-Warning (10268): Verilog HDL information at ppu.sv(1224): always construct contains both blocking and non-blocking assignments File: /home/katherine/code/Gameboy/synthesis2/ppu.sv Line: 1224
-Warning (10273): Verilog HDL warning at IO_reg_handler.sv(237): extended using "x" or "z" File: /home/katherine/code/Gameboy/synthesis2/IO_reg_handler.sv Line: 237
+Warning (10268): Verilog HDL information at ppu.sv(190): always construct contains both blocking and non-blocking assignments File: /afs/ece.cmu.edu/usr/kparry/Private/Gameboy/synthesis2/ppu.sv Line: 190
+Info (10281): Verilog HDL Declaration information at ppu.sv(438): object "bg_done" differs only in case from object "BG_DONE" in the same scope File: /afs/ece.cmu.edu/usr/kparry/Private/Gameboy/synthesis2/ppu.sv Line: 438
+Warning (10273): Verilog HDL warning at ppu.sv(1237): extended using "x" or "z" File: /afs/ece.cmu.edu/usr/kparry/Private/Gameboy/synthesis2/ppu.sv Line: 1237
+Warning (10273): Verilog HDL warning at ppu.sv(1245): extended using "x" or "z" File: /afs/ece.cmu.edu/usr/kparry/Private/Gameboy/synthesis2/ppu.sv Line: 1245
+Warning (10273): Verilog HDL warning at ppu.sv(1253): extended using "x" or "z" File: /afs/ece.cmu.edu/usr/kparry/Private/Gameboy/synthesis2/ppu.sv Line: 1253
+Warning (10268): Verilog HDL information at ppu.sv(1224): always construct contains both blocking and non-blocking assignments File: /afs/ece.cmu.edu/usr/kparry/Private/Gameboy/synthesis2/ppu.sv Line: 1224
+Warning (10273): Verilog HDL warning at IO_reg_handler.sv(237): extended using "x" or "z" File: /afs/ece.cmu.edu/usr/kparry/Private/Gameboy/synthesis2/IO_reg_handler.sv Line: 237

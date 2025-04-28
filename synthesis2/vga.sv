@@ -1,4 +1,4 @@
-`default_nettype none
+//`default_nettype none
 
 module vga #(CLOCK_NS = 20)
 (input logic CLOCK_50, reset,

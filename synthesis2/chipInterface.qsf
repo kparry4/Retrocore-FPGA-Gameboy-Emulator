@@ -42,40 +42,7 @@ set_global_assignment -name DEVICE EP4CE115F29C7
 set_global_assignment -name TOP_LEVEL_ENTITY chipInterface
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 23.1STD.1
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "16:58:40  APRIL 07, 2025"
-set_global_assignment -name LAST_QUARTUS_VERSION "20.1.0 Lite Edition"
-set_global_assignment -name VERILOG_FILE BRAMS/WRAM_BANK.v
-set_global_assignment -name VERILOG_FILE BRAMS/ROM_BANK.v
-set_global_assignment -name VERILOG_FILE BRAMS/OAM_DUALBANK.v
-set_global_assignment -name VERILOG_FILE BRAMS/FRAME_BUFFER.v
-set_global_assignment -name QIP_FILE BRAMS/FRAME_BUFFER.qip
-set_global_assignment -name VERILOG_FILE BRAMS/EXRAM_BANK.v
-set_global_assignment -name VERILOG_FILE BRAMS/DUAL_VRAM_8KB.v
-set_global_assignment -name VERILOG_FILE BRAMS/DUAL_8KB.v
-set_global_assignment -name MIF_FILE tetris.mif
-set_global_assignment -name SOURCE_FILE select.svh
-set_global_assignment -name SOURCE_FILE RegisterPkg.svh
-set_global_assignment -name SOURCE_FILE gameboy2.qsf
-set_global_assignment -name MIF_FILE "dmg-acid-test.mif"
-set_global_assignment -name SOURCE_FILE defs.svh
-set_global_assignment -name SOURCE_FILE copy_sv_files.bash
-set_global_assignment -name SOURCE_FILE addresses.svh
-set_global_assignment -name SDC_FILE gameboy.sdc
-set_global_assignment -name SYSTEMVERILOG_FILE vga.sv
-set_global_assignment -name SYSTEMVERILOG_FILE SevenSegmentDisplayWithHex.sv
-set_global_assignment -name SYSTEMVERILOG_FILE regfile.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ppu.sv
-set_global_assignment -name SYSTEMVERILOG_FILE MMU.sv
-set_global_assignment -name SYSTEMVERILOG_FILE IO_reg_handler.sv
-set_global_assignment -name SYSTEMVERILOG_FILE DMA_controller.sv
-set_global_assignment -name SYSTEMVERILOG_FILE decoder.sv
-set_global_assignment -name SYSTEMVERILOG_FILE gameboy.sv
-set_global_assignment -name SYSTEMVERILOG_FILE cpu.sv
-set_global_assignment -name SYSTEMVERILOG_FILE chipInterface.sv
-set_global_assignment -name SYSTEMVERILOG_FILE BRAM_out_chooser.sv
-set_global_assignment -name SYSTEMVERILOG_FILE BRAM_handler.sv
-set_global_assignment -name SYSTEMVERILOG_FILE BRAM_addr_chooser.sv
-set_global_assignment -name SYSTEMVERILOG_FILE basic.sv
-set_global_assignment -name SYSTEMVERILOG_FILE alu.sv
+set_global_assignment -name LAST_QUARTUS_VERSION "23.1std.1 Standard Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
@@ -614,4 +581,42 @@ set_location_assignment PIN_E10 -to EXT_IO[5]
 set_location_assignment PIN_D9 -to EXT_IO[6]
 set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
 set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name MIF_FILE 02.mif
+set_global_assignment -name MIF_FILE 01.mif
+set_global_assignment -name MIF_FILE alleyway.mif
+set_global_assignment -name VERILOG_FILE BRAMS/WRAM_BANK.v
+set_global_assignment -name VERILOG_FILE BRAMS/ROM_BANK.v
+set_global_assignment -name VERILOG_FILE BRAMS/OAM_DUALBANK.v
+set_global_assignment -name VERILOG_FILE BRAMS/FRAME_BUFFER.v
+set_global_assignment -name QIP_FILE BRAMS/FRAME_BUFFER.qip
+set_global_assignment -name VERILOG_FILE BRAMS/EXRAM_BANK.v
+set_global_assignment -name VERILOG_FILE BRAMS/DUAL_VRAM_8KB.v
+set_global_assignment -name VERILOG_FILE BRAMS/DUAL_8KB.v
+set_global_assignment -name MIF_FILE tetris.mif
+set_global_assignment -name SOURCE_FILE select.svh
+set_global_assignment -name SOURCE_FILE RegisterPkg.svh
+set_global_assignment -name SOURCE_FILE gameboy2.qsf
+set_global_assignment -name MIF_FILE "dmg-acid-test.mif"
+set_global_assignment -name SOURCE_FILE defs.svh
+set_global_assignment -name SOURCE_FILE copy_sv_files.bash
+set_global_assignment -name SOURCE_FILE addresses.svh
+set_global_assignment -name SDC_FILE gameboy.sdc
+set_global_assignment -name SYSTEMVERILOG_FILE vga.sv
+set_global_assignment -name SYSTEMVERILOG_FILE SevenSegmentDisplayWithHex.sv
+set_global_assignment -name SYSTEMVERILOG_FILE regfile.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ppu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE MMU.sv
+set_global_assignment -name SYSTEMVERILOG_FILE IO_reg_handler.sv
+set_global_assignment -name SYSTEMVERILOG_FILE DMA_controller.sv
+set_global_assignment -name SYSTEMVERILOG_FILE decoder.sv
+set_global_assignment -name SYSTEMVERILOG_FILE gameboy.sv
+set_global_assignment -name SYSTEMVERILOG_FILE cpu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE chipInterface.sv
+set_global_assignment -name SYSTEMVERILOG_FILE BRAM_out_chooser.sv
+set_global_assignment -name SYSTEMVERILOG_FILE BRAM_handler.sv
+set_global_assignment -name SYSTEMVERILOG_FILE BRAM_addr_chooser.sv
+set_global_assignment -name SYSTEMVERILOG_FILE basic.sv
+set_global_assignment -name SYSTEMVERILOG_FILE alu.sv
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

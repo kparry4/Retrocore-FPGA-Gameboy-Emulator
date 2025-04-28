@@ -99,7 +99,8 @@ module chipInterface(
     integer pixel_count;
 
     integer r, c;
-
+    logic [23:0] vga_color, vga_color_pixel;
+    logic [15:0] frame_buffer_pixel; //NOTE THAT THIS IS 2 BITS WIDE ACTUALLY BC NO COLOUR
 
 
     vga #(20) v1(.CLOCK_50(vga_clock), .row(vga_row), .col(vga_col), .HS(VGA_HS), .VS(VGA_VS), .blank, .reset());
@@ -112,8 +113,7 @@ module chipInterface(
     assign VGA_G = vga_color[15:8];
     assign VGA_B = vga_color[7:0];
 
-    logic [23:0] vga_color, vga_color_pixel;
-    logic [15:0] frame_buffer_pixel; //NOTE THAT THIS IS 2 BITS WIDE ACTUALLY BC NO COLOUR
+
 	 assign r = pixel_count / `WIDTH;
     assign c = pixel_count % `WIDTH;
 

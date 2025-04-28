@@ -65,7 +65,7 @@ module IO_handler(input logic clock,
                   output logic start_dma);
 
     localparam integer clock_freq = 4_000_000;
-    localparam integer DIV_TICK_COUNT = clock_freq/16384 * 2; //should be 244
+    localparam integer DIV_TICK_COUNT = 256; //should be 244
     logic [11:0] TIMA_TICK_COUNT; //this would be local param but it gets set during runtime
 
     logic[10:0] tima_ticks, divider_ticks;
@@ -300,7 +300,7 @@ module IO_handler(input logic clock,
             restart_after_stop <= 1'b0;
             vblank_sync        <= 1'b0;
             tima_ticks          <= '0;
-            divider_ticks      <= '0;
+            divider_ticks      <= 4;
 
             JOYPAD_R   <= 8'hcf;
             // NR52_R     <= '0;
@@ -327,7 +327,7 @@ module IO_handler(input logic clock,
 
 
 
-            DIV_R      <= 8'hab;
+            DIV_R      <= 8'hbd;
             TIMA_R     <= '0;
             TMA_R      <= '0;
             TAC_R      <= 8'hf8;
@@ -420,7 +420,7 @@ module IO_handler(input logic clock,
 
             //HANDLE TAC: timer control
             if(cpu_addr_write == `TAC && cpu_wren) begin
-                TAC_R <= cpu_IO_in_data;
+                TAC_R <= {5'b11111,cpu_IO_in_data[2:0]};
             end else begin
                 TAC_R <= TAC_R;
             end

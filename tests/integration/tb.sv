@@ -8,6 +8,7 @@ import defs::*;
 `define CNTSTOP 6069534//10000000
 `define BTN 614441//1000000
 `define BTN2 2569534//1000000
+`define PNT1 5069534
 
 module tb;
   string tests[];
@@ -54,7 +55,7 @@ module tb;
     #1; // little memory delay
     // memData = tmp;
   end
-  gameboy gb (.clk,.clk2, .rst, .frame_pixel, .LY, .frame_pixel_valid,
+  gameboy gb (.clk,.clk2, .rst, .frame_pixel, .frame_pixel_valid,
           .joypad_select,
           .joypad_start,
           .joypad_dpad_up,
@@ -126,17 +127,7 @@ module tb;
   end
 
   always @(negedge clk2) begin
-    if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)&(gb.cpu.decoder.mpc!==INTERUPT5)) begin
-      @(posedge clk2);
-      $fwrite(f,"A:%02h F:%02h B:%02h C:%02h D:%02h E:%02h H:%02h L:%02h SP:%04h PC:%04h PCMEM:%02h,%02h,%02h,%02h\n",
-              gb.cpu.regfile.regs[A],gb.cpu.regfile.regs[F],
-              gb.cpu.regfile.regs[B],gb.cpu.regfile.regs[C],
-              gb.cpu.regfile.regs[D],gb.cpu.regfile.regs[E],
-              gb.cpu.regfile.regs[H],gb.cpu.regfile.regs[L],
-              {gb.cpu.regfile.regs[SP],gb.cpu.regfile.regs[SPL]},gb.memAdr,
-              prog[gb.memAdr],prog[gb.memAdr+1],prog[gb.memAdr+2],prog[gb.memAdr+3]
-              );
-    end
+    
     if(gb.cpu.ctrl.done&(gb.cpu.decoder.cb!==1'b1)) begin
       cnt++;
     end
@@ -159,6 +150,30 @@ module tb;
       joypad_a_button = 0;
       joypad_b_button = 0;
     end
+    if(cnt===`PNT1) begin
+
+      file = $fopen("frame1.ppm", "w");
+      if (file == 0) begin
+        $display("ERROR: Could not open frame.ppm for writing.");
+        $finish;
+      end
+      $fwrite(file, "P3\n%0d %0d\n255\n", WIDTH, HEIGHT);
+      for (r = 0; r < HEIGHT; r = r + 1) begin
+        for (c = 0; c < WIDTH; c = c + 1) begin
+          case (frame_buffer[r][c])
+              2'b11: {red, green, blue} = {0,0,0};
+              2'b10: {red, green, blue} = {85,85,85};
+              2'b01: {red, green, blue} = {170,170,170};
+              2'b00: {red, green, blue} = {255,255,255};
+          endcase
+          $fwrite(file, "%0d %0d %0d ", red, green, blue);
+        end
+        $fwrite(file, "\n");
+      end
+      $fclose(file);
+      $fclose(f);
+      $display("Frame written to frame.ppm");
+end
     if(cnt>`CNTSTOP || pc == `PCSTOP) begin
       $display("finish");
       // output ppu data

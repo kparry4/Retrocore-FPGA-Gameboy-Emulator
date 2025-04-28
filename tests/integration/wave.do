@@ -11,6 +11,11 @@ add wave -noupdate -radix dec /tb/gb/mmu/memory_units/dma_guy/cycle_count
 add wave -noupdate /tb/gb/ppu_mode
 add wave -noupdate /tb/frame_pixel
 add wave -noupdate /tb/frame_pixel_valid
+add wave -noupdate /tb/gb/mmu/io_registers/TIMA_R
+add wave -noupdate /tb/gb/mmu/io_registers/TMA_R
+add wave -noupdate /tb/gb/mmu/io_registers/DIV_R
+add wave -noupdate /tb/gb/mmu/io_registers/IF_R
+add wave -noupdate /tb/gb/mmu/io_registers/IE_R
 add wave -group {GB} -noupdate /tb/gb/*
 add wave -group {Testbench} -noupdate /tb/*
 #add wave -group {fb} -noupdate /tb/fb/*

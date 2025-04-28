@@ -319,7 +319,7 @@ module IO_handler(input logic clock,
 
 
 
-            DIV_R      <= 8'hab;
+            DIV_R      <= 8'hbd;
             TIMA_R     <= '0;
             TMA_R      <= '0;
             TAC_R      <= 8'hf8;

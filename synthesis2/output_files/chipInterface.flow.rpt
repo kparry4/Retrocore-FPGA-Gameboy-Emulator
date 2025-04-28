@@ -1,6 +1,6 @@
 Flow report for chipInterface
-Tue Apr 22 12:42:26 2025
-Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
+Mon Apr 28 16:34:05 2025
+Quartus Prime Version 23.1std.1 Build 993 05/14/2024 SC Standard Edition
 
 
 ---------------------
@@ -21,7 +21,7 @@ Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 ----------------
 ; Legal Notice ;
 ----------------
-Copyright (C) 2020  Intel Corporation. All rights reserved.
+Copyright (C) 2024  Intel Corporation. All rights reserved.
 Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and any partner logic 
 functions, and any output files from any of the foregoing 
@@ -38,26 +38,26 @@ https://fpgasoftware.intel.com/eula.
 
 
 
-+----------------------------------------------------------------------------------+
-; Flow Summary                                                                     ;
-+------------------------------------+---------------------------------------------+
-; Flow Status                        ; Successful - Tue Apr 22 12:42:23 2025       ;
-; Quartus Prime Version              ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
-; Revision Name                      ; chipInterface                               ;
-; Top-level Entity Name              ; chipInterface                               ;
-; Family                             ; Cyclone IV E                                ;
-; Device                             ; EP4CE115F29C7                               ;
-; Timing Models                      ; Final                                       ;
-; Total logic elements               ; 9,412 / 114,480 ( 8 % )                     ;
-;     Total combinational functions  ; 8,133 / 114,480 ( 7 % )                     ;
-;     Dedicated logic registers      ; 3,482 / 114,480 ( 3 % )                     ;
-; Total registers                    ; 3482                                        ;
-; Total pins                         ; 173 / 529 ( 33 % )                          ;
-; Total virtual pins                 ; 0                                           ;
-; Total memory bits                  ; 986,304 / 3,981,312 ( 25 % )                ;
-; Embedded Multiplier 9-bit elements ; 0 / 532 ( 0 % )                             ;
-; Total PLLs                         ; 0 / 4 ( 0 % )                               ;
-+------------------------------------+---------------------------------------------+
++-----------------------------------------------------------------------------------------+
+; Flow Summary                                                                            ;
++------------------------------------+----------------------------------------------------+
+; Flow Status                        ; Successful - Mon Apr 28 16:34:02 2025              ;
+; Quartus Prime Version              ; 23.1std.1 Build 993 05/14/2024 SC Standard Edition ;
+; Revision Name                      ; chipInterface                                      ;
+; Top-level Entity Name              ; chipInterface                                      ;
+; Family                             ; Cyclone IV E                                       ;
+; Device                             ; EP4CE115F29C7                                      ;
+; Timing Models                      ; Final                                              ;
+; Total logic elements               ; 9,359 / 114,480 ( 8 % )                            ;
+;     Total combinational functions  ; 8,125 / 114,480 ( 7 % )                            ;
+;     Dedicated logic registers      ; 3,477 / 114,480 ( 3 % )                            ;
+; Total registers                    ; 3477                                               ;
+; Total pins                         ; 173 / 529 ( 33 % )                                 ;
+; Total virtual pins                 ; 0                                                  ;
+; Total memory bits                  ; 986,304 / 3,981,312 ( 25 % )                       ;
+; Embedded Multiplier 9-bit elements ; 0 / 532 ( 0 % )                                    ;
+; Total PLLs                         ; 0 / 4 ( 0 % )                                      ;
++------------------------------------+----------------------------------------------------+
 
 
 +-----------------------------------------+
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 04/22/2025 12:41:04 ;
+; Start date & time ; 04/28/2025 16:33:04 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; chipInterface       ;
 +-------------------+---------------------+
@@ -76,7 +76,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
 ; Assignment Name                     ; Value                                  ; Default Value ; Entity Name ; Section Id                        ;
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
-; COMPILER_SIGNATURE_ID               ; 225373657047031.174534006405134        ; --            ; --          ; --                                ;
+; COMPILER_SIGNATURE_ID               ; 817182748156.174587238415686           ; --            ; --          ; --                                ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_timing           ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_boundary_scan    ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_signal_integrity ;
@@ -87,6 +87,8 @@ https://fpgasoftware.intel.com/eula.
 ; PARTITION_COLOR                     ; -- (Not supported for targeted family) ; --            ; --          ; Top                               ;
 ; PARTITION_FITTER_PRESERVATION_LEVEL ; -- (Not supported for targeted family) ; --            ; --          ; Top                               ;
 ; PARTITION_NETLIST_TYPE              ; -- (Not supported for targeted family) ; --            ; --          ; Top                               ;
+; POWER_BOARD_THERMAL_MODEL           ; None (CONSERVATIVE)                    ; --            ; --          ; --                                ;
+; POWER_PRESET_COOLING_SOLUTION       ; 23 MM HEAT SINK WITH 200 LFPM AIRFLOW  ; --            ; --          ; --                                ;
 ; PROJECT_OUTPUT_DIRECTORY            ; output_files                           ; --            ; --          ; --                                ;
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
 
@@ -96,24 +98,24 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:40     ; 1.0                     ; 544 MB              ; 00:00:51                           ;
-; Fitter               ; 00:00:34     ; 1.1                     ; 1617 MB             ; 00:01:12                           ;
-; Assembler            ; 00:00:03     ; 1.0                     ; 390 MB              ; 00:00:02                           ;
-; Timing Analyzer      ; 00:00:03     ; 1.5                     ; 674 MB              ; 00:00:04                           ;
-; Total                ; 00:01:20     ; --                      ; --                  ; 00:02:09                           ;
+; Analysis & Synthesis ; 00:00:29     ; 1.0                     ; 601 MB              ; 00:00:37                           ;
+; Fitter               ; 00:00:22     ; 1.1                     ; 1972 MB             ; 00:00:58                           ;
+; Assembler            ; 00:00:02     ; 1.0                     ; 454 MB              ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:02     ; 1.4                     ; 798 MB              ; 00:00:03                           ;
+; Total                ; 00:00:55     ; --                      ; --                  ; 00:01:40                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
-+----------------------------------------------------------------------------------------+
-; Flow OS Summary                                                                        ;
-+----------------------+------------------+----------------+------------+----------------+
-; Module Name          ; Machine Hostname ; OS Name        ; OS Version ; Processor type ;
-+----------------------+------------------+----------------+------------+----------------+
-; Analysis & Synthesis ; Katherine        ; Ubuntu 20.04.5 ; 20         ; x86_64         ;
-; Fitter               ; Katherine        ; Ubuntu 20.04.5 ; 20         ; x86_64         ;
-; Assembler            ; Katherine        ; Ubuntu 20.04.5 ; 20         ; x86_64         ;
-; Timing Analyzer      ; Katherine        ; Ubuntu 20.04.5 ; 20         ; x86_64         ;
-+----------------------+------------------+----------------+------------+----------------+
++---------------------------------------------------------------------------------------------+
+; Flow OS Summary                                                                             ;
++----------------------+------------------------------+---------+------------+----------------+
+; Module Name          ; Machine Hostname             ; OS Name ; OS Version ; Processor type ;
++----------------------+------------------------------+---------+------------+----------------+
+; Analysis & Synthesis ; hh-1305-03.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Fitter               ; hh-1305-03.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Assembler            ; hh-1305-03.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
+; Timing Analyzer      ; hh-1305-03.lan.local.cmu.edu ; Red Hat ; Red Hat    ; x86_64         ;
++----------------------+------------------------------+---------+------------+----------------+
 
 
 ------------

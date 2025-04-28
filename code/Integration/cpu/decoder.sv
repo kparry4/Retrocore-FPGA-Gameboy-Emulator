@@ -102,7 +102,7 @@ module decoder (
           8'b11011001: mpc=RETI;
           8'b11110011: mpc=DI;
           8'b11111011: mpc=EI;
-          8'b00010000: mpc=HALT;//STOP;
+          8'b00010000: mpc=STOP;
           8'b01110110: mpc=HALT;
           8'b11???111: mpc=RST_N;
           8'b110??000: mpc=RET_CC;
@@ -2279,6 +2279,7 @@ module decoder (
       end
       // stop everything
       STOP: begin
+        ctrl.pcen = 0;
       end
       STOP2:begin
         ctrl.done = 1;

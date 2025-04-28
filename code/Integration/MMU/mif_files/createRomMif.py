@@ -36,7 +36,7 @@ def main():
 
     footer_template = "\nEND;"
 
-    mif_file_path = f"{args.name}rom.mif"
+    mif_file_path = f"{args.name}.mif"
 
     try:
         with open(args.binpath, 'rb') as binary_file, open(mif_file_path, 'w') as mif_file:

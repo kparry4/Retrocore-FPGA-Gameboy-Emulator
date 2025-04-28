@@ -1,10 +1,10 @@
-/* Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition */
+/* Quartus Prime Version 23.1std.1 Build 993 05/14/2024 SC Standard Edition */
 JedecChain;
 	FileRevision(JESD32A);
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(EP4CE115F29) Path("/home/katherine/code/Gameboy/synthesis2/output_files/") File("chipInterface.sof") MfrSpec(OpMask(1));
+		Device PartName(EP4CE115F29) Path("/afs/ece.cmu.edu/usr/kparry/Private/Gameboy/synthesis2/output_files/") File("chipInterface.sof") MfrSpec(OpMask(1));
 
 ChainEnd;
 
