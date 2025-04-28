@@ -1,5 +1,5 @@
 Flow report for chipInterface
-Mon Apr 28 16:34:05 2025
+Mon Apr 28 18:32:26 2025
 Quartus Prime Version 23.1std.1 Build 993 05/14/2024 SC Standard Edition
 
 
@@ -41,17 +41,17 @@ https://fpgasoftware.intel.com/eula.
 +-----------------------------------------------------------------------------------------+
 ; Flow Summary                                                                            ;
 +------------------------------------+----------------------------------------------------+
-; Flow Status                        ; Successful - Mon Apr 28 16:34:02 2025              ;
+; Flow Status                        ; Successful - Mon Apr 28 18:32:22 2025              ;
 ; Quartus Prime Version              ; 23.1std.1 Build 993 05/14/2024 SC Standard Edition ;
 ; Revision Name                      ; chipInterface                                      ;
 ; Top-level Entity Name              ; chipInterface                                      ;
 ; Family                             ; Cyclone IV E                                       ;
 ; Device                             ; EP4CE115F29C7                                      ;
 ; Timing Models                      ; Final                                              ;
-; Total logic elements               ; 9,359 / 114,480 ( 8 % )                            ;
-;     Total combinational functions  ; 8,125 / 114,480 ( 7 % )                            ;
-;     Dedicated logic registers      ; 3,477 / 114,480 ( 3 % )                            ;
-; Total registers                    ; 3477                                               ;
+; Total logic elements               ; 9,357 / 114,480 ( 8 % )                            ;
+;     Total combinational functions  ; 8,103 / 114,480 ( 7 % )                            ;
+;     Dedicated logic registers      ; 3,464 / 114,480 ( 3 % )                            ;
+; Total registers                    ; 3464                                               ;
 ; Total pins                         ; 173 / 529 ( 33 % )                                 ;
 ; Total virtual pins                 ; 0                                                  ;
 ; Total memory bits                  ; 986,304 / 3,981,312 ( 25 % )                       ;
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 04/28/2025 16:33:04 ;
+; Start date & time ; 04/28/2025 18:31:22 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; chipInterface       ;
 +-------------------+---------------------+
@@ -76,7 +76,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
 ; Assignment Name                     ; Value                                  ; Default Value ; Entity Name ; Section Id                        ;
 +-------------------------------------+----------------------------------------+---------------+-------------+-----------------------------------+
-; COMPILER_SIGNATURE_ID               ; 817182748156.174587238415686           ; --            ; --          ; --                                ;
+; COMPILER_SIGNATURE_ID               ; 817182748156.174587948246958           ; --            ; --          ; --                                ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_timing           ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_boundary_scan    ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --            ; --          ; eda_board_design_signal_integrity ;
@@ -98,11 +98,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:29     ; 1.0                     ; 601 MB              ; 00:00:37                           ;
-; Fitter               ; 00:00:22     ; 1.1                     ; 1972 MB             ; 00:00:58                           ;
-; Assembler            ; 00:00:02     ; 1.0                     ; 454 MB              ; 00:00:02                           ;
-; Timing Analyzer      ; 00:00:02     ; 1.4                     ; 798 MB              ; 00:00:03                           ;
-; Total                ; 00:00:55     ; --                      ; --                  ; 00:01:40                           ;
+; Analysis & Synthesis ; 00:00:29     ; 1.0                     ; 615 MB              ; 00:00:37                           ;
+; Fitter               ; 00:00:25     ; 1.1                     ; 1939 MB             ; 00:01:05                           ;
+; Assembler            ; 00:00:02     ; 1.0                     ; 459 MB              ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:02     ; 1.5                     ; 756 MB              ; 00:00:03                           ;
+; Total                ; 00:00:58     ; --                      ; --                  ; 00:01:47                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 

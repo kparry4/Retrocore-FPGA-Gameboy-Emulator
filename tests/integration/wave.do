@@ -14,6 +14,7 @@ add wave -noupdate /tb/frame_pixel_valid
 add wave -noupdate /tb/gb/mmu/io_registers/TIMA_R
 add wave -noupdate /tb/gb/mmu/io_registers/TMA_R
 add wave -noupdate /tb/gb/mmu/io_registers/DIV_R
+add wave -noupdate /tb/gb/mmu/io_registers/TAC_R
 add wave -noupdate /tb/gb/mmu/io_registers/IF_R
 add wave -noupdate /tb/gb/mmu/io_registers/IE_R
 add wave -group {GB} -noupdate /tb/gb/*

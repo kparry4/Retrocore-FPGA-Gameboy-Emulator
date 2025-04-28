@@ -66,15 +66,15 @@ module IO_handler(input logic clock,
 
     localparam integer clock_freq = 4_000_000;
     localparam integer DIV_TICK_COUNT = 256; //should be 244
-    logic [11:0] TIMA_TICK_COUNT; //this would be local param but it gets set during runtime
+    //logic [11:0] TIMA_TICK_COUNT; //this would be local param but it gets set during runtime
 
-    logic[10:0] tima_ticks, divider_ticks;
+    //logic[10:0] tima_ticks, divider_ticks;
 
     logic vblank_sync;
     logic vblank_posedge;
 
-    logic tima_overflow;
-    assign tima_overflow = (tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2] && TIMA_R == 16'hFF);
+    //logic tima_overflow;
+    //assign tima_overflow = (tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2] && TIMA_R == 16'hFF);
 
     assign vblank_posedge = ~vblank_sync && vblank;
 
@@ -243,15 +243,15 @@ module IO_handler(input logic clock,
     logic debug_skip_ppu;
 
 
-    always_comb begin
-        case(TAC_R[1:0])
-        2'b00: TIMA_TICK_COUNT = 2048; //1024 cpu cycles
-        2'b01: TIMA_TICK_COUNT = 32; //16 cpu cycles
-        2'b10: TIMA_TICK_COUNT = 128; //64 cpu cycles
-        2'b11: TIMA_TICK_COUNT = 512; //256 cpu cycles
-        default: TIMA_TICK_COUNT = 0; //HOPEFULLY unreachable
-        endcase
-    end
+    //always_comb begin
+    //    case(TAC_R[1:0])
+    //    2'b00: TIMA_TICK_COUNT = 2048; //1024 cpu cycles
+    //    2'b01: TIMA_TICK_COUNT = 32; //16 cpu cycles
+    //    2'b10: TIMA_TICK_COUNT = 128; //64 cpu cycles
+    //    2'b11: TIMA_TICK_COUNT = 512; //256 cpu cycles
+    //    default: TIMA_TICK_COUNT = 0; //HOPEFULLY unreachable
+    //    endcase
+    //end
     logic [3:0] DPAD_R, BTN_R;
     always_ff @(posedge clock) begin
       if(reset) {DPAD_R,BTN_R} <= 8'hff;
@@ -290,8 +290,38 @@ module IO_handler(input logic clock,
     //     else
     //         stat_sync <= hidden_stat;
     // end
-
-
+    logic [15:0] divreg;
+    logic savebit;
+    logic timerEn;
+    logic andRes,nextandRes;
+    assign DIV_R = divreg[15:8];
+    always_ff @(posedge ppu_clock) begin
+      if(reset) 
+            divreg      <= 16'hbd0a;
+      else if(cpu_addr_write == `DIV && cpu_wren) divreg <= 0;
+      else divreg<=divreg+1;
+    end
+    always_comb case(TAC_R[1:0])
+      2'b00: savebit = divreg[9];
+      2'b01: savebit = divreg[3];
+      2'b10: savebit = divreg[5];
+      2'b11: savebit = divreg[7];
+    endcase
+    assign timerEn = TAC_R[2];
+    assign andRes = timerEn&savebit;
+    always_ff @(posedge ppu_clock)
+      nextandRes <= andRes;
+    
+    logic tima_overflow;
+    always_ff@(posedge ppu_clock) begin
+      if(reset) TIMA_R = 0;
+      else if(cpu_addr_write == `TIMA && cpu_wren) TIMA_R <= cpu_IO_in_data;
+      else if (nextandRes&~andRes)
+        if(&TIMA_R) TIMA_R <= TMA_R;
+        else TIMA_R <= TIMA_R+1;
+      else TIMA_R <= TIMA_R;
+    end
+    assign tima_overflow = &TIMA_R&nextandRes&~andRes;
 
 
     always_ff@(posedge clock) begin
@@ -299,8 +329,8 @@ module IO_handler(input logic clock,
             halted             <= 1'b0;
             restart_after_stop <= 1'b0;
             vblank_sync        <= 1'b0;
-            tima_ticks          <= '0;
-            divider_ticks      <= 4;
+            //tima_ticks          <= '0;
+            //divider_ticks      <= 4;
 
             JOYPAD_R   <= 8'hcf;
             // NR52_R     <= '0;
@@ -326,10 +356,8 @@ module IO_handler(input logic clock,
             PPU_R.WX_R   <= 8'h00;
 
 
-
-            DIV_R      <= 8'hbd;
-            TIMA_R     <= '0;
             TMA_R      <= '0;
+
             TAC_R      <= 8'hf8;
             IF_R       <= 8'he1;
             IE_R       <= '0;
@@ -356,8 +384,8 @@ module IO_handler(input logic clock,
             APU_R         <= APU_R; //apu regisTERS
             STAT_R        <= STAT_R; //ppu register
             PPU_R         <= PPU_R;  //ppu regisTERS
-            DIV_R         <= DIV_R; //timers
-            TIMA_R        <= TIMA_R;
+            //DIV_R         <= DIV_R; //timers
+           // TIMA_R        <= TIMA_R;
             TMA_R         <= TMA_R;
             TAC_R         <= TAC_R;
             IF_R          <= IF_R; //interrupts
@@ -381,18 +409,18 @@ module IO_handler(input logic clock,
   	        end
 
             //HANDLE DIV: Divider
-            if(cpu_addr_write == `DIV && cpu_wren) begin
-                DIV_R <= 8'd0;
-            end else begin
+            //if(cpu_addr_write == `DIV && cpu_wren) begin
+                //DIV_R <= 8'd0;
+            //end else begin
                 //based on speed switch (tbd, this can increment double speed)
-                if(divider_ticks == DIV_TICK_COUNT - 1) begin
-                    divider_ticks <= '0;
-                    DIV_R <= DIV_R + 8'd1;
-                end else begin
-                    divider_ticks <= divider_ticks + 1;
-                    DIV_R <= DIV_R;
-                end
-            end
+             //   if(divider_ticks == DIV_TICK_COUNT - 1) begin
+             //       divider_ticks <= '0;
+             //       DIV_R <= DIV_R + 8'd1;
+              //  end else begin
+             //       divider_ticks <= divider_ticks + 1;
+             //       DIV_R <= DIV_R;
+             //   end
+            //end
 
             //HANDLE TMA: timer modulo
             if(cpu_addr_write == `TMA && cpu_wren) begin
@@ -402,21 +430,21 @@ module IO_handler(input logic clock,
             end
 
             //HANDLE TIMA: Timer Counter
-            if(tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2]) begin
-                if(TIMA_R == 8'hFF) begin
-                    TIMA_R <= TMA_R;
-                    tima_ticks <= '0;
-                end else if(TAC_R[2]) begin
-                    TIMA_R <= TIMA_R + 8'h1;
-                    tima_ticks <= '0;
-                end else begin
-                    TIMA_R <= TIMA_R;
-                    tima_ticks <= '0;
-                end
-            end else begin
-                TIMA_R <= TIMA_R;
-                tima_ticks <= tima_ticks + 1'b1;
-            end
+           // if(tima_ticks == TIMA_TICK_COUNT - 1 && TAC_R[2]) begin
+           //     if(TIMA_R == 8'hFF) begin
+           //         TIMA_R <= TMA_R;
+           //         tima_ticks <= '0;
+           //     end else if(TAC_R[2]) begin
+           //         TIMA_R <= TIMA_R + 8'h1;
+           //         tima_ticks <= '0;
+           //     end else begin
+           //         TIMA_R <= TIMA_R;
+           //         tima_ticks <= '0;
+           //     end
+           // end else begin
+           //     TIMA_R <= TIMA_R;
+           //     tima_ticks <= tima_ticks + 1'b1;
+           // end
 
             //HANDLE TAC: timer control
             if(cpu_addr_write == `TAC && cpu_wren) begin
